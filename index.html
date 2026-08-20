@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ozi Portföy Takip</title>
+    <!-- Tailwind CSS for Styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js for Data Visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        
+        .tab-active { border-bottom: 2px solid #6366f1; color: #6366f1; }
+        .transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 300ms; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-200 font-sans min-h-screen flex flex-col">
+
+    <header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <div class="bg-brand-500 text-white p-2 rounded-lg shadow-lg shadow-brand-500/30">
+                        <i class="fa-solid fa-chart-pie text-xl"></i>
+                    </div>
+                    <h1 class="text-xl font-bold text-white tracking-wide">Ozi<span class="font-light">Portföy</span></h1>
+                </div>
+                <div class="flex space-x-1 sm:space-x-4">
+                    <button id="tab-monthly" class="tab-active px-3 py-2 text-sm font-medium rounded-t-md hover:text-brand-500 transition-colors" onclick="switchTab('monthly')">
+                        <i class="fa-solid fa-calendar-days mr-2 hidden sm:inline"></i>Aylık Detay
+                    </button>
+                    <button id="tab-compare" class="text-slate-400 px-3 py-2 text-sm font-medium rounded-t-md hover:text-brand-500 transition-colors border-b-2 border-transparent" onclick="switchTab('compare')">
+                        <i class="fa-solid fa-scale-balanced mr-2 hidden sm:inline"></i>Kıyaslama
+                    </button>
+                    <button id="tab-manage" class="text-slate-400 px-3 py-2 text-sm font-medium rounded-t-md hover:text-brand-500 transition-colors border-b-2 border-transparent" onclick="switchTab('manage')">
+                        <i class="fa-solid fa-briefcase mr-2 hidden sm:inline"></i>Yönetim
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- MONTHLY VIEW TAB -->
+        <div id="view-monthly" class="block animate-fade-in">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                <div class="flex flex-wrap items-center gap-3">
+                    <select id="portfolioSelector" class="bg-slate-800 border border-slate-600 text-white text-sm rounded-lg focus:ring-brand-500 focus:border-brand-500 block w-48 p-2.5 outline-none cursor-pointer shadow-sm">
+                        <!-- JS -->
+                    </select>
+                    <select id="monthSelector" class="bg-slate-800 border border-slate-600 text-white text-sm rounded-lg focus:ring-brand-500 focus:border-brand-500 block w-32 p-2.5 outline-none cursor-pointer shadow-sm">
+                        <!-- JS -->
+                    </select>
+                    
+
+                    
+                    <!-- Canlı Fiyat Güncelle Butonu -->
+                    <button id="btnRefresh" onclick="refreshPrices()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 text-sm font-medium rounded-lg transition-colors shadow-lg shadow-emerald-500/20 flex items-center">
+                        <i class="fa-solid fa-bolt mr-2"></i>Canlı Fiyatları Çek
+                    </button>
+                </div>
+                
+                <div class="flex bg-slate-800 p-1 rounded-lg border border-slate-700 shadow-sm">
+                    <button id="btnLineChart" onclick="toggleChartType('line')" class="px-4 py-1.5 text-sm font-medium rounded-md bg-brand-500 text-white shadow transition-colors">
+                        <i class="fa-solid fa-chart-line mr-2"></i>Çizgi
+                    </button>
+                    <button id="btnBarChart" onclick="toggleChartType('bar')" class="px-4 py-1.5 text-sm font-medium rounded-md text-slate-400 hover:text-white transition-colors">
+                        <i class="fa-solid fa-chart-simple mr-2"></i>Sütun
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-slate-800 rounded-xl p-4 sm:p-6 border border-slate-700 shadow-lg mb-8 relative">
+                <h2 class="text-lg font-semibold text-white mb-4">Aylık Portföy Gelişimi (₺)</h2>
+                <div class="w-full h-72 sm:h-96 relative">
+                    <canvas id="monthlyChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-slate-800 rounded-xl border border-slate-700 shadow-lg overflow-hidden">
+                <div class="p-4 sm:p-6 border-b border-slate-700 bg-slate-800/50">
+                    <h2 class="text-lg font-semibold text-white">Varlık Dağılımı ve Performans</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-slate-300">
+                        <thead class="text-xs text-slate-400 uppercase bg-slate-900/50">
+                            <tr>
+                                <th scope="col" class="px-6 py-4 font-medium">Varlık / Hisse</th>
+                                <th scope="col" class="px-6 py-4 font-medium text-right">Adet</th>
+                                <th scope="col" class="px-6 py-4 font-medium text-right">Maliyet (₺)</th>
+                                <th scope="col" class="px-6 py-4 font-medium text-right">Güncel Fiyat (₺)</th>
+                                <th scope="col" class="px-6 py-4 font-medium text-center">Ağırlık (%)</th>
+                                <th scope="col" class="px-6 py-4 font-medium text-right">Net Kâr/Zarar (₺)</th>
+                                <th scope="col" class="px-6 py-4 font-medium text-right">Getiri (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="assetsTableBody" class="divide-y divide-slate-700/50">
+                            <!-- JS -->
+                        </tbody>
+                        <tfoot class="bg-slate-900/80 font-semibold text-white">
+                            <tr>
+                                <td class="px-6 py-4">Toplam Portföy</td>
+                                <td class="px-6 py-4"></td>
+                                <td class="px-6 py-4 text-right" id="totalCost">0 ₺</td>
+                                <td class="px-6 py-4 text-right" id="totalValue">0 ₺</td>
+                                <td class="px-6 py-4 text-center">100%</td>
+                                <td class="px-6 py-4 text-right font-medium" id="totalProfitTL">0 ₺</td>
+                                <td class="px-6 py-4 text-right" id="totalChange">0%</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- COMPARISON VIEW TAB -->
+        <div id="view-compare" class="hidden animate-fade-in">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-white mb-2">Aylık Kümülatif Getiri Kıyaslaması</h2>
+                <p class="text-slate-400 text-sm">Zaman içindeki portföy getirilerinizi ana endekslerle kıyaslayın.</p>
+            </div>
+
+            <div class="bg-slate-800 rounded-xl p-5 border border-slate-700 shadow-lg mb-8">
+                <h3 class="text-sm font-semibold text-slate-300 mb-4 uppercase tracking-wider">Kıyaslanacak Verileri Seçin</h3>
+                <div class="flex flex-wrap gap-3" id="benchmarkToggles">
+                    <!-- JS -->
+                </div>
+            </div>
+
+            <div class="bg-slate-800 rounded-xl p-4 sm:p-6 border border-slate-700 shadow-lg">
+                <h2 class="text-lg font-semibold text-white mb-4">Kümülatif Getiri Grafiği (%)</h2>
+                <div class="w-full h-80 sm:h-[450px] relative">
+                    <canvas id="compareChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8" id="comparisonStats">
+                <!-- JS -->
+            </div>
+        </div>
+
+        <!-- MANAGEMENT TAB -->
+        <div id="view-manage" class="hidden animate-fade-in">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-white mb-2">Portföy Yönetimi</h2>
+                    <p class="text-slate-400 text-sm">Seçili aydaki portföylerinizi yönetin.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-3">
+                    <!-- Kilit Butonu -->
+                    <button id="btnToggleLock" onclick="toggleLock()" class="px-4 py-2 text-sm font-medium rounded-lg border transition-colors shadow-sm flex items-center">
+                        <i class="fa-solid fa-lock mr-2" id="lockIcon"></i><span id="lockText">Kilitli</span>
+                    </button>
+                    <button onclick="openPortfolioModal()" class="bg-brand-500 hover:bg-brand-600 text-white px-4 py-2.5 rounded-lg font-medium transition-colors shadow-lg flex items-center gap-2 whitespace-nowrap">
+                        <i class="fa-solid fa-plus"></i> Yeni Portföy Ekle
+                    </button>
+                </div>
+            </div>
+            
+            <div id="portfoliosContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- JS -->
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODALS -->
+    
+    <div id="portfolioModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4 opacity-0 transition-opacity">
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 w-full max-w-md shadow-2xl transform scale-95 transition-transform" id="portfolioModalContent">
+            <h3 class="text-white text-xl font-bold mb-4">Yeni Portföy Oluştur</h3>
+            <div class="mb-4">
+                <label class="block text-slate-400 text-sm mb-2">Portföy Adı</label>
+                <input type="text" id="newPortName" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-white focus:border-brand-500 outline-none" placeholder="Örn: Uzun Vade Temettü">
+            </div>
+            <div class="flex justify-end gap-3 mt-6">
+                <button onclick="closeModals()" class="px-5 py-2.5 text-slate-300 hover:bg-slate-700 rounded-lg transition-colors">İptal</button>
+                <button onclick="savePortfolio()" class="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white rounded-lg transition-colors shadow-lg">Oluştur</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="assetModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4 opacity-0 transition-opacity">
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 w-full max-w-md shadow-2xl transform scale-95 transition-transform" id="assetModalContent">
+            <h3 class="text-white text-xl font-bold mb-4">Varlık / Hisse Ekle</h3>
+            <input type="hidden" id="targetPortfolioId">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-slate-400 text-sm mb-1">Hisse Kodu (BIST için .IS eklemeyin)</label>
+                    <input type="text" id="assetName" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-white focus:border-brand-500 outline-none uppercase" placeholder="Örn: THYAO">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-slate-400 text-sm mb-1">Adet</label>
+                        <input type="number" id="assetAmount" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-white focus:border-brand-500 outline-none" placeholder="100">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 text-sm mb-1">Birim Maliyet (₺)</label>
+                        <input type="number" id="assetCost" step="0.01" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-white focus:border-brand-500 outline-none" placeholder="150.50">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-slate-400 text-sm mb-1">Manuel Fiyat (Zorunlu Değil)</label>
+                    <input type="number" id="assetPrice" step="0.01" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-white focus:border-brand-500 outline-none" placeholder="Canlı çekilecek...">
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 mt-6">
+                <button onclick="closeModals()" class="px-5 py-2.5 text-slate-300 hover:bg-slate-700 rounded-lg transition-colors">İptal</button>
+                <button onclick="saveAsset()" class="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white rounded-lg transition-colors shadow-lg">Ekle</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirmModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[110] flex items-center justify-center p-4 opacity-0 transition-opacity">
+         <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 w-full max-w-sm shadow-2xl" id="confirmModalContent">
+            <h3 class="text-white text-lg font-bold mb-2">Emin misiniz?</h3>
+            <p id="confirmMessage" class="text-slate-400 text-sm mb-6">Bu işlemi geri alamazsınız.</p>
+            <div class="flex justify-end gap-3">
+                <button onclick="closeConfirmModal()" class="px-4 py-2 text-slate-300 hover:bg-slate-700 rounded-lg transition-colors">İptal</button>
+                <button id="confirmBtn" class="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg transition-colors shadow-lg">Sil</button>
+            </div>
+         </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        const chartColors = ["#6366f1", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#3b82f6", "#ef4444", "#06b6d4"];
+
+        let appState = {
+            portfoliosData: {}, // { "2026-08": [ {id, name, assets} ] }
+            benchmarksData: {}, // { "2026-08": { "ALTIN": 2500, "XU100.IS": 10000 } }
+            frozenMonths: {},   // { "2026-08": false }
+            activeBenchmarks: [],
+            
+            // UI State
+            currentViewMonth: "",
+            currentPortfolioId: "",
+            monthlyChartType: 'line',
+            deleteQueue: { type: null, pId: null, aId: null }
+        };
+
+        let mChart = null;
+        let cChart = null;
+
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.font.family = 'Inter';
+
+        window.onload = initApp;
+
+        async function initApp() {
+            try {
+                const res = await fetch(`${API_URL}/load`);
+                const data = await res.json();
+                
+                const d = new Date();
+                const actualMonth = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}`;
+                
+                if (data.status === "empty" || !data.data.portfoliosData) {
+                    appState.portfoliosData[actualMonth] = [];
+                    appState.benchmarksData[actualMonth] = {};
+                    appState.frozenMonths[actualMonth] = false;
+                } else {
+                    appState = { ...appState, ...data.data };
+                    
+                    const months = Object.keys(appState.portfoliosData).sort();
+                    if(months.length > 0) {
+                        const lastMonth = months[months.length - 1];
+                        if (lastMonth < actualMonth) {
+                            appState.frozenMonths[lastMonth] = true;
+                            appState.portfoliosData[actualMonth] = JSON.parse(JSON.stringify(appState.portfoliosData[lastMonth]));
+                            appState.benchmarksData[actualMonth] = JSON.parse(JSON.stringify(appState.benchmarksData[lastMonth] || {}));
+                            appState.frozenMonths[actualMonth] = false;
+                            await saveState();
+                        }
+                    } else {
+                        appState.portfoliosData[actualMonth] = [];
+                        appState.benchmarksData[actualMonth] = {};
+                        appState.frozenMonths[actualMonth] = false;
+                    }
+                }
+                
+                appState.currentViewMonth = actualMonth;
+                
+                if (!appState.activeBenchmarks || appState.activeBenchmarks.length === 0) {
+                    appState.activeBenchmarks = ['ALTIN', 'XU100.IS'];
+                }
+
+                if(appState.portfoliosData[appState.currentViewMonth].length > 0){
+                    appState.currentPortfolioId = appState.portfoliosData[appState.currentViewMonth][0].id;
+                }
+                
+                initDropdowns();
+                updateAllViews();
+                
+                // İlk açılışta güncel ay donuk değilse fiyatları çek
+                if(!appState.frozenMonths[appState.currentViewMonth]) {
+                    refreshPrices();
+                }
+                
+            } catch (e) {
+                console.error(e);
+                alert("Backend'e ulaşılamadı. Lütfen 'python server.py' komutunun çalıştığından emin olun.");
+            }
+        }
+
+        async function saveState() {
+            // UI statelerini ayırıp kaydetmek daha temiz olabilir ama şimdilik bütünü atıyoruz
+            try {
+                await fetch(`${API_URL}/save`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(appState)
+                });
+            } catch(e) { console.error("Kayıt hatası", e); }
+        }
+
+        async function refreshPrices() {
+            if (appState.frozenMonths[appState.currentViewMonth]) {
+                alert("Bu ay kilitli! Fiyatları canlı çekmek için önce sağ üstten kilidi açın.");
+                return;
+            }
+            
+            const btn = document.getElementById('btnRefresh');
+            if(btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Güncelleniyor...';
+            
+            try {
+                let symbols = new Set(['ALTIN', 'XU100.IS']);
+                const ports = appState.portfoliosData[appState.currentViewMonth] || [];
+                ports.forEach(p => p.assets.forEach(a => {
+                    let fetchName = a.name.includes('.') ? a.name : a.name + '.IS';
+                    symbols.add(fetchName);
+                }));
+                
+                const res = await fetch(`${API_URL}/prices`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({symbols: Array.from(symbols)})
+                });
+                
+                const data = await res.json();
+                if (data.status === "success") {
+                    const prices = data.prices;
+                    
+                    ports.forEach(p => {
+                        p.assets.forEach(a => {
+                            let fetchName = a.name.includes('.') ? a.name : a.name + '.IS';
+                            if (prices[fetchName]) {
+                                a.price = prices[fetchName];
+                            }
+                        });
+                    });
+                    
+                    if (!appState.benchmarksData[appState.currentViewMonth]) appState.benchmarksData[appState.currentViewMonth] = {};
+                    if (prices['ALTIN']) appState.benchmarksData[appState.currentViewMonth]['ALTIN'] = prices['ALTIN'];
+                    if (prices['XU100.IS']) appState.benchmarksData[appState.currentViewMonth]['XU100.IS'] = prices['XU100.IS'];
+                    
+                    await saveState();
+                    updateAllViews();
+                }
+            } catch (e) {
+                console.error(e);
+            }
+            
+            if(btn) btn.innerHTML = '<i class="fa-solid fa-bolt mr-2"></i>Canlı Fiyatları Çek';
+        }
+
+        async function toggleLock() {
+            appState.frozenMonths[appState.currentViewMonth] = !appState.frozenMonths[appState.currentViewMonth];
+            await saveState();
+            updateLockUI();
+        }
+
+        function updateLockUI() {
+            const isFrozen = appState.frozenMonths[appState.currentViewMonth];
+            const btn = document.getElementById('btnToggleLock');
+            const icon = document.getElementById('lockIcon');
+            const txt = document.getElementById('lockText');
+            
+            if (isFrozen) {
+                btn.className = "px-4 py-2 text-sm font-medium rounded-lg border transition-colors shadow-sm flex items-center bg-slate-800 border-rose-500/50 text-rose-400 hover:bg-slate-700";
+                icon.className = "fa-solid fa-lock mr-2";
+                txt.textContent = "Kilitli (Salt Okunur)";
+            } else {
+                btn.className = "px-4 py-2 text-sm font-medium rounded-lg border transition-colors shadow-sm flex items-center bg-slate-800 border-emerald-500/50 text-emerald-400 hover:bg-slate-700";
+                icon.className = "fa-solid fa-lock-open mr-2";
+                txt.textContent = "Açık (Düzenlenebilir)";
+            }
+        }
+
+        function switchTab(tabId) {
+            const tabs = ['monthly', 'compare', 'manage'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                const view = document.getElementById(`view-${t}`);
+                if (t === tabId) {
+                    btn.classList.add('tab-active');
+                    btn.classList.remove('text-slate-400', 'border-transparent');
+                    view.classList.remove('hidden');
+                } else {
+                    btn.classList.remove('tab-active');
+                    btn.classList.add('text-slate-400', 'border-transparent');
+                    view.classList.add('hidden');
+                }
+            });
+        }
+
+        function initDropdowns() {
+            const mSelector = document.getElementById('monthSelector');
+            mSelector.innerHTML = '';
+            
+            const months = Object.keys(appState.portfoliosData).sort().reverse();
+            months.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m; opt.textContent = m;
+                if(m === appState.currentViewMonth) opt.selected = true;
+                mSelector.appendChild(opt);
+            });
+            mSelector.onchange = (e) => { 
+                appState.currentViewMonth = e.target.value; 
+                // Portföy id'si yeni ayda yoksa ilkini seç
+                const ports = appState.portfoliosData[appState.currentViewMonth];
+                if(ports && ports.length > 0) {
+                    if(!ports.find(p=>p.id === appState.currentPortfolioId)) {
+                        appState.currentPortfolioId = ports[0].id;
+                    }
+                }
+                updateAllViews(); 
+            };
+            
+            updatePortfolioDropdown();
+        }
+
+        function updatePortfolioDropdown() {
+            const pSelector = document.getElementById('portfolioSelector');
+            pSelector.innerHTML = '';
+            const currentPorts = appState.portfoliosData[appState.currentViewMonth] || [];
+            
+            currentPorts.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id; opt.textContent = p.name;
+                if(p.id === appState.currentPortfolioId) opt.selected = true;
+                pSelector.appendChild(opt);
+            });
+            pSelector.onchange = (e) => { appState.currentPortfolioId = e.target.value; renderMonthlyView(); };
+        }
+
+        function toggleChartType(type) {
+            appState.monthlyChartType = type;
+            const btnLine = document.getElementById('btnLineChart');
+            const btnBar = document.getElementById('btnBarChart');
+            if (type === 'line') {
+                btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md bg-brand-500 text-white shadow transition-colors";
+                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-400 hover:text-white transition-colors";
+            } else {
+                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md bg-brand-500 text-white shadow transition-colors";
+                btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-400 hover:text-white transition-colors";
+            }
+            renderMonthlyChart();
+        }
+
+        function getPortfolioStats(portfolio) {
+            let totalCost = 0; let totalValue = 0;
+            if(!portfolio || !portfolio.assets) return { totalCost:0, totalValue:0, totalChange:0, assetsWithStats:[] };
+
+            portfolio.assets.forEach(a => {
+                totalCost += (a.amount * a.cost);
+                totalValue += (a.amount * (a.price || a.cost)); // Fiyat yoksa maliyet üzerinden
+            });
+
+            let assetsWithStats = portfolio.assets.map(a => {
+                let p = a.price || a.cost;
+                let val = a.amount * p;
+                let cst = a.amount * a.cost;
+                let change = cst > 0 ? ((val - cst) / cst) * 100 : 0;
+                let weight = totalValue > 0 ? (val / totalValue) * 100 : 0;
+                return { ...a, price: p, currentValue: val, totalCost: cst, change, weight };
+            });
+
+            assetsWithStats.sort((a,b) => b.weight - a.weight);
+            let totalChange = totalCost > 0 ? ((totalValue - totalCost) / totalCost) * 100 : 0;
+
+            return { totalCost, totalValue, totalChange, assetsWithStats };
+        }
+
+        function formatMoney(amount) {
+            return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(amount);
+        }
+
+        function renderMonthlyView() {
+            updateLockUI();
+            renderMonthlyChart();
+            renderMonthlyTable();
+        }
+
+        const monthNames = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
+
+        function getTradingDays(yearMonth) {
+            const [year, month] = yearMonth.split('-').map(Number);
+            const today = new Date();
+            let daysInMonth = new Date(year, month, 0).getDate();
+            
+            if (today.getFullYear() === year && (today.getMonth() + 1) === month) {
+                daysInMonth = today.getDate();
+            }
+
+            const labels = [];
+            for (let i = 1; i <= daysInMonth; i++) {
+                const d = new Date(year, month - 1, i);
+                const dayOfWeek = d.getDay();
+                if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+                    labels.push(`${i} ${monthNames[month - 1]}`);
+                }
+            }
+            if (labels.length === 0) labels.push(`1 ${monthNames[month - 1]}`);
+            return labels;
+        }
+
+        function generateFakePathPercent(finalPercent, count) {
+            if (finalPercent === 0) return Array(count).fill(0);
+            let data = [0];
+            let step = finalPercent / (count > 1 ? count - 1 : 1);
+            let current = 0;
+            for(let i=1; i<count - 1; i++) {
+                current += step + ((Math.random() - 0.5) * Math.abs(step) * 2);
+                data.push(current);
+            }
+            if (count > 1) data.push(finalPercent);
+            return data;
+        }
+
+        function renderMonthlyChart() {
+            const ctx = document.getElementById('monthlyChart').getContext('2d');
+            const ports = appState.portfoliosData[appState.currentViewMonth] || [];
+            const portfolio = ports.find(p => p.id === appState.currentPortfolioId);
+            const stats = getPortfolioStats(portfolio);
+            
+            if (mChart) mChart.destroy();
+            if (!portfolio) return;
+
+            const isLine = appState.monthlyChartType === 'line';
+
+            let chartLabels = [];
+            let chartData = [];
+            let bgColors = [];
+            let borderColors = [];
+
+            if (isLine) {
+                chartLabels = getTradingDays(appState.currentViewMonth);
+                chartData = generateFakePathPercent(stats.totalChange, chartLabels.length);
+                
+                let lineColor = '#3b82f6'; // Mavi
+                if (stats.totalChange > 0.05) lineColor = '#10b981'; // Yeşil
+                else if (stats.totalChange < -0.05) lineColor = '#ef4444'; // Kırmızı
+
+                borderColors = lineColor;
+                const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                gradient.addColorStop(0, lineColor);
+                gradient.addColorStop(1, 'rgba(15, 23, 42, 0)');
+                bgColors = gradient;
+            } else {
+                stats.assetsWithStats.forEach(a => {
+                    chartLabels.push(a.name);
+                    chartData.push(a.change.toFixed(2));
+                    let color = a.change >= 0 ? '#10b981' : '#ef4444';
+                    bgColors.push(color);
+                    borderColors.push(color);
+                });
+            }
+
+            mChart = new Chart(ctx, {
+                type: appState.monthlyChartType,
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: isLine ? portfolio.name + ' Kümülatif Getiri (%)' : 'Hisse Getirisi (%)',
+                        data: chartData,
+                        borderColor: borderColors,
+                        backgroundColor: bgColors,
+                        borderWidth: isLine ? 2 : 0,
+                        pointRadius: 0,
+                        pointHoverRadius: 5,
+                        pointBackgroundColor: borderColors,
+                        fill: true,
+                        borderRadius: isLine ? 0 : 4,
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: { 
+                        legend: { display: false }, 
+                        tooltip: { 
+                            enabled: true,
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleColor: '#fff',
+                            bodyColor: '#cbd5e1',
+                            borderColor: '#334155',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Getiri: %' + context.parsed.y.toFixed(2);
+                                }
+                            }
+                        } 
+                    },
+                    scales: {
+                        x: { display: true, grid: { color: '#334155', drawBorder: false }, ticks: { color: '#94a3b8', maxTicksLimit: 15 } },
+                        y: { grid: { color: '#334155', drawBorder: false }, ticks: { callback: v => '%' + v, color: '#94a3b8' } }
+                    }
+                }
+            });
+        }
+
+        function renderMonthlyTable() {
+            const tbody = document.getElementById('assetsTableBody');
+            const ports = appState.portfoliosData[appState.currentViewMonth] || [];
+            const portfolio = ports.find(p => p.id === appState.currentPortfolioId);
+            const stats = getPortfolioStats(portfolio);
+            
+            tbody.innerHTML = '';
+            
+            if(stats.assetsWithStats.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-500">Bu portföyde henüz hisse yok.</td></tr>`;
+            }
+
+            stats.assetsWithStats.forEach(asset => {
+                const changeClass = asset.change >= 0 ? 'text-emerald-400' : 'text-rose-400';
+                const changeIcon = asset.change >= 0 ? '<i class="fa-solid fa-arrow-trend-up mr-1"></i>' : '<i class="fa-solid fa-arrow-trend-down mr-1"></i>';
+                const changeSign = asset.change > 0 ? '+' : '';
+                const profitTL = asset.currentValue - asset.totalCost;
+                const profitSign = profitTL > 0 ? '+' : '';
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-700/30 transition-colors">
+                        <td class="px-6 py-4 font-medium text-white flex items-center">
+                            <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold mr-3 border border-slate-600">
+                                ${asset.name.substring(0,2)}
+                            </div>
+                            ${asset.name}
+                        </td>
+                        <td class="px-6 py-4 text-right">${asset.amount}</td>
+                        <td class="px-6 py-4 text-right">${formatMoney(asset.cost)}</td>
+                        <td class="px-6 py-4 text-right font-medium text-white">${formatMoney(asset.price)}</td>
+                        <td class="px-6 py-4 text-center">
+                            <div class="flex items-center justify-center">
+                                <span class="mr-2 w-10 text-right">${asset.weight.toFixed(1)}%</span>
+                                <div class="w-16 bg-slate-700 rounded-full h-1.5">
+                                    <div class="bg-brand-500 h-1.5 rounded-full" style="width: ${asset.weight}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-right font-medium ${changeClass}">${profitSign}${formatMoney(profitTL)}</td>
+                        <td class="px-6 py-4 text-right font-bold ${changeClass}">
+                            ${changeIcon} ${changeSign}${asset.change.toFixed(2)}%
+                        </td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('totalCost').textContent = formatMoney(stats.totalCost);
+            document.getElementById('totalValue').textContent = formatMoney(stats.totalValue);
+            
+            const tEl = document.getElementById('totalChange');
+            const totalProfitTL = stats.totalValue - stats.totalCost;
+            const tSign = stats.totalChange > 0 ? '+' : '';
+            const tColor = stats.totalChange >= 0 ? 'text-emerald-400' : 'text-rose-400';
+            const pEl = document.getElementById('totalProfitTL');
+            if (pEl) pEl.innerHTML = `<span class="${tColor}">${tSign}${formatMoney(totalProfitTL)}</span>`;
+            
+            tEl.innerHTML = `<span class="${tColor}">
+                ${tSign}${stats.totalChange.toFixed(2)}%
+            </span>`;
+        }
+
+        function renderCompareView() {
+            const container = document.getElementById('benchmarkToggles');
+            container.innerHTML = '';
+            
+            const benchmarkColors = { "ALTIN": "#eab308", "XU100.IS": "#ef4444" };
+            const benchmarkNames = { "ALTIN": "Altın (Gram)", "XU100.IS": "BIST 100" };
+            
+            const months = Object.keys(appState.portfoliosData).sort();
+            const latestPorts = appState.portfoliosData[months[months.length-1]] || [];
+            
+            const allOptions = {};
+            latestPorts.forEach(p => {
+                allOptions[p.id] = { name: p.name, color: p.color, type: 'port' };
+            });
+            ['ALTIN', 'XU100.IS'].forEach(b => {
+                allOptions[b] = { name: benchmarkNames[b], color: benchmarkColors[b], type: 'bench' };
+            });
+
+            for (const [key, item] of Object.entries(allOptions)) {
+                const isChecked = appState.activeBenchmarks.includes(key);
+                const label = document.createElement('label');
+                label.className = `cursor-pointer flex items-center px-4 py-2 rounded-full border transition-all select-none ${isChecked ? 'bg-slate-700 border-slate-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500'}`;
+                label.innerHTML = `
+                    <input type="checkbox" value="${key}" class="hidden" ${isChecked ? 'checked' : ''} onchange="toggleBenchmark(this)">
+                    <span class="w-3 h-3 rounded-full mr-2 inline-block" style="background-color: ${item.color}"></span>
+                    <span class="text-sm font-medium">${item.name}</span>
+                `;
+                container.appendChild(label);
+            }
+
+            const ctx = document.getElementById('compareChart').getContext('2d');
+            if (cChart) cChart.destroy();
+
+            const datasets = [];
+            const statsContainer = document.getElementById('comparisonStats');
+            statsContainer.innerHTML = '';
+            
+            let firstBench = { 'ALTIN': null, 'XU100.IS': null };
+            
+            appState.activeBenchmarks.forEach(key => {
+                const item = allOptions[key];
+                if(!item) return;
+
+                let dataPoints = [];
+                let finalReturn = 0;
+                
+                months.forEach(m => {
+                    if (item.type === 'bench') {
+                        let val = (appState.benchmarksData[m] || {})[key];
+                        if (val) {
+                            if (!firstBench[key]) firstBench[key] = val;
+                            let ret = ((val - firstBench[key]) / firstBench[key]) * 100;
+                            dataPoints.push(ret.toFixed(2));
+                            finalReturn = ret.toFixed(2);
+                        } else {
+                            dataPoints.push(0);
+                        }
+                    } else { // portfolio
+                        let pMonth = (appState.portfoliosData[m] || []).find(x => x.id === key);
+                        if (pMonth) {
+                            let val = pMonth.assets.reduce((sum, a) => sum + (a.amount * (a.price || a.cost)), 0);
+                            let cost = pMonth.assets.reduce((sum, a) => sum + (a.amount * a.cost), 0);
+                            let ret = cost > 0 ? ((val - cost) / cost) * 100 : 0;
+                            dataPoints.push(ret.toFixed(2));
+                            finalReturn = ret.toFixed(2);
+                        } else {
+                            dataPoints.push(0);
+                        }
+                    }
+                });
+
+                datasets.push({
+                    label: item.name,
+                    data: dataPoints,
+                    borderColor: item.color,
+                    backgroundColor: item.color,
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    tension: 0.3
+                });
+
+                const statClass = finalReturn >= 0 ? 'text-emerald-400' : 'text-rose-400';
+                statsContainer.innerHTML += `
+                    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow flex flex-col justify-between">
+                        <div class="flex items-center mb-2">
+                            <span class="w-3 h-3 rounded-full mr-2" style="background-color: ${item.color}"></span>
+                            <span class="text-sm text-slate-300 font-medium truncate">${item.name}</span>
+                        </div>
+                        <div class="text-2xl font-bold ${statClass}">${finalReturn > 0 ? '+' : ''}${finalReturn}%</div>
+                        <div class="text-xs text-slate-500 mt-1">Kümülatif Getiri</div>
+                    </div>
+                `;
+            });
+
+            cChart = new Chart(ctx, {
+                type: 'line',
+                data: { labels: months, datasets: datasets },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: { legend: { display: true, labels: { color: '#cbd5e1', usePointStyle: true } } },
+                    scales: {
+                        x: { grid: { color: '#334155', drawBorder: false } },
+                        y: { grid: { color: '#334155', drawBorder: false }, ticks: { callback: v => '%' + v } }
+                    }
+                }
+            });
+        }
+
+        window.toggleBenchmark = async function(checkbox) {
+            const val = checkbox.value;
+            if (checkbox.checked && !appState.activeBenchmarks.includes(val)) {
+                appState.activeBenchmarks.push(val);
+            } else {
+                appState.activeBenchmarks = appState.activeBenchmarks.filter(b => b !== val);
+            }
+            await saveState();
+            renderCompareView();
+        };
+
+        function renderManagementView() {
+            const container = document.getElementById('portfoliosContainer');
+            container.innerHTML = '';
+            
+            const isFrozen = appState.frozenMonths[appState.currentViewMonth];
+            const ports = appState.portfoliosData[appState.currentViewMonth] || [];
+
+            ports.forEach(p => {
+                let trs = '';
+                if(p.assets.length === 0) {
+                    trs = `<tr><td colspan="4" class="py-4 text-center text-slate-500 text-sm">Varlık bulunamadı.</td></tr>`;
+                } else {
+                    p.assets.forEach(a => {
+                        trs += `
+                            <tr class="hover:bg-slate-700/30">
+                                <td class="py-2 font-medium text-white">${a.name}</td>
+                                <td class="py-2 text-right">${a.amount}</td>
+                                <td class="py-2 text-right">${a.cost.toFixed(2)} ₺</td>
+                                <td class="py-2 text-right">${(a.price || a.cost).toFixed(2)} ₺</td>
+                                <td class="py-2 text-right">
+                                    <button onclick="confirmDeleteAsset('${p.id}', '${a.id}')" class="${isFrozen ? 'hidden' : ''} text-rose-400 hover:text-rose-300 p-1"><i class="fa-solid fa-xmark"></i></button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+
+                container.innerHTML += `
+                    <div class="bg-slate-800 rounded-xl border border-slate-700 shadow-lg overflow-hidden flex flex-col">
+                        <div class="p-4 border-b border-slate-700 bg-slate-800/50 flex justify-between items-center">
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full" style="background-color: ${p.color}"></span>
+                                <h3 class="text-lg font-bold text-white">${p.name}</h3>
+                            </div>
+                            <div class="flex gap-2 ${isFrozen ? 'hidden' : ''}">
+                                <button onclick="openAssetModal('${p.id}')" class="text-sm bg-brand-500/20 text-brand-400 hover:bg-brand-500 hover:text-white px-3 py-1.5 rounded transition-colors" title="Hisse Ekle"><i class="fa-solid fa-plus"></i></button>
+                                <button onclick="confirmDeletePortfolio('${p.id}')" class="text-sm bg-rose-500/20 text-rose-400 hover:bg-rose-500 hover:text-white px-3 py-1.5 rounded transition-colors" title="Portföyü Sil"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <div class="p-4 flex-grow overflow-x-auto">
+                            <table class="w-full text-sm text-left text-slate-300 min-w-[250px]">
+                                <thead class="text-xs text-slate-500 uppercase">
+                                    <tr>
+                                        <th class="pb-2">Hisse</th>
+                                        <th class="pb-2 text-right">Adet</th>
+                                        <th class="pb-2 text-right">Maliyet</th>
+                                        <th class="pb-2 text-right">Güncel Fiyat</th>
+                                        <th class="pb-2 text-right">İşlem</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-700/50">
+                                    ${trs}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function openModal(id) {
+            if (appState.frozenMonths[appState.currentViewMonth]) {
+                alert("Bu ay kilitli! Değişiklik yapmak için önce kilidi açın.");
+                return;
+            }
+            const m = document.getElementById(id);
+            const c = document.getElementById(id + 'Content');
+            m.classList.remove('hidden');
+            setTimeout(() => { m.classList.remove('opacity-0'); c.classList.remove('scale-95'); }, 10);
+        }
+
+        function closeConfirmModal() {
+            closeModals();
+        }
+
+        function closeModals() {
+            ['portfolioModal', 'assetModal', 'confirmModal'].forEach(id => {
+                const m = document.getElementById(id);
+                const c = document.getElementById(id + 'Content');
+                if(m) m.classList.add('opacity-0');
+                if(c) c.classList.add('scale-95');
+                setTimeout(() => { if(m) m.classList.add('hidden'); }, 300);
+            });
+            document.getElementById('newPortName').value = '';
+            document.getElementById('assetName').value = '';
+            document.getElementById('assetAmount').value = '';
+            document.getElementById('assetCost').value = '';
+            document.getElementById('assetPrice').value = '';
+        }
+
+        function openPortfolioModal() { openModal('portfolioModal'); }
+        
+        async function savePortfolio() {
+            const name = document.getElementById('newPortName').value.trim();
+            if(!name) return;
+            
+            const newId = 'p' + Date.now();
+            const color = chartColors[appState.portfoliosData[appState.currentViewMonth].length % chartColors.length];
+            
+            appState.portfoliosData[appState.currentViewMonth].push({ id: newId, name: name, color: color, assets: [] });
+            appState.currentPortfolioId = newId; 
+            
+            await saveState();
+            closeModals();
+            updateAllViews();
+        }
+
+        function confirmDeletePortfolio(id) {
+            appState.deleteQueue = { type: 'portfolio', pId: id, aId: null };
+            document.getElementById('confirmMessage').textContent = "Bu portföyü ve içindeki tüm hisseleri silmek istediğinize emin misiniz?";
+            document.getElementById('confirmBtn').onclick = executeDelete;
+            openModal('confirmModal');
+        }
+
+        function openAssetModal(portfolioId) {
+            document.getElementById('targetPortfolioId').value = portfolioId;
+            openModal('assetModal');
+        }
+
+        async function saveAsset() {
+            const pId = document.getElementById('targetPortfolioId').value;
+            const name = document.getElementById('assetName').value.trim().toUpperCase();
+            const amount = parseFloat(document.getElementById('assetAmount').value);
+            const cost = parseFloat(document.getElementById('assetCost').value);
+            let price = document.getElementById('assetPrice').value;
+
+            if(!name || isNaN(amount) || isNaN(cost)) return;
+            
+            price = parseFloat(price);
+            if (isNaN(price)) price = cost; // Fiyat girilmediyse maliyet olsun, refresh yapınca güncellenir
+
+            const ports = appState.portfoliosData[appState.currentViewMonth];
+            const portfolio = ports.find(p => p.id === pId);
+            
+            if(portfolio) {
+                portfolio.assets.push({ id: 'a' + Date.now(), name, amount, cost, price });
+                await saveState();
+            }
+
+            closeModals();
+            updateAllViews();
+            
+            // Yeni hisse eklenince fiyatları arka planda güncelle (kilitli değil zaten)
+            refreshPrices();
+        }
+
+        function confirmDeleteAsset(pId, aId) {
+            appState.deleteQueue = { type: 'asset', pId, aId };
+            document.getElementById('confirmMessage').textContent = "Bu hisseyi portföyden çıkarmak istediğinize emin misiniz?";
+            document.getElementById('confirmBtn').onclick = executeDelete;
+            openModal('confirmModal');
+        }
+
+        async function executeDelete() {
+            const { type, pId, aId } = appState.deleteQueue;
+            const ports = appState.portfoliosData[appState.currentViewMonth];
+            
+            if (type === 'portfolio') {
+                appState.portfoliosData[appState.currentViewMonth] = ports.filter(p => p.id !== pId);
+                appState.activeBenchmarks = appState.activeBenchmarks.filter(b => b !== pId);
+                if(appState.currentPortfolioId === pId) {
+                    appState.currentPortfolioId = appState.portfoliosData[appState.currentViewMonth].length > 0 ? appState.portfoliosData[appState.currentViewMonth][0].id : null;
+                }
+            } else if (type === 'asset') {
+                const p = ports.find(p => p.id === pId);
+                if(p) p.assets = p.assets.filter(a => a.id !== aId);
+            }
+            
+            await saveState();
+            closeModals();
+            updateAllViews();
+        }
+
+        function updateAllViews() {
+            updatePortfolioDropdown();
+            renderMonthlyView();
+            renderManagementView();
+            renderCompareView();
+        }
+    </script>
+</body>
+</html>
