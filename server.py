@@ -50,6 +50,12 @@ def api_prices():
         fetch_symbols.remove("ALTIN")
         fetch_symbols.add("GC=F")
         fetch_symbols.add("TRY=X")
+    if "NASDAQ" in fetch_symbols:
+        fetch_symbols.remove("NASDAQ")
+        fetch_symbols.add("^IXIC")
+    if "SP500" in fetch_symbols:
+        fetch_symbols.remove("SP500")
+        fetch_symbols.add("^GSPC")
         
     results = {}
     if fetch_symbols:
@@ -75,12 +81,81 @@ def api_prices():
         if ons and usd_try:
             gram_altin = (ons * usd_try) / 31.1034768
             results["ALTIN"] = gram_altin
+            
+    if "NASDAQ" in symbols:
+        val = results.get("^IXIC")
+        if val: results["NASDAQ"] = val
+    if "SP500" in symbols:
+        val = results.get("^GSPC")
+        if val: results["SP500"] = val
 
     return jsonify({"status": "success", "prices": results})
+
+@app.route('/api/history', methods=['POST'])
+def api_history():
+    """
+    Beklenen girdi: {"symbols": ["THYAO.IS", "TUPRS.IS", "XU100.IS", "ALTIN"], "period": "1mo"}
+    """
+    req_data = request.json
+    symbols = req_data.get('symbols', [])
+    period = req_data.get('period', '1mo')
+    
+    fetch_symbols = set(symbols)
+    if "ALTIN" in fetch_symbols:
+        fetch_symbols.remove("ALTIN")
+        fetch_symbols.add("GC=F")
+        fetch_symbols.add("TRY=X")
+    if "NASDAQ" in fetch_symbols:
+        fetch_symbols.remove("NASDAQ")
+        fetch_symbols.add("^IXIC")
+    if "SP500" in fetch_symbols:
+        fetch_symbols.remove("SP500")
+        fetch_symbols.add("^GSPC")
+        
+    results = {}
+    if fetch_symbols:
+        try:
+            tickers = yf.Tickers(" ".join(fetch_symbols))
+            for sym in fetch_symbols:
+                try:
+                    hist = tickers.tickers[sym].history(period=period)
+                    if not hist.empty:
+                        dates = hist.index.strftime('%Y-%m-%d').tolist()
+                        closes = hist['Close'].tolist()
+                        results[sym] = dict(zip(dates, closes))
+                except Exception as e:
+                    print(f"Hata: {sym} gecmis fiyatı alınamadı. {e}")
+        except Exception as e:
+            print(f"yfinance genel hatası: {e}")
+
+    # Altın için geçmiş fiyatları hesapla
+    if "ALTIN" in symbols:
+        ons_hist = results.get("GC=F", {})
+        usd_try_hist = results.get("TRY=X", {})
+        altin_hist = {}
+        for date, ons_price in ons_hist.items():
+            usd_price = usd_try_hist.get(date)
+            if usd_price:
+                altin_hist[date] = (ons_price * usd_price) / 31.1034768
+        if altin_hist:
+            results["ALTIN"] = altin_hist
+
+    if "NASDAQ" in symbols:
+        hist = results.get("^IXIC")
+        if hist: results["NASDAQ"] = hist
+    if "SP500" in symbols:
+        hist = results.get("^GSPC")
+        if hist: results["SP500"] = hist
+
+    return jsonify({"status": "success", "history": results})
 
 @app.route('/')
 def index():
     return send_from_directory('.', 'index.html')
+
+@app.route('/logo.png')
+def serve_logo():
+    return send_from_directory('.', 'logo.png')
 
 if __name__ == '__main__':
     print("Ozi Portföy Backend çalışıyor: http://localhost:5000")
