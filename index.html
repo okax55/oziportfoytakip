@@ -1324,6 +1324,17 @@
             return dates;
         }
 
+        const prevDateCache = {};
+        function getPrevDateStr(dateStr, offset) {
+            const cacheKey = dateStr + '_' + offset;
+            if (prevDateCache[cacheKey]) return prevDateCache[cacheKey];
+            const prevD = new Date(dateStr);
+            prevD.setDate(prevD.getDate() - offset);
+            const prevStr = `${prevD.getFullYear()}-${String(prevD.getMonth()+1).padStart(2, '0')}-${String(prevD.getDate()).padStart(2, '0')}`;
+            prevDateCache[cacheKey] = prevStr;
+            return prevStr;
+        }
+
         function getPortfolioValueAndCost(pId, yyyy_mm, dateStr) {
             const ports = appState.portfoliosData[yyyy_mm];
             if (!ports) return null;
@@ -1337,11 +1348,9 @@
                 
                 if (!price) {
                     for (let offset = 1; offset <= 7; offset++) {
-                        const prevD = new Date(dateStr);
-                        prevD.setDate(prevD.getDate() - offset);
-                        const prevStr = `${prevD.getFullYear()}-${String(prevD.getMonth()+1).padStart(2, '0')}-${String(prevD.getDate()).padStart(2, '0')}`;
+                        const prevStr = getPrevDateStr(dateStr, offset);
                         price = (appState.benchmarksHistory[fetchName] || {})[prevStr];
-                        if (price) break;
+                        if (price !== undefined) break;
                     }
                 }
                 
@@ -1432,12 +1441,9 @@
                         dates.forEach(dateStr => {
                             let val = (appState.benchmarksHistory && appState.benchmarksHistory[key]) ? appState.benchmarksHistory[key][dateStr] : undefined;
                             
-                            // Fallback up to 7 days if data is missing (e.g. holiday or sync issue)
                             if (val === undefined && appState.benchmarksHistory && appState.benchmarksHistory[key]) {
                                 for (let offset = 1; offset <= 7; offset++) {
-                                    const prevD = new Date(dateStr);
-                                    prevD.setDate(prevD.getDate() - offset);
-                                    const prevStr = `${prevD.getFullYear()}-${String(prevD.getMonth()+1).padStart(2, '0')}-${String(prevD.getDate()).padStart(2, '0')}`;
+                                    const prevStr = getPrevDateStr(dateStr, offset);
                                     val = appState.benchmarksHistory[key][prevStr];
                                     if (val !== undefined) break;
                                 }
