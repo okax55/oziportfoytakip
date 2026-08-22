@@ -34,40 +34,149 @@
     </script>
     <style>
         ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #1e293b; }
-        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.3); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.5); }
         
         .tab-active { border-bottom: 2px solid #6366f1; color: #6366f1; }
         .transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 300ms; }
+        
+        @keyframes blob {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+        }
+        .animate-blob { animation: blob 10s infinite alternate; }
+        .animation-delay-2000 { animation-delay: 2s; }
+        .animation-delay-4000 { animation-delay: 4s; }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .dark .glass-panel {
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+        }
+
+        .glass-header {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .dark .glass-header {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .glass-button {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            box-shadow: 0 4px 15px -3px rgba(99, 102, 241, 0.4);
+            transition: all 0.3s ease;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-button:hover {
+            box-shadow: 0 8px 25px -5px rgba(99, 102, 241, 0.6);
+            transform: translateY(-1px);
+        }
+        .dark .glass-button {
+            box-shadow: 0 4px 15px -3px rgba(99, 102, 241, 0.2);
+        }
+        .dark .glass-button:hover {
+            box-shadow: 0 8px 25px -5px rgba(99, 102, 241, 0.4);
+        }
+
+        .glass-button-green {
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 4px 15px -3px rgba(16, 185, 129, 0.4);
+            transition: all 0.3s ease;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-button-green:hover {
+            box-shadow: 0 8px 25px -5px rgba(16, 185, 129, 0.6);
+            transform: translateY(-1px);
+        }
+        .dark .glass-button-green {
+            box-shadow: 0 4px 15px -3px rgba(16, 185, 129, 0.2);
+        }
+        .dark .glass-button-green:hover {
+            box-shadow: 0 8px 25px -5px rgba(16, 185, 129, 0.4);
+        }
+
+        .glass-button-tab {
+            background: linear-gradient(135deg, #0ea5e9, #3b82f6);
+            box-shadow: 0 4px 15px -3px rgba(14, 165, 233, 0.4);
+            transition: all 0.3s ease;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-button-tab:hover {
+            box-shadow: 0 8px 25px -5px rgba(14, 165, 233, 0.6);
+            transform: translateY(-1px);
+        }
+        .dark .glass-button-tab {
+            box-shadow: 0 4px 15px -3px rgba(14, 165, 233, 0.2);
+        }
+        .dark .glass-button-tab:hover {
+            box-shadow: 0 8px 25px -5px rgba(14, 165, 233, 0.4);
+        }
+
+        .glass-input {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(203, 213, 225, 0.5);
+        }
+        .dark .glass-input {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans min-h-screen flex flex-col">
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 font-sans min-h-screen flex flex-col relative overflow-x-hidden transition-colors duration-500">
+    
+    <!-- Animated Liquid Background Blobs -->
+    <div class="fixed inset-0 w-full h-full pointer-events-none z-[-1] overflow-hidden">
+        <div class="absolute top-0 -left-10 w-96 h-96 bg-purple-300 dark:bg-purple-900 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-50 dark:opacity-10 animate-blob"></div>
+        <div class="absolute top-0 -right-10 w-96 h-96 bg-cyan-300 dark:bg-indigo-900 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-50 dark:opacity-10 animate-blob animation-delay-2000"></div>
+        <div class="absolute -bottom-8 left-40 w-96 h-96 bg-pink-300 dark:bg-blue-900 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-50 dark:opacity-10 animate-blob animation-delay-4000"></div>
+    </div>
 
-    <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-50">
+    <header class="glass-header sticky top-0 z-50">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('monthly')">
                     <img src="logo.png" alt="Logo" class="w-10 h-10 rounded-lg shadow-lg shadow-brand-500/30 object-cover">
                     <h1 class="text-xl font-bold text-slate-900 dark:text-white tracking-wide">Ozi<span class="font-light">Portföy</span></h1>
                 </div>
                 <div class="flex items-center gap-2 sm:gap-4">
                     <div class="hidden md:flex items-center gap-2 mr-2">
-                        <button id="btnRefresh" onclick="refreshPrices()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 text-xs font-medium rounded-lg transition-colors shadow flex items-center">
+                        <button id="btnRefresh" onclick="refreshPrices()" class="glass-button-green px-3 py-1.5 text-xs font-medium rounded-lg flex items-center">
                             <i class="fa-solid fa-bolt mr-1"></i>Canlı Fiyat
                         </button>
-                        <button id="btnFetchHistory" onclick="fetchHistory()" class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1.5 text-xs font-medium rounded-lg transition-colors shadow flex items-center">
+                        <button id="btnFetchHistory" onclick="fetchHistory()" class="glass-button px-3 py-1.5 text-xs font-medium rounded-lg flex items-center">
                             <i class="fa-solid fa-clock-rotate-left mr-1"></i>Geçmiş Veri
                         </button>
                     </div>
-                    <div class="flex space-x-1 sm:space-x-4">
-                        <button id="tab-monthly" class="tab-active px-3 py-2 text-sm font-medium rounded-t-md hover:text-brand-500 transition-colors" onclick="switchTab('monthly')">
+                    <div class="flex glass-input p-1 rounded-xl shadow-sm">
+                        <button id="tab-monthly" class="px-4 py-2 text-sm font-medium rounded-lg transition-all glass-button-tab text-white shadow-md" onclick="switchTab('monthly')">
                             <i class="fa-solid fa-calendar-days mr-2 hidden sm:inline"></i>Aylık Detay
                         </button>
-                        <button id="tab-compare" class="text-slate-500 dark:text-slate-400 px-3 py-2 text-sm font-medium rounded-t-md hover:text-brand-500 transition-colors border-b-2 border-transparent" onclick="switchTab('compare')">
+                        <button id="tab-compare" class="px-4 py-2 text-sm font-medium rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all" onclick="switchTab('compare')">
                             <i class="fa-solid fa-scale-balanced mr-2 hidden sm:inline"></i>Kıyaslama
                         </button>
-                        <button id="tab-manage" class="text-slate-500 dark:text-slate-400 px-3 py-2 text-sm font-medium rounded-t-md hover:text-brand-500 transition-colors border-b-2 border-transparent" onclick="switchTab('manage')">
+                        <button id="tab-manage" class="px-4 py-2 text-sm font-medium rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all" onclick="switchTab('manage')">
                             <i class="fa-solid fa-briefcase mr-2 hidden sm:inline"></i>Yönetim
                         </button>
                     </div>
@@ -85,18 +194,27 @@
         <div id="view-monthly" class="block animate-fade-in">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                 <div class="flex flex-wrap items-center gap-3">
-                    <select id="portfolioSelector" class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white text-sm rounded-lg focus:ring-brand-500 focus:border-brand-500 block w-48 p-2.5 outline-none cursor-pointer shadow-sm">
-                        <!-- JS -->
-                    </select>
-                    <select id="monthSelector" class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white text-sm rounded-lg focus:ring-brand-500 focus:border-brand-500 block w-40 p-2.5 outline-none cursor-pointer shadow-sm">
-                        <!-- JS -->
-                    </select>
-                    
-
-                    
+                    <div class="relative group z-50">
+                        <button id="portfolioDropdownBtn" onclick="toggleCustomDropdown('portfolioDropdownMenu')" class="glass-input px-4 py-2 rounded-xl text-sm font-bold text-slate-900 dark:text-white focus:outline-none flex justify-between items-center w-56 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all shadow-sm">
+                            <span id="portfolioDropdownText" class="truncate">Ana Portföy</span>
+                            <i class="fa-solid fa-chevron-down text-xs opacity-60 ml-2"></i>
+                        </button>
+                        <div id="portfolioDropdownMenu" class="absolute left-0 top-full mt-2 w-56 glass-panel rounded-xl shadow-2xl opacity-0 invisible transition-all duration-200 transform origin-top scale-95 flex flex-col py-2 max-h-60 overflow-y-auto border border-slate-200/50 dark:border-slate-700/50">
+                            <!-- JS -->
+                        </div>
+                    </div>
+                    <div class="relative group z-50">
+                        <button id="monthDropdownBtn" onclick="toggleCustomDropdown('monthDropdownMenu')" class="glass-input px-4 py-2 rounded-xl text-sm font-bold text-slate-900 dark:text-white focus:outline-none flex justify-between items-center w-40 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all shadow-sm">
+                            <span id="monthDropdownText">Ay Seç</span>
+                            <i class="fa-solid fa-chevron-down text-xs opacity-60 ml-2"></i>
+                        </button>
+                        <div id="monthDropdownMenu" class="absolute left-0 top-full mt-2 w-40 glass-panel rounded-xl shadow-2xl opacity-0 invisible transition-all duration-200 transform origin-top scale-95 flex flex-col py-2 max-h-60 overflow-y-auto border border-slate-200/50 dark:border-slate-700/50">
+                            <!-- JS -->
+                        </div>
+                    </div>
                 </div>
                 
-                <div class="flex bg-white dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div class="flex glass-panel p-1 rounded-lg shadow-sm">
                     <button id="btnLineChart" onclick="toggleChartType('line')" class="px-4 py-1.5 text-sm font-medium rounded-md bg-brand-500 text-white shadow transition-colors">
                         <i class="fa-solid fa-chart-line mr-2"></i>Çizgi
                     </button>
@@ -106,7 +224,7 @@
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-slate-800 rounded-xl p-4 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-lg mb-8 relative">
+            <div class="glass-panel rounded-2xl p-4 sm:p-6 shadow-xl mb-8 relative">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
                     <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Portföy Gelişimi (₺)</h2>
                     <!-- Zaman filtreleri aylık sekmede gizlendi, çünkü burası sadece seçili ayı gösteriyor -->
@@ -116,13 +234,13 @@
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg overflow-hidden">
-                <div class="p-4 sm:p-6 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50">
+            <div class="glass-panel rounded-2xl shadow-xl overflow-hidden">
+                <div class="p-4 sm:p-6 border-b border-white/20 dark:border-white/5">
                     <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Varlık Dağılımı ve Performans</h2>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left text-slate-700 dark:text-slate-300">
-                        <thead class="text-xs text-slate-500 dark:text-slate-400 uppercase bg-slate-50 dark:bg-slate-900/50">
+                        <thead class="text-xs text-slate-500 dark:text-slate-400 uppercase border-b border-white/20 dark:border-white/5">
                             <tr>
                                 <th scope="col" class="px-6 py-4 font-medium">Varlık / Hisse</th>
                                 <th scope="col" class="px-6 py-4 font-medium text-right">Adet</th>
@@ -136,7 +254,7 @@
                         <tbody id="assetsTableBody" class="divide-y divide-slate-700/50">
                             <!-- JS -->
                         </tbody>
-                        <tfoot class="bg-slate-50 dark:bg-slate-900/80 font-semibold text-slate-900 dark:text-white">
+                        <tfoot class="border-t border-white/20 dark:border-white/5 font-semibold text-slate-900 dark:text-white">
                             <tr>
                                 <td class="px-6 py-4">Toplam Portföy</td>
                                 <td class="px-6 py-4"></td>
@@ -159,14 +277,14 @@
                 <p class="text-slate-500 dark:text-slate-400 text-sm">Zaman içindeki portföy getirilerinizi ana endekslerle kıyaslayın.</p>
             </div>
 
-            <div class="bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700 shadow-lg mb-8">
+            <div class="glass-panel rounded-2xl p-5 shadow-xl mb-8">
                 <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4 uppercase tracking-wider">Kıyaslanacak Verileri Seçin</h3>
                 <div class="flex flex-wrap gap-3" id="benchmarkToggles">
                     <!-- JS -->
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-slate-800 rounded-xl p-4 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-lg">
+            <div class="glass-panel rounded-2xl p-4 sm:p-6 shadow-xl">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
                     <div class="flex flex-col gap-2">
                         <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Kümülatif Getiri Grafiği (%)</h2>
@@ -181,7 +299,7 @@
                             <button class="compare-time-filter-btn px-2.5 py-1 text-xs font-medium rounded-md bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors" data-range="2y" onclick="setCompareTimeRange('2y')">2Y</button>
                         </div>
                     </div>
-                    <div class="flex bg-white dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div class="flex glass-panel p-1 rounded-lg shadow-sm">
                         <button id="btnCompareLineChart" onclick="toggleCompareChartType('line')" class="px-4 py-1.5 text-sm font-medium rounded-md bg-brand-500 text-white shadow transition-colors">
                             <i class="fa-solid fa-chart-line mr-2"></i>Çizgi
                         </button>
@@ -209,10 +327,10 @@
                 </div>
                 <div class="flex flex-wrap items-center gap-3">
                     <!-- Kilit Butonu -->
-                    <button id="btnToggleLock" onclick="toggleLock()" class="px-4 py-2 text-sm font-medium rounded-lg border transition-colors shadow-sm flex items-center">
+                    <button id="btnToggleLock" onclick="toggleLock()" class="glass-input px-4 py-2 text-sm font-medium rounded-lg transition-colors shadow-sm flex items-center">
                         <i class="fa-solid fa-lock mr-2" id="lockIcon"></i><span id="lockText">Kilitli</span>
                     </button>
-                    <button onclick="openPortfolioModal()" class="bg-brand-500 hover:bg-brand-600 text-white px-4 py-2.5 rounded-lg font-medium transition-colors shadow-lg flex items-center gap-2 whitespace-nowrap">
+                    <button onclick="openPortfolioModal()" class="glass-button px-4 py-2.5 rounded-lg font-medium shadow-lg flex items-center gap-2 whitespace-nowrap">
                         <i class="fa-solid fa-plus"></i> Yeni Portföy Ekle
                     </button>
                 </div>
@@ -227,60 +345,75 @@
 
     <!-- MODALS -->
     
-    <div id="portfolioModal" class="hidden fixed inset-0 bg-slate-50 dark:bg-slate-900/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4 opacity-0 transition-opacity">
-        <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 w-full max-w-md shadow-2xl transform scale-95 transition-transform" id="portfolioModalContent">
+    <div id="portfolioModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 opacity-0 transition-opacity">
+        <div class="glass-panel p-6 rounded-2xl w-full max-w-md shadow-2xl transform scale-95 transition-transform" id="portfolioModalContent">
             <h3 class="text-slate-900 dark:text-white text-xl font-bold mb-4">Yeni Portföy Oluştur</h3>
             <div class="mb-4">
                 <label class="block text-slate-500 dark:text-slate-400 text-sm mb-2">Portföy Adı</label>
-                <input type="text" id="newPortName" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg p-3 text-slate-900 dark:text-white focus:border-brand-500 outline-none" placeholder="Örn: Uzun Vade Temettü">
+                <input type="text" id="newPortName" class="w-full glass-input rounded-lg p-3 text-slate-900 dark:text-white focus:border-brand-500 outline-none" placeholder="Örn: Uzun Vade Temettü" onkeypress="if(event.key === 'Enter') savePortfolio()">
             </div>
             <div class="flex justify-end gap-3 mt-6">
-                <button onclick="closeModals()" class="px-5 py-2.5 text-slate-700 dark:text-slate-300 hover:bg-slate-700 rounded-lg transition-colors">İptal</button>
-                <button onclick="savePortfolio()" class="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white rounded-lg transition-colors shadow-lg">Oluştur</button>
+                <button onclick="closeModals()" class="px-5 py-2.5 glass-input text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">İptal</button>
+                <button onclick="savePortfolio()" class="px-5 py-2.5 glass-button rounded-lg transition-colors shadow-lg">Oluştur</button>
             </div>
         </div>
     </div>
 
-    <div id="assetModal" class="hidden fixed inset-0 bg-slate-50 dark:bg-slate-900/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4 opacity-0 transition-opacity">
-        <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 w-full max-w-md shadow-2xl transform scale-95 transition-transform" id="assetModalContent">
+    <div id="assetModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 opacity-0 transition-opacity">
+        <div class="glass-panel p-6 rounded-2xl w-full max-w-md shadow-2xl transform scale-95 transition-transform" id="assetModalContent">
             <h3 class="text-slate-900 dark:text-white text-xl font-bold mb-4">Varlık / Hisse Ekle</h3>
             <input type="hidden" id="targetPortfolioId">
             <div class="space-y-4">
                 <div>
                     <label class="block text-slate-500 dark:text-slate-400 text-sm mb-1">Hisse Kodu (BIST için .IS eklemeyin)</label>
-                    <input type="text" id="assetName" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none uppercase" placeholder="Örn: THYAO">
+                    <input type="text" id="assetName" class="w-full glass-input rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none uppercase" placeholder="Örn: THYAO" onkeypress="if(event.key === 'Enter') saveAsset()">
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-slate-500 dark:text-slate-400 text-sm mb-1">Adet</label>
-                        <input type="number" id="assetAmount" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none" placeholder="100">
+                        <input type="number" id="assetAmount" class="w-full glass-input rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none" placeholder="100" onkeypress="if(event.key === 'Enter') saveAsset()">
                     </div>
                     <div>
                         <label class="block text-slate-500 dark:text-slate-400 text-sm mb-1">Birim Maliyet (₺)</label>
-                        <input type="number" id="assetCost" step="0.01" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none" placeholder="150.50">
+                        <input type="number" id="assetCost" step="0.01" class="w-full glass-input rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none" placeholder="150.50" onkeypress="if(event.key === 'Enter') saveAsset()">
                     </div>
                 </div>
                 <div>
                     <label class="block text-slate-500 dark:text-slate-400 text-sm mb-1">Manuel Fiyat (Zorunlu Değil)</label>
-                    <input type="number" id="assetManualPrice" step="0.01" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none" placeholder="Güncel Fiyat">
+                    <input type="number" id="assetPrice" step="0.01" class="w-full glass-input rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none" placeholder="Güncel Fiyat" onkeypress="if(event.key === 'Enter') saveAsset()">
                 </div>
             </div>
             <div class="flex justify-end gap-3 mt-6">
-                <button onclick="closeModals()" class="px-5 py-2.5 text-slate-700 dark:text-slate-300 hover:bg-slate-700 rounded-lg transition-colors">İptal</button>
-                <button onclick="saveAsset()" class="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white rounded-lg transition-colors shadow-lg">Ekle</button>
+                <button onclick="closeModals()" class="px-5 py-2.5 glass-input text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">İptal</button>
+                <button onclick="saveAsset()" class="px-5 py-2.5 glass-button rounded-lg transition-colors shadow-lg">Ekle</button>
             </div>
         </div>
     </div>
 
-    <div id="confirmModal" class="hidden fixed inset-0 bg-slate-50 dark:bg-slate-900/80 backdrop-blur-sm z-[110] flex items-center justify-center p-4 opacity-0 transition-opacity">
-         <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 w-full max-w-sm shadow-2xl" id="confirmModalContent">
+    <div id="confirmModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[110] flex items-center justify-center p-4 opacity-0 transition-opacity">
+         <div class="glass-panel p-6 rounded-2xl w-full max-w-sm shadow-2xl" id="confirmModalContent">
             <h3 class="text-slate-900 dark:text-white text-lg font-bold mb-2">Emin misiniz?</h3>
             <p id="confirmMessage" class="text-slate-500 dark:text-slate-400 text-sm mb-6">Bu işlemi geri alamazsınız.</p>
             <div class="flex justify-end gap-3">
-                <button onclick="closeConfirmModal()" class="px-4 py-2 text-slate-700 dark:text-slate-300 hover:bg-slate-700 rounded-lg transition-colors">İptal</button>
-                <button id="confirmBtn" class="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg transition-colors shadow-lg">Sil</button>
+                <button onclick="closeConfirmModal()" class="px-4 py-2 glass-input text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">İptal</button>
+                <button id="confirmBtn" class="px-4 py-2 bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-400 hover:to-red-500 text-white rounded-lg transition-all shadow-[0_0_15px_rgba(225,29,72,0.5)]">Sil</button>
             </div>
          </div>
+    </div>
+
+    <div id="editPortfolioModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 opacity-0 transition-opacity">
+        <div class="glass-panel p-6 rounded-2xl w-full max-w-md shadow-2xl transform scale-95 transition-transform" id="editPortfolioModalContent">
+            <h3 class="text-slate-900 dark:text-white text-xl font-bold mb-4">Portföy İsmini Düzenle</h3>
+            <input type="hidden" id="editPortfolioId">
+            <div class="mb-4">
+                <label class="block text-slate-500 dark:text-slate-400 text-sm mb-2">Yeni Portföy Adı</label>
+                <input type="text" id="editPortName" class="w-full glass-input rounded-lg p-3 text-slate-900 dark:text-white focus:border-brand-500 outline-none" placeholder="Örn: Uzun Vade Temettü" onkeypress="if(event.key === 'Enter') saveEditedPortfolioName()">
+            </div>
+            <div class="flex justify-end gap-3 mt-6">
+                <button onclick="closeModals()" class="px-5 py-2.5 glass-input text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">İptal</button>
+                <button onclick="saveEditedPortfolioName()" class="px-5 py-2.5 glass-button rounded-lg transition-colors shadow-lg">Kaydet</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -314,7 +447,7 @@
             });
         }
 
-        const chartColors = ["#6366f1", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#d946ef", "#f43f5e", "#14b8a6"];
+        const chartColors = ["#10b981", "#ec4899", "#f59e0b", "#8b5cf6", "#14b8a6", "#d946ef", "#f43f5e", "#84cc16"];
 
         let appState = {
             portfoliosData: {}, // { "2026-08": [ {id, name, assets} ] }
@@ -397,17 +530,23 @@
                 if (!appState.compareChartType) appState.compareChartType = (appState.compareTimeRange === 'this_month') ? 'bar' : 'line';
                 toggleCompareChartType(appState.compareChartType);
                 if (!appState.monthlyChartType) appState.monthlyChartType = 'line';
-                toggleChartType(appState.monthlyChartType);
+                toggleChartType(appState.monthlyChartType, true);
                 
-                // Fix any existing portfolio colors that clash with benchmarks
-                const bColors = ["#eab308", "#ef4444", "#3b82f6", "#a855f7"];
+                // Fix any existing portfolio colors that clash with benchmarks or are too close to blue
+                const bColors = ["#eab308", "#ef4444", "#3b82f6", "#a855f7", "#6366f1"];
+                let colorChanged = false;
                 Object.values(appState.portfoliosData).forEach(ports => {
                     ports.forEach((p, idx) => {
                         if (bColors.includes(p.color)) {
                             p.color = chartColors[idx % chartColors.length];
+                            colorChanged = true;
                         }
                     });
                 });
+                
+                if (colorChanged) {
+                    await saveState();
+                }
                 
                 initDropdowns();
                 updateAllViews();
@@ -623,12 +762,10 @@
                 const btn = document.getElementById(`tab-${t}`);
                 const view = document.getElementById(`view-${t}`);
                 if (t === tabId) {
-                    btn.classList.add('tab-active');
-                    btn.classList.remove('text-slate-500', 'dark:text-slate-400', 'border-transparent');
+                    btn.className = "px-4 py-2 text-sm font-medium rounded-lg transition-all glass-button-tab text-white shadow-md";
                     view.classList.remove('hidden');
                 } else {
-                    btn.classList.remove('tab-active');
-                    btn.classList.add('text-slate-500', 'dark:text-slate-400', 'border-transparent');
+                    btn.className = "px-4 py-2 text-sm font-medium rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all";
                     view.classList.add('hidden');
                 }
             });
@@ -657,73 +794,114 @@
         async function setCompareTimeRange(range) {
             appState.compareTimeRange = range;
             updateFilterButtons('compareTimeFilters', range);
+            
+            const btnContainer = document.getElementById('btnCompareLineChart').parentElement;
             if (range === 'this_month') {
-                toggleCompareChartType('bar'); 
+                btnContainer.classList.add('hidden');
+                btnContainer.classList.remove('flex');
+                toggleCompareChartType('bar', true); 
             } else {
-                toggleCompareChartType('line');
+                btnContainer.classList.remove('hidden');
+                btnContainer.classList.add('flex');
+                toggleCompareChartType('line', true);
             }
             await fetchHistory(range);
             renderCompareView();
         }
 
+        function toggleCustomDropdown(id) {
+            const menu = document.getElementById(id);
+            const isVisible = !menu.classList.contains('invisible');
+            
+            document.querySelectorAll('[id$="DropdownMenu"]').forEach(el => {
+                el.classList.add('opacity-0', 'invisible', 'scale-95');
+                el.classList.remove('opacity-100', 'scale-100');
+            });
+
+            if (!isVisible) {
+                menu.classList.remove('opacity-0', 'invisible', 'scale-95');
+                menu.classList.add('opacity-100', 'scale-100');
+            }
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.group')) {
+                document.querySelectorAll('[id$="DropdownMenu"]').forEach(el => {
+                    el.classList.add('opacity-0', 'invisible', 'scale-95');
+                    el.classList.remove('opacity-100', 'scale-100');
+                });
+            }
+        });
+
         function initDropdowns() {
-            const mSelector = document.getElementById('monthSelector');
-            mSelector.innerHTML = '';
+            const mMenu = document.getElementById('monthDropdownMenu');
+            mMenu.innerHTML = '';
             
             const trMonths = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
-            
             const months = Object.keys(appState.portfoliosData).sort().reverse();
+            
             months.forEach(m => {
-                const opt = document.createElement('option');
-                opt.value = m; 
-                
                 const [yyyy, mm] = m.split('-');
-                opt.textContent = `${trMonths[parseInt(mm) - 1]} ${yyyy}`;
+                const text = `${trMonths[parseInt(mm) - 1]} ${yyyy}`;
                 
-                if(m === appState.currentViewMonth) opt.selected = true;
-                mSelector.appendChild(opt);
-            });
-            mSelector.onchange = (e) => { 
-                appState.currentViewMonth = e.target.value; 
-                // Portföy id'si yeni ayda yoksa ilkini seç
-                const ports = appState.portfoliosData[appState.currentViewMonth];
-                if(ports && ports.length > 0) {
-                    if(!ports.find(p=>p.id === appState.currentPortfolioId)) {
-                        appState.currentPortfolioId = ports[0].id;
-                    }
+                if(m === appState.currentViewMonth) {
+                    document.getElementById('monthDropdownText').textContent = text;
                 }
-                updateAllViews(); 
-            };
+                
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left px-4 py-2 text-sm transition-colors ${m === appState.currentViewMonth ? 'bg-brand-500/20 text-brand-600 dark:text-brand-400 font-bold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'}`;
+                btn.textContent = text;
+                btn.onclick = () => {
+                    appState.currentViewMonth = m;
+                    const ports = appState.portfoliosData[appState.currentViewMonth];
+                    if(ports && ports.length > 0) {
+                        if(!ports.find(p=>p.id === appState.currentPortfolioId)) {
+                            appState.currentPortfolioId = ports[0].id;
+                        }
+                    }
+                    toggleCustomDropdown('monthDropdownMenu');
+                    updateAllViews();
+                };
+                mMenu.appendChild(btn);
+            });
             
             updatePortfolioDropdown();
         }
 
         function updatePortfolioDropdown() {
-            const pSelector = document.getElementById('portfolioSelector');
-            pSelector.innerHTML = '';
+            const pMenu = document.getElementById('portfolioDropdownMenu');
+            pMenu.innerHTML = '';
             const currentPorts = appState.portfoliosData[appState.currentViewMonth] || [];
             
             currentPorts.forEach(p => {
-                const opt = document.createElement('option');
-                opt.value = p.id; opt.textContent = p.name;
-                if(p.id === appState.currentPortfolioId) opt.selected = true;
-                pSelector.appendChild(opt);
+                if(p.id === appState.currentPortfolioId) {
+                    document.getElementById('portfolioDropdownText').textContent = p.name;
+                }
+                
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left px-4 py-2 text-sm transition-colors flex items-center gap-2 ${p.id === appState.currentPortfolioId ? 'bg-brand-500/20 text-brand-600 dark:text-brand-400 font-bold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'}`;
+                btn.innerHTML = `<span class="w-2.5 h-2.5 rounded-full" style="background-color: ${p.color}"></span> <span class="truncate">${p.name}</span>`;
+                btn.onclick = () => {
+                    appState.currentPortfolioId = p.id;
+                    toggleCustomDropdown('portfolioDropdownMenu');
+                    renderMonthlyView();
+                };
+                pMenu.appendChild(btn);
             });
-            pSelector.onchange = (e) => { appState.currentPortfolioId = e.target.value; renderMonthlyView(); };
         }
 
-        function toggleChartType(type) {
+        function toggleChartType(type, skipRender = false) {
             appState.monthlyChartType = type;
             const btnLine = document.getElementById('btnLineChart');
             const btnBar = document.getElementById('btnBarChart');
             if (type === 'line') {
-                btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md bg-brand-500 text-white shadow transition-colors";
-                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors";
+                btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md glass-button transition-colors";
+                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors";
             } else {
-                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md bg-brand-500 text-white shadow transition-colors";
-                btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors";
+                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md glass-button transition-colors";
+                btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors";
             }
-            renderMonthlyChart();
+            if (!skipRender) renderMonthlyChart();
         }
 
         function getPortfolioStats(portfolio) {
@@ -895,6 +1073,8 @@
                 });
             }
 
+            const gridColor = document.documentElement.classList.contains('dark') ? 'rgba(148, 163, 184, 0.15)' : 'rgba(15, 23, 42, 0.25)';
+
             mChart = new Chart(ctx, {
                 type: appState.monthlyChartType,
                 data: {
@@ -909,8 +1089,16 @@
                         pointRadius: 0,
                         pointHoverRadius: 5,
                         pointBackgroundColor: borderColors,
-                        fill: true,
-                        borderRadius: isLine ? 0 : 4,
+                        fill: isLine ? {
+                            target: 'origin',
+                            above: 'rgba(16, 185, 129, 0.25)',
+                            below: 'rgba(244, 63, 94, 0.25)'
+                        } : true,
+                        segment: isLine ? {
+                            borderColor: ctx => ctx.p0.parsed.y < 0 && ctx.p1.parsed.y < 0 ? '#f43f5e' : (ctx.p0.parsed.y >= 0 && ctx.p1.parsed.y >= 0 ? '#10b981' : '#94a3b8')
+                        } : undefined,
+                        borderRadius: isLine ? 0 : 6,
+                        maxBarThickness: 40,
                     }]
                 },
                 options: {
@@ -920,10 +1108,11 @@
                         legend: { display: false }, 
                         tooltip: { 
                             enabled: true,
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            backgroundColor: 'rgba(15, 23, 42, 0.7)',
+                            backdropFilter: 'blur(10px)',
                             titleColor: '#fff',
                             bodyColor: '#cbd5e1',
-                            borderColor: '#334155',
+                            borderColor: 'rgba(255,255,255,0.1)',
                             borderWidth: 1,
                             callbacks: {
                                 title: function(context) {
@@ -938,6 +1127,16 @@
                                         }
                                     }
                                     return context[0].label + ' Durumu';
+                                },
+                                labelColor: function(context) {
+                                    const val = context.parsed.y;
+                                    const color = val < 0 ? '#f43f5e' : (appState.monthlyChartType === 'line' ? '#10b981' : context.dataset.backgroundColor[context.dataIndex]);
+                                    return {
+                                        borderColor: color,
+                                        backgroundColor: color,
+                                        borderWidth: 0,
+                                        borderRadius: 2
+                                    };
                                 },
                                 label: function(context) {
                                     const val = context.parsed.y;
@@ -957,8 +1156,19 @@
                         } 
                     },
                     scales: {
-                        x: { display: true, grid: { color: '#334155', drawBorder: false }, ticks: { color: '#94a3b8', maxTicksLimit: 15 } },
-                        y: { grid: { color: '#334155', drawBorder: false }, ticks: { callback: v => '%' + v, color: '#94a3b8' } }
+                        x: { 
+                            border: { dash: [5, 5], color: gridColor },
+                            grid: { color: gridColor, drawTicks: false, tickBorderDash: [5, 5], borderDash: [5, 5] }, 
+                            ticks: { color: '#94a3b8', maxTicksLimit: 15 } 
+                        },
+                        y: { 
+                            border: { dash: [5, 5], color: gridColor },
+                            grid: { 
+                                color: (ctx) => ctx.tick.value === 0 ? (document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)') : gridColor,
+                                drawTicks: false, tickBorderDash: [5, 5], borderDash: [5, 5] 
+                            }, 
+                            ticks: { callback: v => '%' + v, color: '#94a3b8' } 
+                        }
                     }
                 }
             });
@@ -977,6 +1187,8 @@
             }
 
             stats.assetsWithStats.forEach(asset => {
+                let fetchName = asset.name.includes('.') ? asset.name : asset.name + '.IS';
+                const logoUrl = `https://financialmodelingprep.com/image-stock/${fetchName}.png`;
                 const changeClass = asset.change >= 0 ? 'text-emerald-400' : 'text-rose-400';
                 const changeIcon = asset.change >= 0 ? '<i class="fa-solid fa-arrow-trend-up mr-1"></i>' : '<i class="fa-solid fa-arrow-trend-down mr-1"></i>';
                 const changeSign = asset.change > 0 ? '+' : '';
@@ -984,10 +1196,13 @@
                 const profitSign = profitTL > 0 ? '+' : '';
 
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-100 dark:hover:bg-slate-700/30 transition-colors">
-                        <td class="px-6 py-4 font-medium text-slate-900 dark:text-white flex items-center">
-                            <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold mr-3 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white">
-                                ${asset.name.substring(0,2)}
+                    <tr class="hover:bg-slate-400/10 transition-colors">
+                        <td class="px-6 py-4 font-bold text-base text-slate-900 dark:text-white flex items-center tracking-wide">
+                            <div class="relative w-8 h-8 mr-3">
+                                <img src="${logoUrl}" alt="${asset.name}" class="w-8 h-8 rounded-full object-cover border border-slate-300 dark:border-slate-600 bg-white" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white absolute inset-0" style="display:none;">
+                                    ${asset.name.substring(0,2)}
+                                </div>
                             </div>
                             ${asset.name}
                         </td>
@@ -1025,18 +1240,18 @@
             </span>`;
         }
 
-        function toggleCompareChartType(type) {
+        function toggleCompareChartType(type, skipRender = false) {
             appState.compareChartType = type;
             const btnLine = document.getElementById('btnCompareLineChart');
             const btnBar = document.getElementById('btnCompareBarChart');
             if (type === 'line') {
-                btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md bg-brand-500 text-white shadow transition-colors";
-                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors";
+                btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md glass-button transition-colors";
+                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors";
             } else {
-                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md bg-brand-500 text-white shadow transition-colors";
-                btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors";
+                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md glass-button transition-colors";
+                btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors";
             }
-            renderCompareView();
+            if (!skipRender) renderCompareView();
         }
 
         function getTradingDaysForRange(range) {
@@ -1080,15 +1295,18 @@
             if (appState.benchmarksHistory && appState.benchmarksHistory['XU100.IS']) {
                 const allDays = Object.keys(appState.benchmarksHistory['XU100.IS']).sort();
                 dates = allDays.filter(d => d >= startStr && d <= todayStr);
+                
                 if (dates.length > 0) {
-                    const firstDateIdx = allDays.indexOf(dates[0]);
-                    if (firstDateIdx > 0) {
-                        dates.unshift(allDays[firstDateIdx - 1]);
-                    } else {
-                        let fd = new Date(dates[0]);
-                        fd.setDate(fd.getDate() - 1);
-                        while (fd.getDay() === 0 || fd.getDay() === 6) fd.setDate(fd.getDate() - 1);
-                        dates.unshift(`${fd.getFullYear()}-${String(fd.getMonth()+1).padStart(2, '0')}-${String(fd.getDate()).padStart(2, '0')}`);
+                    if (range === 'ytd' || dates[0] > startStr) {
+                        const firstDateIdx = allDays.indexOf(dates[0]);
+                        if (firstDateIdx > 0) {
+                            dates.unshift(allDays[firstDateIdx - 1]);
+                        } else {
+                            let fd = new Date(dates[0]);
+                            fd.setDate(fd.getDate() - 1);
+                            while (fd.getDay() === 0 || fd.getDay() === 6) fd.setDate(fd.getDate() - 1);
+                            dates.unshift(`${fd.getFullYear()}-${String(fd.getMonth()+1).padStart(2, '0')}-${String(fd.getDate()).padStart(2, '0')}`);
+                        }
                     }
                 }
             } else {
@@ -1097,7 +1315,7 @@
                         dates.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
                     }
                 }
-                if (dates.length > 0) {
+                if (dates.length > 0 && (range === 'ytd' || dates[0] > startStr)) {
                     let fd = new Date(dates[0]);
                     fd.setDate(fd.getDate() - 1);
                     while (fd.getDay() === 0 || fd.getDay() === 6) fd.setDate(fd.getDate() - 1);
@@ -1173,9 +1391,11 @@
             
             const trMonths = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
             let chartLabels = [];
+            const shouldSlice = (appState.compareTimeRange === 'this_month' || appState.compareTimeRange === 'ytd');
+            
             if (isLine && dates.length > 1) {
-                // Remove the first base date from the chart entirely
-                chartLabels = dates.slice(1).map(d => {
+                const displayDates = shouldSlice ? dates.slice(1) : dates;
+                chartLabels = displayDates.map(d => {
                     const [y, m, day] = d.split('-');
                     return `${parseInt(day)} ${trMonths[parseInt(m) - 1]}`;
                 });
@@ -1211,7 +1431,19 @@
                     if (item.type === 'bench') {
                         let firstBaseValue = null;
                         dates.forEach(dateStr => {
-                            const val = (appState.benchmarksHistory && appState.benchmarksHistory[key]) ? appState.benchmarksHistory[key][dateStr] : undefined;
+                            let val = (appState.benchmarksHistory && appState.benchmarksHistory[key]) ? appState.benchmarksHistory[key][dateStr] : undefined;
+                            
+                            // Fallback up to 7 days if data is missing (e.g. holiday or sync issue)
+                            if (val === undefined && appState.benchmarksHistory && appState.benchmarksHistory[key]) {
+                                for (let offset = 1; offset <= 7; offset++) {
+                                    const prevD = new Date(dateStr);
+                                    prevD.setDate(prevD.getDate() - offset);
+                                    const prevStr = `${prevD.getFullYear()}-${String(prevD.getMonth()+1).padStart(2, '0')}-${String(prevD.getDate()).padStart(2, '0')}`;
+                                    val = appState.benchmarksHistory[key][prevStr];
+                                    if (val !== undefined) break;
+                                }
+                            }
+                            
                             if (val !== undefined) {
                                 if (firstBaseValue === null) firstBaseValue = val;
                                 const ret = firstBaseValue > 0 ? ((val - firstBaseValue) / firstBaseValue) : 0;
@@ -1222,7 +1454,11 @@
                         });
                         finalReturn = dataPoints[dataPoints.length - 1];
                     } else {
-                        if (dates.length > 0) {
+                        if (appState.compareTimeRange === 'this_month') {
+                            const stats = getPortfolioStats(item.pData);
+                            finalReturn = stats.totalChange;
+                            dataPoints.push(finalReturn);
+                        } else if (dates.length > 0) {
                             let currentMonth = dates[0].substring(0, 7);
                             let compoundBase = 1.0;
                             dates.forEach(dateStr => {
@@ -1257,8 +1493,9 @@
                 }
 
                 if (isLine && dataPoints.length > 1) {
+                    const displayData = shouldSlice ? dataPoints.slice(1) : dataPoints;
                     datasets.push({
-                        label: item.name, data: dataPoints.slice(1),
+                        label: item.name, data: displayData,
                         borderColor: item.color, backgroundColor: item.color,
                         borderWidth: 2, pointRadius: 2, tension: 0.3
                     });
@@ -1269,7 +1506,7 @@
 
                 const statClass = finalReturn >= 0 ? 'text-emerald-400' : 'text-rose-400';
                 statsContainer.innerHTML += `
-                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow flex flex-col justify-between">
+                    <div class="glass-panel p-4 rounded-xl shadow-lg flex flex-col justify-between">
                         <div class="flex items-center mb-2">
                             <span class="w-3 h-3 rounded-full mr-2" style="background-color: ${item.color}"></span>
                             <span class="text-sm text-slate-700 dark:text-slate-300 font-medium truncate">${item.name}</span>
@@ -1281,8 +1518,10 @@
             });
             
             if (!isLine) {
-                datasets.push({ label: 'Getiri (%)', data: barData, backgroundColor: barBackgroundColors, borderWidth: 0, borderRadius: 4 });
+                datasets.push({ label: 'Getiri (%)', data: barData, backgroundColor: barBackgroundColors, borderWidth: 0, borderRadius: 6, maxBarThickness: 40 });
             }
+
+            const gridColor = document.documentElement.classList.contains('dark') ? 'rgba(148, 163, 184, 0.15)' : 'rgba(15, 23, 42, 0.25)';
 
             cChart = new Chart(ctx, {
                 type: isLine ? 'line' : 'bar',
@@ -1293,7 +1532,9 @@
                     plugins: {
                         legend: { display: isLine },
                         tooltip: {
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)', titleColor: '#fff', bodyColor: '#cbd5e1', borderColor: '#334155', borderWidth: 1,
+                            backgroundColor: 'rgba(15, 23, 42, 0.7)',
+                            backdropFilter: 'blur(10px)',
+                            titleColor: '#fff', bodyColor: '#cbd5e1', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
                             callbacks: {
                                 title: function(context) {
                                     if (isLine) return context[0].label + ' Durumu';
@@ -1308,8 +1549,16 @@
                         }
                     },
                     scales: {
-                        x: { grid: { color: '#334155', drawBorder: false }, ticks: { color: '#94a3b8', maxTicksLimit: 15 } },
-                        y: { grid: { color: '#334155', drawBorder: false }, ticks: { callback: v => '%' + v, color: '#94a3b8' } }
+                        x: { 
+                            border: { dash: [5, 5], color: gridColor },
+                            grid: { color: gridColor, drawTicks: false, tickBorderDash: [5, 5], borderDash: [5, 5] }, 
+                            ticks: { color: '#94a3b8', maxTicksLimit: 15 } 
+                        },
+                        y: { 
+                            border: { dash: [5, 5], color: gridColor },
+                            grid: { color: gridColor, drawTicks: false, tickBorderDash: [5, 5], borderDash: [5, 5] }, 
+                            ticks: { callback: v => '%' + v, color: '#94a3b8' } 
+                        }
                     }
                 }
             });
@@ -1339,9 +1588,19 @@
                     trs = `<tr><td colspan="4" class="py-4 text-center text-slate-500 text-sm">Varlık bulunamadı.</td></tr>`;
                 } else {
                     p.assets.forEach(a => {
+                        let fetchName = a.name.includes('.') ? a.name : a.name + '.IS';
+                        const logoUrl = `https://financialmodelingprep.com/image-stock/${fetchName}.png`;
                         trs += `
-                            <tr class="hover:bg-slate-700/30">
-                                <td class="py-2 font-medium text-white">${a.name}</td>
+                            <tr class="hover:bg-slate-400/10 transition-colors">
+                                <td class="py-2 font-bold text-base text-slate-900 dark:text-white tracking-wide flex items-center">
+                                    <div class="relative w-6 h-6 mr-2">
+                                        <img src="${logoUrl}" alt="${a.name}" class="w-6 h-6 rounded-full object-cover border border-slate-300 dark:border-slate-600 bg-white" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                        <div class="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-[10px] font-bold border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white absolute inset-0" style="display:none;">
+                                            ${a.name.substring(0,2)}
+                                        </div>
+                                    </div>
+                                    ${a.name}
+                                </td>
                                 <td class="py-2 text-right">${a.amount}</td>
                                 <td class="py-2 text-right">${a.cost.toFixed(2)} ₺</td>
                                 <td class="py-2 text-right">${(a.price || a.cost).toFixed(2)} ₺</td>
@@ -1354,11 +1613,16 @@
                 }
 
                 container.innerHTML += `
-                    <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg overflow-hidden flex flex-col">
-                        <div class="p-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 flex justify-between items-center">
+                    <div class="glass-panel rounded-2xl shadow-xl overflow-hidden flex flex-col">
+                        <div class="p-4 border-b border-white/20 dark:border-white/5 flex justify-between items-center">
                             <div class="flex items-center gap-2">
                                 <span class="w-3 h-3 rounded-full" style="background-color: ${p.color}"></span>
-                                <h3 class="text-lg font-bold text-slate-900 dark:text-white">${p.name}</h3>
+                                <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                    ${p.name}
+                                    <button onclick="editPortfolioName('${p.id}')" class="${isFrozen ? 'hidden' : ''} text-slate-400 hover:text-brand-500 transition-colors text-sm" title="İsmi Düzenle">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+                                </h3>
                             </div>
                             <div class="flex gap-2 ${isFrozen ? 'hidden' : ''}">
                                 <button onclick="openAssetModal('${p.id}')" class="text-sm bg-brand-500/20 text-brand-400 hover:bg-brand-500 hover:text-white px-3 py-1.5 rounded transition-colors" title="Hisse Ekle"><i class="fa-solid fa-plus"></i></button>
@@ -1402,7 +1666,7 @@
         }
 
         function closeModals() {
-            ['portfolioModal', 'assetModal', 'confirmModal'].forEach(id => {
+            ['portfolioModal', 'assetModal', 'confirmModal', 'editPortfolioModal'].forEach(id => {
                 const m = document.getElementById(id);
                 const c = document.getElementById(id + 'Content');
                 if(m) m.classList.add('opacity-0');
@@ -1444,6 +1708,31 @@
             openModal('confirmModal');
         }
 
+        function editPortfolioName(id) {
+            const ports = appState.portfoliosData[appState.currentViewMonth];
+            const portfolio = ports.find(p => p.id === id);
+            if (!portfolio) return;
+            
+            document.getElementById('editPortfolioId').value = id;
+            document.getElementById('editPortName').value = portfolio.name;
+            openModal('editPortfolioModal');
+        }
+
+        async function saveEditedPortfolioName() {
+            const id = document.getElementById('editPortfolioId').value;
+            const newName = document.getElementById('editPortName').value.trim();
+            if (!newName) return;
+
+            const ports = appState.portfoliosData[appState.currentViewMonth];
+            const portfolio = ports.find(p => p.id === id);
+            if (portfolio) {
+                portfolio.name = newName;
+                await saveState();
+                updateAllViews();
+            }
+            closeModals();
+        }
+
         function openAssetModal(portfolioId) {
             document.getElementById('targetPortfolioId').value = portfolioId;
             openModal('assetModal');
@@ -1473,6 +1762,7 @@
             updateAllViews();
             
             // Yeni hisse eklenince fiyatları arka planda güncelle (kilitli değil zaten)
+            fetchHistory(appState.monthlyTimeRange || 'this_month');
             refreshPrices();
         }
 
