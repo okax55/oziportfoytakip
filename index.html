@@ -551,10 +551,8 @@
                 initDropdowns();
                 updateAllViews();
                 
-                // İlk açılışta güncel ay donuk değilse fiyatları çek
-                if(!appState.frozenMonths[appState.currentViewMonth]) {
-                    refreshPrices();
-                }
+                // Otomatik fiyat yenilemeyi kaldırdık, çok yavaşlatıyordu.
+                // Sadece kullanıcı "Fiyatları Yenile" butonuna bastığında güncellenecek.
                 
             } catch (e) {
                 console.error(e);
@@ -603,7 +601,7 @@
                     const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
                     ports.forEach(p => {
                         p.assets.forEach(a => {
-                            let fetchName = a.name.includes('.') ? a.name : a.name + '.IS';
+                            let fetchName = (a.name === 'ALTIN' || a.name === 'NASDAQ' || a.name === 'SP500') ? a.name : (a.name.includes('.') ? a.name : a.name + '.IS');
                             if (prices[fetchName]) {
                                 a.price = prices[fetchName];
                             }
