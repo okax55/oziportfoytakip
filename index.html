@@ -586,7 +586,7 @@
                 let symbols = new Set(['ALTIN', 'XU100.IS', 'NASDAQ', 'SP500']);
                 const ports = appState.portfoliosData[appState.currentViewMonth] || [];
                 ports.forEach(p => p.assets.forEach(a => {
-                    let fetchName = a.name.includes('.') ? a.name : a.name + '.IS';
+                    let fetchName = (a.name === 'ALTIN' || a.name === 'NASDAQ' || a.name === 'SP500') ? a.name : (a.name.includes('.') ? a.name : a.name + '.IS');
                     symbols.add(fetchName);
                 }));
                 
@@ -1334,7 +1334,7 @@
 
             let totalValue = 0, totalCost = 0, hasAnyData = false;
             p.assets.forEach(a => {
-                let fetchName = a.name.includes('.') ? a.name : a.name + '.IS';
+                let fetchName = (a.name === 'ALTIN' || a.name === 'NASDAQ' || a.name === 'SP500') ? a.name : (a.name.includes('.') ? a.name : a.name + '.IS');
                 let price = (appState.benchmarksHistory[fetchName] || {})[dateStr];
                 
                 if (!price) {
