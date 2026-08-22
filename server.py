@@ -4,25 +4,181 @@ import math
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import yfinance as yf
+from dotenv import load_dotenv
+from supabase import create_client, Client
+
+load_dotenv()
+
+url: str = os.environ.get("SUPABASE_URL")
+key: str = os.environ.get("SUPABASE_KEY")
+supabase: Client = create_client(url, key) if url and key else None
 
 from flask import send_from_directory
 app = Flask(__name__, static_folder='.')
 CORS(app)
 
-DATA_FILE = "data.json"
-
 def load_data():
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, 'r', encoding='utf-8') as f:
-            try:
-                return json.load(f)
-            except json.JSONDecodeError:
-                return None
-    return None
+    if not supabase:
+        return None
+    try:
+        data = {}
+        
+        settings_res = supabase.table("settings").select("*").execute()
+        for row in settings_res.data:
+            data[row["key"]] = row["value"]
+
+        portfolios_res = supabase.table("portfolios").select("*").execute()
+        assets_res = supabase.table("assets").select("*").execute()
+        history_res = supabase.table("portfolio_history").select("*").execute()
+        
+        portfolios_data = {}
+        for p in portfolios_res.data:
+            month = p["month"]
+            if month not in portfolios_data:
+                portfolios_data[month] = []
+            portfolios_data[month].append({
+                "id": p["id"],
+                "name": p["name"],
+                "color": p["color"],
+                "assets": [],
+                "dailyHistory": {}
+            })
+            
+        for a in assets_res.data:
+            for month, ports in portfolios_data.items():
+                for p in ports:
+                    if p["id"] == a["portfolio_id"]:
+                        p["assets"].append({
+                            "id": a["id"],
+                            "name": a["name"],
+                            "amount": a["amount"],
+                            "cost": a["cost"],
+                            "price": a["price"]
+                        })
+                        
+        for h in history_res.data:
+            for month, ports in portfolios_data.items():
+                for p in ports:
+                    if p["id"] == h["portfolio_id"]:
+                        p["dailyHistory"][h["date"]] = h["change_pct"]
+                        
+        data["portfoliosData"] = portfolios_data
+        
+        b_data_res = supabase.table("benchmarks_data").select("*").execute()
+        benchmarks_data = {}
+        for b in b_data_res.data:
+            month = b["month"]
+            if month not in benchmarks_data:
+                benchmarks_data[month] = {}
+            benchmarks_data[month][b["symbol"]] = b["price"]
+        data["benchmarksData"] = benchmarks_data
+        
+        b_hist_res = supabase.table("benchmarks_history").select("*").execute()
+        benchmarks_history = {}
+        for b in b_hist_res.data:
+            sym = b["symbol"]
+            if sym not in benchmarks_history:
+                benchmarks_history[sym] = {}
+            benchmarks_history[sym][b["date"]] = b["price"]
+        data["benchmarksHistory"] = benchmarks_history
+        
+        if not portfolios_data:
+            return None
+            
+        return data
+    except Exception as e:
+        print("Error loading data from Supabase:", e)
+        return None
 
 def save_data(data):
-    with open(DATA_FILE, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=4)
+    if not supabase:
+        return
+    try:
+        incoming_p_ids = []
+        incoming_a_ids = []
+        
+        portfolios_to_insert = []
+        assets_to_insert = []
+        history_to_insert = []
+        
+        for month, portfolios in data.get("portfoliosData", {}).items():
+            for p in portfolios:
+                incoming_p_ids.append(p["id"])
+                portfolios_to_insert.append({
+                    "id": p["id"],
+                    "month": month,
+                    "name": p["name"],
+                    "color": p["color"]
+                })
+                for a in p.get("assets", []):
+                    incoming_a_ids.append(a["id"])
+                    assets_to_insert.append({
+                        "id": a["id"],
+                        "portfolio_id": p["id"],
+                        "name": a["name"],
+                        "amount": a["amount"],
+                        "cost": a["cost"],
+                        "price": a.get("price", a["cost"])
+                    })
+                for date_str, change in p.get("dailyHistory", {}).items():
+                    history_to_insert.append({
+                        "portfolio_id": p["id"],
+                        "date": date_str,
+                        "change_pct": change
+                    })
+        
+        if portfolios_to_insert:
+            supabase.table("portfolios").upsert(portfolios_to_insert).execute()
+            
+        if incoming_p_ids:
+            existing_p = supabase.table("portfolios").select("id").execute()
+            to_delete_p = set([row["id"] for row in existing_p.data]) - set(incoming_p_ids)
+            if to_delete_p:
+                supabase.table("portfolios").delete().in_("id", list(to_delete_p)).execute()
+                
+        if assets_to_insert:
+            supabase.table("assets").upsert(assets_to_insert).execute()
+            
+        if incoming_a_ids:
+            existing_a = supabase.table("assets").select("id").execute()
+            to_delete_a = set([row["id"] for row in existing_a.data]) - set(incoming_a_ids)
+            if to_delete_a:
+                supabase.table("assets").delete().in_("id", list(to_delete_a)).execute()
+                
+        if history_to_insert:
+            for i in range(0, len(history_to_insert), 1000):
+                supabase.table("portfolio_history").upsert(history_to_insert[i:i+1000]).execute()
+
+        b_data_insert = []
+        for month, benchmarks in data.get("benchmarksData", {}).items():
+            for sym, price in benchmarks.items():
+                b_data_insert.append({"month": month, "symbol": sym, "price": price})
+        if b_data_insert:
+            supabase.table("benchmarks_data").upsert(b_data_insert).execute()
+
+        b_hist_insert = []
+        for sym, hist in data.get("benchmarksHistory", {}).items():
+            for date_str, price in hist.items():
+                if price is not None:
+                    b_hist_insert.append({"symbol": sym, "date": date_str, "price": price})
+        if b_hist_insert:
+            for i in range(0, len(b_hist_insert), 1000):
+                supabase.table("benchmarks_history").upsert(b_hist_insert[i:i+1000]).execute()
+
+        settings_keys = [
+            "frozenMonths", "activeBenchmarks", "currentViewMonth", 
+            "currentPortfolioId", "monthlyChartType", "deleteQueue",
+            "compareTimeRange", "compareChartType"
+        ]
+        settings_insert = []
+        for key in settings_keys:
+            if key in data:
+                settings_insert.append({"key": key, "value": data[key]})
+        if settings_insert:
+            supabase.table("settings").upsert(settings_insert).execute()
+
+    except Exception as e:
+        print("Error saving data to Supabase:", e)
 
 @app.route('/api/load', methods=['GET'])
 def api_load():
