@@ -1,6 +1,7 @@
 import json
 import os
 import math
+import concurrent.futures
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
@@ -30,14 +31,24 @@ def load_data():
     try:
         data = {}
         
-        settings_res = supabase.table("settings").select("*").execute()
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            fut_settings = executor.submit(lambda: supabase.table("settings").select("*").execute())
+            fut_ports = executor.submit(lambda: supabase.table("portfolios").select("*").execute())
+            fut_assets = executor.submit(lambda: supabase.table("assets").select("*").execute())
+            fut_hist = executor.submit(lambda: supabase.table("portfolio_history").select("*").execute())
+            fut_b_data = executor.submit(lambda: supabase.table("benchmarks_data").select("*").execute())
+            fut_b_hist = executor.submit(lambda: supabase.table("benchmarks_history").select("*").execute())
+
+            settings_res = fut_settings.result()
+            portfolios_res = fut_ports.result()
+            assets_res = fut_assets.result()
+            history_res = fut_hist.result()
+            b_data_res = fut_b_data.result()
+            b_hist_res = fut_b_hist.result()
+
         for row in settings_res.data:
             data[row["key"]] = row["value"]
 
-        portfolios_res = supabase.table("portfolios").select("*").execute()
-        assets_res = supabase.table("assets").select("*").execute()
-        history_res = supabase.table("portfolio_history").select("*").execute()
-        
         portfolios_data = {}
         for p in portfolios_res.data:
             month = p["month"]
@@ -71,7 +82,6 @@ def load_data():
                         
         data["portfoliosData"] = portfolios_data
         
-        b_data_res = supabase.table("benchmarks_data").select("*").execute()
         benchmarks_data = {}
         for b in b_data_res.data:
             month = b["month"]
@@ -80,7 +90,6 @@ def load_data():
             benchmarks_data[month][b["symbol"]] = b["price"]
         data["benchmarksData"] = benchmarks_data
         
-        b_hist_res = supabase.table("benchmarks_history").select("*").execute()
         benchmarks_history = {}
         for b in b_hist_res.data:
             sym = b["symbol"]
