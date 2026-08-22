@@ -3,8 +3,15 @@ import os
 import math
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import yfinance as yf
 from dotenv import load_dotenv
+
+# Vercel's read-only filesystem workaround for yfinance
+try:
+    os.environ['YF_CACHE_DIR'] = '/tmp'
+    import yfinance as yf
+except Exception as e:
+    print("Failed to import yfinance:", e)
+    yf = None
 from supabase import create_client, Client
 
 load_dotenv()
@@ -181,6 +188,7 @@ def save_data(data):
         print("Error saving data to Supabase:", e)
 
 @app.route('/api/load', methods=['GET'])
+@app.route('/load', methods=['GET'])
 def api_load():
     data = load_data()
     if data is None:
@@ -188,12 +196,14 @@ def api_load():
     return jsonify({"status": "success", "data": data})
 
 @app.route('/api/save', methods=['POST'])
+@app.route('/save', methods=['POST'])
 def api_save():
     data = request.json
     save_data(data)
     return jsonify({"status": "success"})
 
 @app.route('/api/prices', methods=['POST'])
+@app.route('/prices', methods=['POST'])
 def api_prices():
     """
     Beklenen girdi: {"symbols": ["THYAO.IS", "TUPRS.IS", "XU100.IS", "ALTIN"]}
