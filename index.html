@@ -1563,15 +1563,15 @@
             });
         }
 
-        window.toggleBenchmark = async function(checkbox) {
+        window.toggleBenchmark = function(checkbox) {
             const val = checkbox.value;
             if (checkbox.checked && !appState.activeBenchmarks.includes(val)) {
                 appState.activeBenchmarks.push(val);
             } else {
                 appState.activeBenchmarks = appState.activeBenchmarks.filter(b => b !== val);
             }
-            await saveState();
             renderCompareView();
+            saveState();
         };
 
         function renderManagementView() {
