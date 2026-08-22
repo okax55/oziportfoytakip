@@ -1,5 +1,6 @@
 import json
 import os
+import math
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import yfinance as yf
@@ -67,8 +68,9 @@ def api_prices():
                     # history(period="1d") genellikle en son kapanışı/anlık fiyatı verir
                     hist = tickers.tickers[sym].history(period="1d")
                     if not hist.empty:
-                        last_price = hist['Close'].iloc[-1]
-                        results[sym] = float(last_price)
+                        last_price = float(hist['Close'].iloc[-1])
+                        if not math.isnan(last_price):
+                            results[sym] = last_price
                 except Exception as e:
                     print(f"Hata: {sym} fiyatı alınamadı. {e}")
         except Exception as e:
@@ -120,8 +122,10 @@ def api_history():
                 try:
                     hist = tickers.tickers[sym].history(period=period)
                     if not hist.empty:
+                        if hist.index.tz is not None:
+                            hist.index = hist.index.tz_localize(None)
                         dates = hist.index.strftime('%Y-%m-%d').tolist()
-                        closes = hist['Close'].tolist()
+                        closes = [None if math.isnan(x) else x for x in hist['Close'].tolist()]
                         results[sym] = dict(zip(dates, closes))
                 except Exception as e:
                     print(f"Hata: {sym} gecmis fiyatı alınamadı. {e}")

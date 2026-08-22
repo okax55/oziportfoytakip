@@ -1,289 +1,4 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ozi Portföy Takip</title>
-    <link rel="icon" type="image/png" href="logo.png">
-    <!-- Tailwind CSS for Styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js for Data Visualization -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Font Awesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            500: '#6366f1',
-                            600: '#4f46e5',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #1e293b; }
-        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
-        
-        .tab-active { border-bottom: 2px solid #6366f1; color: #6366f1; }
-        .transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 300ms; }
-    </style>
-</head>
-<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans min-h-screen flex flex-col">
 
-    <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-50">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center gap-3">
-                    <img src="logo.png" alt="Logo" class="w-10 h-10 rounded-lg shadow-lg shadow-brand-500/30 object-cover">
-                    <h1 class="text-xl font-bold text-slate-900 dark:text-white tracking-wide">Ozi<span class="font-light">Portföy</span></h1>
-                </div>
-                <div class="flex items-center gap-2 sm:gap-4">
-                    <div class="hidden md:flex items-center gap-2 mr-2">
-                        <button id="btnRefresh" onclick="refreshPrices()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 text-xs font-medium rounded-lg transition-colors shadow flex items-center">
-                            <i class="fa-solid fa-bolt mr-1"></i>Canlı Fiyat
-                        </button>
-                        <button id="btnFetchHistory" onclick="fetchHistory()" class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1.5 text-xs font-medium rounded-lg transition-colors shadow flex items-center">
-                            <i class="fa-solid fa-clock-rotate-left mr-1"></i>Geçmiş Veri
-                        </button>
-                    </div>
-                    <div class="flex space-x-1 sm:space-x-4">
-                        <button id="tab-monthly" class="tab-active px-3 py-2 text-sm font-medium rounded-t-md hover:text-brand-500 transition-colors" onclick="switchTab('monthly')">
-                            <i class="fa-solid fa-calendar-days mr-2 hidden sm:inline"></i>Aylık Detay
-                        </button>
-                        <button id="tab-compare" class="text-slate-500 dark:text-slate-400 px-3 py-2 text-sm font-medium rounded-t-md hover:text-brand-500 transition-colors border-b-2 border-transparent" onclick="switchTab('compare')">
-                            <i class="fa-solid fa-scale-balanced mr-2 hidden sm:inline"></i>Kıyaslama
-                        </button>
-                        <button id="tab-manage" class="text-slate-500 dark:text-slate-400 px-3 py-2 text-sm font-medium rounded-t-md hover:text-brand-500 transition-colors border-b-2 border-transparent" onclick="switchTab('manage')">
-                            <i class="fa-solid fa-briefcase mr-2 hidden sm:inline"></i>Yönetim
-                        </button>
-                    </div>
-                    <button id="themeToggleBtn" onclick="toggleTheme()" class="text-slate-500 dark:text-slate-400 hover:text-brand-500 transition-colors ml-2 p-2 rounded-full hover:bg-slate-700/50">
-                        <i class="fa-solid fa-moon text-lg" id="themeIcon"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
-        <!-- MONTHLY VIEW TAB -->
-        <div id="view-monthly" class="block animate-fade-in">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-                <div class="flex flex-wrap items-center gap-3">
-                    <select id="portfolioSelector" class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white text-sm rounded-lg focus:ring-brand-500 focus:border-brand-500 block w-48 p-2.5 outline-none cursor-pointer shadow-sm">
-                        <!-- JS -->
-                    </select>
-                    <select id="monthSelector" class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white text-sm rounded-lg focus:ring-brand-500 focus:border-brand-500 block w-40 p-2.5 outline-none cursor-pointer shadow-sm">
-                        <!-- JS -->
-                    </select>
-                    
-
-                    
-                </div>
-                
-                <div class="flex bg-white dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
-                    <button id="btnLineChart" onclick="toggleChartType('line')" class="px-4 py-1.5 text-sm font-medium rounded-md bg-brand-500 text-white shadow transition-colors">
-                        <i class="fa-solid fa-chart-line mr-2"></i>Çizgi
-                    </button>
-                    <button id="btnBarChart" onclick="toggleChartType('bar')" class="px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-900 dark:hover:text-white transition-colors">
-                        <i class="fa-solid fa-chart-simple mr-2"></i>Sütun
-                    </button>
-                </div>
-            </div>
-
-            <div class="bg-white dark:bg-slate-800 rounded-xl p-4 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-lg mb-8 relative">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
-                    <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Portföy Gelişimi (₺)</h2>
-                    <!-- Zaman filtreleri aylık sekmede gizlendi, çünkü burası sadece seçili ayı gösteriyor -->
-                </div>
-                <div class="w-full h-72 sm:h-96 relative">
-                    <canvas id="monthlyChart"></canvas>
-                </div>
-            </div>
-
-            <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg overflow-hidden">
-                <div class="p-4 sm:p-6 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50">
-                    <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Varlık Dağılımı ve Performans</h2>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left text-slate-700 dark:text-slate-300">
-                        <thead class="text-xs text-slate-500 dark:text-slate-400 uppercase bg-slate-50 dark:bg-slate-900/50">
-                            <tr>
-                                <th scope="col" class="px-6 py-4 font-medium">Varlık / Hisse</th>
-                                <th scope="col" class="px-6 py-4 font-medium text-right">Adet</th>
-                                <th scope="col" class="px-6 py-4 font-medium text-right">Maliyet (₺)</th>
-                                <th scope="col" class="px-6 py-4 font-medium text-right">Güncel Fiyat (₺)</th>
-                                <th scope="col" class="px-6 py-4 font-medium text-center">Ağırlık (%)</th>
-                                <th scope="col" class="px-6 py-4 font-medium text-right">Net Kâr/Zarar (₺)</th>
-                                <th scope="col" class="px-6 py-4 font-medium text-right">Getiri (%)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="assetsTableBody" class="divide-y divide-slate-700/50">
-                            <!-- JS -->
-                        </tbody>
-                        <tfoot class="bg-slate-50 dark:bg-slate-900/80 font-semibold text-slate-900 dark:text-white">
-                            <tr>
-                                <td class="px-6 py-4">Toplam Portföy</td>
-                                <td class="px-6 py-4"></td>
-                                <td class="px-6 py-4 text-right" id="totalCost">0 ₺</td>
-                                <td class="px-6 py-4 text-right" id="totalValue">0 ₺</td>
-                                <td class="px-6 py-4 text-center">100%</td>
-                                <td class="px-6 py-4 text-right font-medium" id="totalProfitTL">0 ₺</td>
-                                <td class="px-6 py-4 text-right" id="totalChange">0%</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- COMPARISON VIEW TAB -->
-        <div id="view-compare" class="hidden animate-fade-in">
-            <div class="mb-6">
-                <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">Aylık Kümülatif Getiri Kıyaslaması</h2>
-                <p class="text-slate-500 dark:text-slate-400 text-sm">Zaman içindeki portföy getirilerinizi ana endekslerle kıyaslayın.</p>
-            </div>
-
-            <div class="bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700 shadow-lg mb-8">
-                <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4 uppercase tracking-wider">Kıyaslanacak Verileri Seçin</h3>
-                <div class="flex flex-wrap gap-3" id="benchmarkToggles">
-                    <!-- JS -->
-                </div>
-            </div>
-
-            <div class="bg-white dark:bg-slate-800 rounded-xl p-4 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-lg">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
-                    <div class="flex flex-col gap-2">
-                        <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Kümülatif Getiri Grafiği (%)</h2>
-                        <div class="flex flex-wrap gap-1.5" id="compareTimeFilters">
-                            <button class="compare-time-filter-btn px-2.5 py-1 text-xs font-medium rounded-md bg-brand-500 text-white shadow transition-colors" data-range="this_month" onclick="setCompareTimeRange('this_month')">Bu Ay</button>
-                            <button class="compare-time-filter-btn px-2.5 py-1 text-xs font-medium rounded-md bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors" data-range="1w" onclick="setCompareTimeRange('1w')">1H</button>
-                            <button class="compare-time-filter-btn px-2.5 py-1 text-xs font-medium rounded-md bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors" data-range="1m" onclick="setCompareTimeRange('1m')">1A</button>
-                            <button class="compare-time-filter-btn px-2.5 py-1 text-xs font-medium rounded-md bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors" data-range="3m" onclick="setCompareTimeRange('3m')">3A</button>
-                            <button class="compare-time-filter-btn px-2.5 py-1 text-xs font-medium rounded-md bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors" data-range="6m" onclick="setCompareTimeRange('6m')">6A</button>
-                            <button class="compare-time-filter-btn px-2.5 py-1 text-xs font-medium rounded-md bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors" data-range="ytd" onclick="setCompareTimeRange('ytd')">YTD</button>
-                            <button class="compare-time-filter-btn px-2.5 py-1 text-xs font-medium rounded-md bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors" data-range="1y" onclick="setCompareTimeRange('1y')">1Y</button>
-                            <button class="compare-time-filter-btn px-2.5 py-1 text-xs font-medium rounded-md bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors" data-range="2y" onclick="setCompareTimeRange('2y')">2Y</button>
-                        </div>
-                    </div>
-                    <div class="flex bg-white dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
-                        <button id="btnCompareLineChart" onclick="toggleCompareChartType('line')" class="px-4 py-1.5 text-sm font-medium rounded-md bg-brand-500 text-white shadow transition-colors">
-                            <i class="fa-solid fa-chart-line mr-2"></i>Çizgi
-                        </button>
-                        <button id="btnCompareBarChart" onclick="toggleCompareChartType('bar')" class="px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-900 dark:hover:text-white transition-colors">
-                            <i class="fa-solid fa-chart-simple mr-2"></i>Sütun
-                        </button>
-                    </div>
-                </div>
-                <div class="w-full h-80 sm:h-[450px] relative">
-                    <canvas id="compareChart"></canvas>
-                </div>
-            </div>
-            
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8" id="comparisonStats">
-                <!-- JS -->
-            </div>
-        </div>
-
-        <!-- MANAGEMENT TAB -->
-        <div id="view-manage" class="hidden animate-fade-in">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-                <div>
-                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">Portföy Yönetimi</h2>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm">Seçili aydaki portföylerinizi yönetin.</p>
-                </div>
-                <div class="flex flex-wrap items-center gap-3">
-                    <!-- Kilit Butonu -->
-                    <button id="btnToggleLock" onclick="toggleLock()" class="px-4 py-2 text-sm font-medium rounded-lg border transition-colors shadow-sm flex items-center">
-                        <i class="fa-solid fa-lock mr-2" id="lockIcon"></i><span id="lockText">Kilitli</span>
-                    </button>
-                    <button onclick="openPortfolioModal()" class="bg-brand-500 hover:bg-brand-600 text-white px-4 py-2.5 rounded-lg font-medium transition-colors shadow-lg flex items-center gap-2 whitespace-nowrap">
-                        <i class="fa-solid fa-plus"></i> Yeni Portföy Ekle
-                    </button>
-                </div>
-            </div>
-            
-            <div id="portfoliosContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- JS -->
-            </div>
-        </div>
-
-    </main>
-
-    <!-- MODALS -->
-    
-    <div id="portfolioModal" class="hidden fixed inset-0 bg-slate-50 dark:bg-slate-900/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4 opacity-0 transition-opacity">
-        <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 w-full max-w-md shadow-2xl transform scale-95 transition-transform" id="portfolioModalContent">
-            <h3 class="text-slate-900 dark:text-white text-xl font-bold mb-4">Yeni Portföy Oluştur</h3>
-            <div class="mb-4">
-                <label class="block text-slate-500 dark:text-slate-400 text-sm mb-2">Portföy Adı</label>
-                <input type="text" id="newPortName" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg p-3 text-slate-900 dark:text-white focus:border-brand-500 outline-none" placeholder="Örn: Uzun Vade Temettü">
-            </div>
-            <div class="flex justify-end gap-3 mt-6">
-                <button onclick="closeModals()" class="px-5 py-2.5 text-slate-700 dark:text-slate-300 hover:bg-slate-700 rounded-lg transition-colors">İptal</button>
-                <button onclick="savePortfolio()" class="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white rounded-lg transition-colors shadow-lg">Oluştur</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="assetModal" class="hidden fixed inset-0 bg-slate-50 dark:bg-slate-900/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4 opacity-0 transition-opacity">
-        <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 w-full max-w-md shadow-2xl transform scale-95 transition-transform" id="assetModalContent">
-            <h3 class="text-slate-900 dark:text-white text-xl font-bold mb-4">Varlık / Hisse Ekle</h3>
-            <input type="hidden" id="targetPortfolioId">
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-slate-500 dark:text-slate-400 text-sm mb-1">Hisse Kodu (BIST için .IS eklemeyin)</label>
-                    <input type="text" id="assetName" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none uppercase" placeholder="Örn: THYAO">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-slate-500 dark:text-slate-400 text-sm mb-1">Adet</label>
-                        <input type="number" id="assetAmount" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none" placeholder="100">
-                    </div>
-                    <div>
-                        <label class="block text-slate-500 dark:text-slate-400 text-sm mb-1">Birim Maliyet (₺)</label>
-                        <input type="number" id="assetCost" step="0.01" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none" placeholder="150.50">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-slate-500 dark:text-slate-400 text-sm mb-1">Manuel Fiyat (Zorunlu Değil)</label>
-                    <input type="number" id="assetManualPrice" step="0.01" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none" placeholder="Güncel Fiyat">
-                </div>
-            </div>
-            <div class="flex justify-end gap-3 mt-6">
-                <button onclick="closeModals()" class="px-5 py-2.5 text-slate-700 dark:text-slate-300 hover:bg-slate-700 rounded-lg transition-colors">İptal</button>
-                <button onclick="saveAsset()" class="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white rounded-lg transition-colors shadow-lg">Ekle</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="confirmModal" class="hidden fixed inset-0 bg-slate-50 dark:bg-slate-900/80 backdrop-blur-sm z-[110] flex items-center justify-center p-4 opacity-0 transition-opacity">
-         <div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 w-full max-w-sm shadow-2xl" id="confirmModalContent">
-            <h3 class="text-slate-900 dark:text-white text-lg font-bold mb-2">Emin misiniz?</h3>
-            <p id="confirmMessage" class="text-slate-500 dark:text-slate-400 text-sm mb-6">Bu işlemi geri alamazsınız.</p>
-            <div class="flex justify-end gap-3">
-                <button onclick="closeConfirmModal()" class="px-4 py-2 text-slate-700 dark:text-slate-300 hover:bg-slate-700 rounded-lg transition-colors">İptal</button>
-                <button id="confirmBtn" class="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg transition-colors shadow-lg">Sil</button>
-            </div>
-         </div>
-    </div>
-
-    <script>
         const API_URL = 'http://127.0.0.1:5000/api';
 
         function toggleTheme() {
@@ -295,8 +10,8 @@
             
             // Re-render charts for theme colors
             Chart.defaults.color = isDark ? '#94a3b8' : '#64748b';
-            if (!document.getElementById('view-monthly').classList.contains('hidden')) renderMonthlyChart();
-            if (!document.getElementById('view-compare').classList.contains('hidden')) renderCompareView();
+            if (document.getElementById('view-monthly').classList.contains('block')) renderMonthlyChart();
+            if (document.getElementById('view-compare').classList.contains('block')) renderCompareView();
         }
         
         // Initial load
@@ -314,7 +29,7 @@
             });
         }
 
-        const chartColors = ["#6366f1", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#d946ef", "#f43f5e", "#14b8a6"];
+        const chartColors = ["#6366f1", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#3b82f6", "#ef4444", "#06b6d4"];
 
         let appState = {
             portfoliosData: {}, // { "2026-08": [ {id, name, assets} ] }
@@ -371,18 +86,6 @@
                 
                 appState.currentViewMonth = actualMonth;
                 
-                // Başlangıç grafik statelerini ve UI görünümünü senkronize et
-                if (!appState.compareTimeRange) appState.compareTimeRange = 'this_month';
-                if (!appState.compareChartType) appState.compareChartType = (appState.compareTimeRange === 'this_month') ? 'bar' : 'line';
-                if (!appState.monthlyChartType) appState.monthlyChartType = 'line';
-                
-                // Buton görünümlerini mevcut state'e göre ayarla
-                setTimeout(() => {
-                    updateFilterButtons('compareTimeFilters', appState.compareTimeRange);
-                    toggleCompareChartType(appState.compareChartType);
-                    toggleChartType(appState.monthlyChartType);
-                }, 50);
-                
                 if (!appState.activeBenchmarks || appState.activeBenchmarks.length === 0) {
                     appState.activeBenchmarks = ['ALTIN', 'XU100.IS'];
                 }
@@ -390,24 +93,6 @@
                 if(appState.portfoliosData[appState.currentViewMonth].length > 0){
                     appState.currentPortfolioId = appState.portfoliosData[appState.currentViewMonth][0].id;
                 }
-                
-                // Senkronizasyon (Grafik tipi ve filtre butonları başlangıç state'i)
-                if (!appState.compareTimeRange) appState.compareTimeRange = 'this_month';
-                updateFilterButtons('compareTimeFilters', appState.compareTimeRange);
-                if (!appState.compareChartType) appState.compareChartType = (appState.compareTimeRange === 'this_month') ? 'bar' : 'line';
-                toggleCompareChartType(appState.compareChartType);
-                if (!appState.monthlyChartType) appState.monthlyChartType = 'line';
-                toggleChartType(appState.monthlyChartType);
-                
-                // Fix any existing portfolio colors that clash with benchmarks
-                const bColors = ["#eab308", "#ef4444", "#3b82f6", "#a855f7"];
-                Object.values(appState.portfoliosData).forEach(ports => {
-                    ports.forEach((p, idx) => {
-                        if (bColors.includes(p.color)) {
-                            p.color = chartColors[idx % chartColors.length];
-                        }
-                    });
-                });
                 
                 initDropdowns();
                 updateAllViews();
@@ -460,8 +145,8 @@
                 const data = await res.json();
                 if (data.status === "success") {
                     const prices = data.prices;
-                    const today = new Date();
-                    const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                    
+                    const todayStr = new Date().toISOString().split('T')[0];
                     ports.forEach(p => {
                         p.assets.forEach(a => {
                             let fetchName = a.name.includes('.') ? a.name : a.name + '.IS';
@@ -494,44 +179,40 @@
             if(btn) btn.innerHTML = '<i class="fa-solid fa-bolt mr-2"></i>Canlı Fiyatları Çek';
         }
 
-        async function fetchHistory(range = 'this_month') {
+        async function fetchHistory() {
+            if (appState.frozenMonths[appState.currentViewMonth]) {
+                alert("Bu ay kilitli! Geçmiş verileri çekmek için önce kilidi açın.");
+                return;
+            }
+            
             const btn = document.getElementById('btnFetchHistory');
             if(btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Çekiliyor...';
             
-            // Harita: UI Range -> yfinance period
-            const periodMap = {
-                'this_month': '1mo', '1w': '1mo', '1m': '1mo',
-                '3m': '3mo', '6m': '6mo', 'ytd': 'ytd', '1y': '1y', '2y': '2y'
-            };
-            const yfPeriod = periodMap[range] || '1mo';
-
             try {
                 let symbols = new Set(['ALTIN', 'XU100.IS', 'NASDAQ', 'SP500']);
-                // Bütün geçmiş aylardaki portföylerin hisselerini de ekleyelim ki geriye dönük hesaplama yapılabilsin
-                Object.values(appState.portfoliosData).forEach(ports => {
-                    ports.forEach(p => p.assets.forEach(a => {
-                        let fetchName = a.name.includes('.') ? a.name : a.name + '.IS';
-                        symbols.add(fetchName);
-                    }));
-                });
+                const ports = appState.portfoliosData[appState.currentViewMonth] || [];
+                ports.forEach(p => p.assets.forEach(a => {
+                    let fetchName = a.name.includes('.') ? a.name : a.name + '.IS';
+                    symbols.add(fetchName);
+                }));
                 
                 const res = await fetch(`${API_URL}/history`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({symbols: Array.from(symbols), period: yfPeriod})
+                    body: JSON.stringify({symbols: Array.from(symbols), period: "1mo"})
                 });
                 
                 const data = await res.json();
                 if (data.status === "success" && data.history) {
-                    // (Bu kısımda değişiklik yok, sadece catch bloğunu değiştirmek için bir üst scope'u da tutuyoruz, ancak hata yapmamak için else ekleyelim)
                     const history = data.history;
                     
                     if (!appState.benchmarksHistory) appState.benchmarksHistory = {};
-                    Object.keys(history).forEach(sym => {
-                        appState.benchmarksHistory[sym] = Object.assign(appState.benchmarksHistory[sym] || {}, history[sym]);
+                    ['ALTIN', 'XU100.IS', 'NASDAQ', 'SP500'].forEach(bk => {
+                        if (history[bk]) {
+                            appState.benchmarksHistory[bk] = Object.assign(appState.benchmarksHistory[bk] || {}, history[bk]);
+                        }
                     });
                     
-                    const ports = appState.portfoliosData[appState.currentViewMonth] || [];
                     ports.forEach(p => {
                         if (!p.dailyHistory) p.dailyHistory = {};
                         
@@ -582,13 +263,10 @@
                     
                     await saveState();
                     updateAllViews();
-                } else {
-                    console.error("API Başarısız veya history eksik:", data);
-                    alert("API Hatası: " + (data.message || "Bilinmeyen hata"));
                 }
             } catch (e) {
                 console.error(e);
-                alert("Geçmiş veri çekilirken hata oluştu: " + e.message);
+                alert("Geçmiş veri çekilirken hata oluştu.");
             }
             
             if(btn) btn.innerHTML = '<i class="fa-solid fa-clock-rotate-left mr-2"></i>Geçmiş Verileri Çek';
@@ -632,38 +310,6 @@
                     view.classList.add('hidden');
                 }
             });
-        }
-
-        function updateFilterButtons(containerId, activeRange) {
-            const container = document.getElementById(containerId);
-            if (!container) return;
-            const buttons = container.querySelectorAll('button.time-filter-btn, button.compare-time-filter-btn');
-            buttons.forEach(btn => {
-                if (btn.getAttribute('data-range') === activeRange) {
-                    btn.className = (containerId === 'timeFilters' ? 'time-filter-btn' : 'compare-time-filter-btn') + " px-2.5 py-1 text-xs font-medium rounded-md bg-brand-500 text-white shadow transition-colors";
-                } else {
-                    btn.className = (containerId === 'timeFilters' ? 'time-filter-btn' : 'compare-time-filter-btn') + " px-2.5 py-1 text-xs font-medium rounded-md bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors";
-                }
-            });
-        }
-
-        async function setTimeRange(range) {
-            appState.monthlyTimeRange = range;
-            updateFilterButtons('timeFilters', range);
-            await fetchHistory(range);
-            renderMonthlyView();
-        }
-
-        async function setCompareTimeRange(range) {
-            appState.compareTimeRange = range;
-            updateFilterButtons('compareTimeFilters', range);
-            if (range === 'this_month') {
-                toggleCompareChartType('bar'); 
-            } else {
-                toggleCompareChartType('line');
-            }
-            await fetchHistory(range);
-            renderCompareView();
         }
 
         function initDropdowns() {
@@ -718,10 +364,10 @@
             const btnBar = document.getElementById('btnBarChart');
             if (type === 'line') {
                 btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md bg-brand-500 text-white shadow transition-colors";
-                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors";
+                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:text-white transition-colors";
             } else {
                 btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md bg-brand-500 text-white shadow transition-colors";
-                btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors";
+                btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:text-white transition-colors";
             }
             renderMonthlyChart();
         }
@@ -984,20 +630,20 @@
                 const profitSign = profitTL > 0 ? '+' : '';
 
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-100 dark:hover:bg-slate-700/30 transition-colors">
-                        <td class="px-6 py-4 font-medium text-slate-900 dark:text-white flex items-center">
-                            <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold mr-3 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white">
+                    <tr class="hover:bg-slate-700/30 transition-colors">
+                        <td class="px-6 py-4 font-medium text-white flex items-center">
+                            <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold mr-3 border border-slate-300 dark:border-slate-600">
                                 ${asset.name.substring(0,2)}
                             </div>
                             ${asset.name}
                         </td>
                         <td class="px-6 py-4 text-right">${asset.amount}</td>
                         <td class="px-6 py-4 text-right">${formatMoney(asset.cost)}</td>
-                        <td class="px-6 py-4 text-right font-medium text-slate-900 dark:text-white">${formatMoney(asset.price)}</td>
+                        <td class="px-6 py-4 text-right font-medium text-white">${formatMoney(asset.price)}</td>
                         <td class="px-6 py-4 text-center">
                             <div class="flex items-center justify-center">
                                 <span class="mr-2 w-10 text-right">${asset.weight.toFixed(1)}%</span>
-                                <div class="w-16 bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
+                                <div class="w-16 bg-slate-700 rounded-full h-1.5">
                                     <div class="bg-brand-500 h-1.5 rounded-full" style="width: ${asset.weight}%"></div>
                                 </div>
                             </div>
@@ -1031,116 +677,16 @@
             const btnBar = document.getElementById('btnCompareBarChart');
             if (type === 'line') {
                 btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md bg-brand-500 text-white shadow transition-colors";
-                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors";
+                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:text-white transition-colors";
             } else {
                 btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md bg-brand-500 text-white shadow transition-colors";
-                btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors";
+                btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:text-white transition-colors";
             }
             renderCompareView();
         }
 
-        function getTradingDaysForRange(range) {
-            const today = new Date();
-            let startDate = new Date();
-            const yyyy_mm = appState.currentViewMonth;
-            const [cYear, cMonth] = yyyy_mm.split('-');
-
-            if (range === 'this_month') {
-                startDate = new Date(cYear, parseInt(cMonth) - 1, 1);
-                let endDate = new Date(cYear, parseInt(cMonth), 0);
-                if (today < endDate) endDate = today;
-                
-                const dates = [];
-                for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-                    if (d.getDay() !== 0 && d.getDay() !== 6) {
-                        dates.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
-                    }
-                }
-                if (dates.length > 0) {
-                    let fd = new Date(dates[0]);
-                    fd.setDate(fd.getDate() - 1);
-                    while (fd.getDay() === 0 || fd.getDay() === 6) fd.setDate(fd.getDate() - 1);
-                    dates.unshift(`${fd.getFullYear()}-${String(fd.getMonth()+1).padStart(2, '0')}-${String(fd.getDate()).padStart(2, '0')}`);
-                }
-                return dates;
-            }
-
-            if (range === '1w') startDate.setDate(today.getDate() - 7);
-            else if (range === '1m') startDate.setMonth(today.getMonth() - 1);
-            else if (range === '3m') startDate.setMonth(today.getMonth() - 3);
-            else if (range === '6m') startDate.setMonth(today.getMonth() - 6);
-            else if (range === 'ytd') { startDate.setMonth(0); startDate.setDate(1); }
-            else if (range === '1y') startDate.setFullYear(today.getFullYear() - 1);
-            else if (range === '2y') startDate.setFullYear(today.getFullYear() - 2);
-
-            const startStr = `${startDate.getFullYear()}-${String(startDate.getMonth()+1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`;
-            const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-
-            let dates = [];
-            if (appState.benchmarksHistory && appState.benchmarksHistory['XU100.IS']) {
-                const allDays = Object.keys(appState.benchmarksHistory['XU100.IS']).sort();
-                dates = allDays.filter(d => d >= startStr && d <= todayStr);
-                if (dates.length > 0) {
-                    const firstDateIdx = allDays.indexOf(dates[0]);
-                    if (firstDateIdx > 0) {
-                        dates.unshift(allDays[firstDateIdx - 1]);
-                    } else {
-                        let fd = new Date(dates[0]);
-                        fd.setDate(fd.getDate() - 1);
-                        while (fd.getDay() === 0 || fd.getDay() === 6) fd.setDate(fd.getDate() - 1);
-                        dates.unshift(`${fd.getFullYear()}-${String(fd.getMonth()+1).padStart(2, '0')}-${String(fd.getDate()).padStart(2, '0')}`);
-                    }
-                }
-            } else {
-                for (let d = new Date(startDate); d <= today; d.setDate(d.getDate() + 1)) {
-                    if (d.getDay() !== 0 && d.getDay() !== 6) {
-                        dates.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
-                    }
-                }
-                if (dates.length > 0) {
-                    let fd = new Date(dates[0]);
-                    fd.setDate(fd.getDate() - 1);
-                    while (fd.getDay() === 0 || fd.getDay() === 6) fd.setDate(fd.getDate() - 1);
-                    dates.unshift(`${fd.getFullYear()}-${String(fd.getMonth()+1).padStart(2, '0')}-${String(fd.getDate()).padStart(2, '0')}`);
-                }
-            }
-            return dates;
-        }
-
-        function getPortfolioValueAndCost(pId, yyyy_mm, dateStr) {
-            const ports = appState.portfoliosData[yyyy_mm];
-            if (!ports) return null;
-            const p = ports.find(x => x.id === pId);
-            if (!p || p.assets.length === 0) return null;
-
-            let totalValue = 0, totalCost = 0, hasAnyData = false;
-            p.assets.forEach(a => {
-                let fetchName = a.name.includes('.') ? a.name : a.name + '.IS';
-                let price = (appState.benchmarksHistory[fetchName] || {})[dateStr];
-                
-                if (!price) {
-                    for (let offset = 1; offset <= 7; offset++) {
-                        const prevD = new Date(dateStr);
-                        prevD.setDate(prevD.getDate() - offset);
-                        const prevStr = `${prevD.getFullYear()}-${String(prevD.getMonth()+1).padStart(2, '0')}-${String(prevD.getDate()).padStart(2, '0')}`;
-                        price = (appState.benchmarksHistory[fetchName] || {})[prevStr];
-                        if (price) break;
-                    }
-                }
-                
-                if (price) {
-                    totalValue += a.amount * price;
-                    totalCost += a.amount * a.cost;
-                    hasAnyData = true;
-                }
-            });
-            if (!hasAnyData || totalCost === 0) return null;
-            return { value: totalValue, cost: totalCost };
-        }
-
         function renderCompareView() {
             if (!appState.compareChartType) appState.compareChartType = 'line';
-            if (!appState.compareTimeRange) appState.compareTimeRange = 'this_month';
             
             const container = document.getElementById('benchmarkToggles');
             container.innerHTML = '';
@@ -1149,9 +695,14 @@
             const benchmarkNames = { "ALTIN": "Altın (Gram)", "XU100.IS": "BIST 100", "NASDAQ": "NASDAQ", "SP500": "S&P 500" };
             
             const currentPorts = appState.portfoliosData[appState.currentViewMonth] || [];
+            
             const allOptions = {};
-            currentPorts.forEach(p => { allOptions[p.id] = { name: p.name, color: p.color, type: 'port', pData: p }; });
-            ['ALTIN', 'XU100.IS', 'NASDAQ', 'SP500'].forEach(b => { allOptions[b] = { name: benchmarkNames[b], color: benchmarkColors[b], type: 'bench' }; });
+            currentPorts.forEach(p => {
+                allOptions[p.id] = { name: p.name, color: p.color, type: 'port', pData: p };
+            });
+            ['ALTIN', 'XU100.IS', 'NASDAQ', 'SP500'].forEach(b => {
+                allOptions[b] = { name: benchmarkNames[b], color: benchmarkColors[b], type: 'bench' };
+            });
 
             for (const [key, item] of Object.entries(allOptions)) {
                 const isChecked = appState.activeBenchmarks.includes(key);
@@ -1168,37 +719,23 @@
             const ctx = document.getElementById('compareChart').getContext('2d');
             if (cChart) cChart.destroy();
 
-            const dates = getTradingDaysForRange(appState.compareTimeRange);
-            const isLine = appState.compareChartType === 'line';
+            const datasets = [];
+            const statsContainer = document.getElementById('comparisonStats');
+            statsContainer.innerHTML = '';
             
-            const trMonths = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
+            const isLine = appState.compareChartType === 'line';
             let chartLabels = [];
-            if (isLine && dates.length > 1) {
-                // Remove the first base date from the chart entirely
-                chartLabels = dates.slice(1).map(d => {
-                    const [y, m, day] = d.split('-');
-                    return `${parseInt(day)} ${trMonths[parseInt(m) - 1]}`;
-                });
-            } else if (!isLine) {
+            if (isLine) {
+                chartLabels = getTradingDays(appState.currentViewMonth);
+            } else {
                 appState.activeBenchmarks.forEach(key => {
                     const item = allOptions[key];
                     if(item) chartLabels.push(item.name);
                 });
             }
-
-            const lastTradingDays = {};
-            Object.keys(appState.portfoliosData).forEach(yyyy_mm => {
-                if (appState.benchmarksHistory && appState.benchmarksHistory['XU100.IS']) {
-                    const days = Object.keys(appState.benchmarksHistory['XU100.IS']).filter(d => d.startsWith(yyyy_mm)).sort();
-                    if (days.length > 0) lastTradingDays[yyyy_mm] = days[days.length - 1];
-                }
-            });
-
-            const datasets = [];
+            
             const barData = [];
             const barBackgroundColors = [];
-            const statsContainer = document.getElementById('comparisonStats');
-            statsContainer.innerHTML = '';
 
             appState.activeBenchmarks.forEach(key => {
                 const item = allOptions[key];
@@ -1207,62 +744,66 @@
                 let dataPoints = [];
                 let finalReturn = 0;
                 
-                if (dates.length > 0) {
-                    if (item.type === 'bench') {
-                        let firstBaseValue = null;
-                        dates.forEach(dateStr => {
+                if (isLine) {
+                    const [year, month] = appState.currentViewMonth.split('-');
+                    let firstBaseValue = null;
+                    
+                    chartLabels.forEach((label, i) => {
+                        const dayMatch = label.match(/\d+/);
+                        if (!dayMatch) return;
+                        const dateStr = `${year}-${month}-${String(dayMatch[0]).padStart(2, '0')}`;
+                        
+                        if (item.type === 'bench') {
                             const val = (appState.benchmarksHistory && appState.benchmarksHistory[key]) ? appState.benchmarksHistory[key][dateStr] : undefined;
                             if (val !== undefined) {
                                 if (firstBaseValue === null) firstBaseValue = val;
-                                const ret = firstBaseValue > 0 ? ((val - firstBaseValue) / firstBaseValue) : 0;
-                                dataPoints.push(ret * 100);
+                                const ret = firstBaseValue > 0 ? ((val - firstBaseValue) / firstBaseValue) * 100 : 0;
+                                dataPoints.push(ret);
+                                finalReturn = ret;
                             } else {
                                 dataPoints.push(dataPoints.length > 0 ? dataPoints[dataPoints.length - 1] : 0);
                             }
-                        });
-                        finalReturn = dataPoints[dataPoints.length - 1];
-                    } else {
-                        if (dates.length > 0) {
-                            let currentMonth = dates[0].substring(0, 7);
-                            let compoundBase = 1.0;
-                            dates.forEach(dateStr => {
-                                const yyyy_mm = dateStr.substring(0, 7);
-                                if (yyyy_mm !== currentMonth) {
-                                    let endOfMonthRet = 0;
-                                    if (lastTradingDays[currentMonth]) {
-                                        const vc = getPortfolioValueAndCost(key, currentMonth, lastTradingDays[currentMonth]);
-                                        if (vc) endOfMonthRet = (vc.value - vc.cost) / vc.cost;
-                                    }
-                                    compoundBase *= (1 + endOfMonthRet);
-                                    currentMonth = yyyy_mm;
-                                }
-                                
-                                let currentRet = 0;
-                                const vc = getPortfolioValueAndCost(key, currentMonth, dateStr);
-                                if (vc) currentRet = (vc.value - vc.cost) / vc.cost;
-                                
-                                const totalRet = (compoundBase * (1 + currentRet)) - 1;
-                                dataPoints.push(totalRet * 100);
-                            });
-                            
-                            if (dataPoints.length > 0) {
-                                const firstRet = dataPoints[0] / 100;
-                                dataPoints = dataPoints.map(r => (((1 + r / 100) / (1 + firstRet)) - 1) * 100);
-                            }
-                            finalReturn = dataPoints[dataPoints.length - 1];
                         } else {
-                            finalReturn = 0;
+                            let pRet = 0;
+                            if (item.pData.dailyHistory && item.pData.dailyHistory[dateStr] !== undefined) {
+                                const dp = item.pData.dailyHistory[dateStr];
+                                pRet = typeof dp === 'object' ? dp.percent : dp;
+                            } else if (dataPoints.length > 0) {
+                                pRet = dataPoints[dataPoints.length - 1];
+                            }
+                            dataPoints.push(pRet);
+                            finalReturn = pRet;
                         }
-                    }
-                }
-
-                if (isLine && dataPoints.length > 1) {
-                    datasets.push({
-                        label: item.name, data: dataPoints.slice(1),
-                        borderColor: item.color, backgroundColor: item.color,
-                        borderWidth: 2, pointRadius: 2, tension: 0.3
                     });
-                } else if (!isLine) {
+                    
+                    datasets.push({
+                        label: item.name,
+                        data: dataPoints,
+                        borderColor: item.color,
+                        backgroundColor: item.color,
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        tension: 0.3
+                    });
+                } else {
+                    if (item.type === 'bench') {
+                        const [year, month] = appState.currentViewMonth.split('-');
+                        let firstVal = null, lastVal = null;
+                        if (appState.benchmarksHistory && appState.benchmarksHistory[key]) {
+                            const hist = appState.benchmarksHistory[key];
+                            const days = Object.keys(hist).filter(d => d.startsWith(`${year}-${month}-`)).sort();
+                            if (days.length > 0) {
+                                firstVal = hist[days[0]];
+                                lastVal = hist[days[days.length - 1]];
+                            }
+                        }
+                        if (firstVal && firstVal > 0) {
+                            finalReturn = ((lastVal - firstVal) / firstVal) * 100;
+                        }
+                    } else {
+                        const stats = getPortfolioStats(item.pData);
+                        finalReturn = stats.totalChange;
+                    }
                     barData.push(finalReturn);
                     barBackgroundColors.push(item.color);
                 }
@@ -1275,28 +816,50 @@
                             <span class="text-sm text-slate-700 dark:text-slate-300 font-medium truncate">${item.name}</span>
                         </div>
                         <div class="text-2xl font-bold ${statClass}">${finalReturn > 0 ? '+' : ''}${finalReturn.toFixed(2)}%</div>
-                        <div class="text-xs text-slate-500 mt-1">Dönem Getirisi</div>
+                        <div class="text-xs text-slate-500 mt-1">Aylık Getiri</div>
                     </div>
                 `;
             });
             
             if (!isLine) {
-                datasets.push({ label: 'Getiri (%)', data: barData, backgroundColor: barBackgroundColors, borderWidth: 0, borderRadius: 4 });
+                datasets.push({
+                    label: 'Getiri (%)',
+                    data: barData,
+                    backgroundColor: barBackgroundColors,
+                    borderWidth: 0,
+                    borderRadius: 4
+                });
             }
 
             cChart = new Chart(ctx, {
                 type: isLine ? 'line' : 'bar',
-                data: { labels: chartLabels, datasets: datasets },
+                data: {
+                    labels: chartLabels,
+                    datasets: datasets
+                },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     interaction: { mode: 'index', intersect: false },
                     plugins: {
                         legend: { display: isLine },
                         tooltip: {
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)', titleColor: '#fff', bodyColor: '#cbd5e1', borderColor: '#334155', borderWidth: 1,
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleColor: '#fff',
+                            bodyColor: '#cbd5e1',
+                            borderColor: '#334155',
+                            borderWidth: 1,
                             callbacks: {
                                 title: function(context) {
-                                    if (isLine) return context[0].label + ' Durumu';
+                                    if (isLine) {
+                                        const label = context[0].label;
+                                        const dayMatch = label.match(/\d+/);
+                                        if (dayMatch) {
+                                            const day = dayMatch[0];
+                                            const [year, month] = appState.currentViewMonth.split('-');
+                                            const trMonths = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+                                            return `${day} ${trMonths[parseInt(month) - 1]} ${year} Durumu`;
+                                        }
+                                    }
                                     return context[0].label;
                                 },
                                 label: function(context) {
@@ -1308,8 +871,8 @@
                         }
                     },
                     scales: {
-                        x: { grid: { color: '#334155', drawBorder: false }, ticks: { color: '#94a3b8', maxTicksLimit: 15 } },
-                        y: { grid: { color: '#334155', drawBorder: false }, ticks: { callback: v => '%' + v, color: '#94a3b8' } }
+                        x: { grid: { color: '#334155', drawBorder: false }, ticks: { color: '#94a3b8' } },
+                        y: { grid: { color: '#334155', drawBorder: false }, ticks: { color: '#94a3b8' } }
                     }
                 }
             });
@@ -1425,12 +988,8 @@
             const newId = 'p' + Date.now();
             const color = chartColors[appState.portfoliosData[appState.currentViewMonth].length % chartColors.length];
             
-            appState.portfoliosData[appState.currentViewMonth].push({ id: newId, name: name, color: color, assets: [], dailyHistory: {} });
+            appState.portfoliosData[appState.currentViewMonth].push({ id: newId, name: name, color: color, assets: [] });
             appState.currentPortfolioId = newId; 
-            
-            if (!appState.activeBenchmarks.includes(newId)) {
-                appState.activeBenchmarks.push(newId);
-            }
             
             await saveState();
             closeModals();
@@ -1509,6 +1068,4 @@
             renderManagementView();
             renderCompareView();
         }
-    </script>
-</body>
-</html>
+    
