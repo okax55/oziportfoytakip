@@ -493,7 +493,7 @@
                             appState.portfoliosData[actualMonth] = JSON.parse(JSON.stringify(appState.portfoliosData[lastMonth]));
                             appState.benchmarksData[actualMonth] = JSON.parse(JSON.stringify(appState.benchmarksData[lastMonth] || {}));
                             appState.frozenMonths[actualMonth] = false;
-                            await saveState();
+                            saveState();
                         }
                     } else {
                         appState.portfoliosData[actualMonth] = [];
@@ -545,7 +545,7 @@
                 });
                 
                 if (colorChanged) {
-                    await saveState();
+                    saveState();
                 }
                 
                 initDropdowns();
@@ -621,7 +621,7 @@
                         }
                     });
                     
-                    await saveState();
+                    saveState();
                     updateAllViews();
                 }
             } catch (e) {
@@ -717,7 +717,7 @@
                         }
                     });
                     
-                    await saveState();
+                    saveState();
                     updateAllViews();
                 } else {
                     console.error("API Başarısız veya history eksik:", data);
@@ -1701,7 +1701,7 @@
                 appState.activeBenchmarks.push(newId);
             }
             
-            await saveState();
+            saveState();
             closeModals();
             updateAllViews();
         }
@@ -1732,7 +1732,7 @@
             const portfolio = ports.find(p => p.id === id);
             if (portfolio) {
                 portfolio.name = newName;
-                await saveState();
+                saveState();
                 updateAllViews();
             }
             closeModals();
@@ -1760,7 +1760,7 @@
             
             if(portfolio) {
                 portfolio.assets.push({ id: 'a' + Date.now(), name, amount, cost, price });
-                await saveState();
+                saveState();
             }
 
             closeModals();
@@ -1793,7 +1793,7 @@
                 if(p) p.assets = p.assets.filter(a => a.id !== aId);
             }
             
-            await saveState();
+            saveState();
             closeModals();
             updateAllViews();
         }
