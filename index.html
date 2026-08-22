@@ -170,14 +170,14 @@
                         </button>
                     </div>
                     <div class="flex glass-input p-1 rounded-xl shadow-sm">
-                        <button id="tab-monthly" class="px-4 py-2 text-sm font-medium rounded-lg transition-all glass-button-tab text-white shadow-md" onclick="switchTab('monthly')">
-                            <i class="fa-solid fa-calendar-days mr-2 hidden sm:inline"></i>Aylık Detay
+                        <button id="tab-monthly" class="p-2 sm:px-4 sm:py-2 text-xl sm:text-sm font-medium rounded-lg transition-all glass-button-tab text-white shadow-md flex items-center justify-center" onclick="switchTab('monthly')">
+                            <i class="fa-solid fa-calendar-days sm:mr-2"></i><span class="hidden sm:inline">Aylık Detay</span>
                         </button>
-                        <button id="tab-compare" class="px-4 py-2 text-sm font-medium rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all" onclick="switchTab('compare')">
-                            <i class="fa-solid fa-scale-balanced mr-2 hidden sm:inline"></i>Kıyaslama
+                        <button id="tab-compare" class="p-2 sm:px-4 sm:py-2 text-xl sm:text-sm font-medium rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all flex items-center justify-center" onclick="switchTab('compare')">
+                            <i class="fa-solid fa-scale-balanced sm:mr-2"></i><span class="hidden sm:inline">Kıyaslama</span>
                         </button>
-                        <button id="tab-manage" class="px-4 py-2 text-sm font-medium rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all" onclick="switchTab('manage')">
-                            <i class="fa-solid fa-briefcase mr-2 hidden sm:inline"></i>Yönetim
+                        <button id="tab-manage" class="p-2 sm:px-4 sm:py-2 text-xl sm:text-sm font-medium rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all flex items-center justify-center" onclick="switchTab('manage')">
+                            <i class="fa-solid fa-briefcase sm:mr-2"></i><span class="hidden sm:inline">Yönetim</span>
                         </button>
                     </div>
                     <button id="themeToggleBtn" onclick="toggleTheme()" class="text-slate-500 dark:text-slate-400 hover:text-brand-500 transition-colors ml-2 p-2 rounded-full hover:bg-slate-700/50">
@@ -242,13 +242,13 @@
                     <table class="w-full text-sm text-left text-slate-700 dark:text-slate-300">
                         <thead class="text-xs text-slate-500 dark:text-slate-400 uppercase border-b border-white/20 dark:border-white/5">
                             <tr>
-                                <th scope="col" class="px-6 py-4 font-medium">Varlık / Hisse</th>
-                                <th scope="col" class="px-6 py-4 font-medium text-right">Adet</th>
-                                <th scope="col" class="px-6 py-4 font-medium text-right">Maliyet (₺)</th>
-                                <th scope="col" class="px-6 py-4 font-medium text-right">Güncel Fiyat (₺)</th>
-                                <th scope="col" class="px-6 py-4 font-medium text-center">Ağırlık (%)</th>
-                                <th scope="col" class="px-6 py-4 font-medium text-right">Net Kâr/Zarar (₺)</th>
-                                <th scope="col" class="px-6 py-4 font-medium text-right">Getiri (%)</th>
+                                <th scope="col" class="px-6 py-4 font-medium whitespace-nowrap">Varlık / Hisse</th>
+                                <th scope="col" class="px-6 py-4 font-medium text-right whitespace-nowrap">Adet</th>
+                                <th scope="col" class="px-6 py-4 font-medium text-right whitespace-nowrap">Maliyet (₺)</th>
+                                <th scope="col" class="px-6 py-4 font-medium text-right whitespace-nowrap">Güncel Fiyat (₺)</th>
+                                <th scope="col" class="px-6 py-4 font-medium text-center whitespace-nowrap">Ağırlık (%)</th>
+                                <th scope="col" class="px-6 py-4 font-medium text-right whitespace-nowrap">Net Kâr/Zarar (₺)</th>
+                                <th scope="col" class="px-6 py-4 font-medium text-right whitespace-nowrap">Getiri (%)</th>
                             </tr>
                         </thead>
                         <tbody id="assetsTableBody" class="divide-y divide-slate-700/50">
@@ -256,13 +256,13 @@
                         </tbody>
                         <tfoot class="border-t border-white/20 dark:border-white/5 font-semibold text-slate-900 dark:text-white">
                             <tr>
-                                <td class="px-6 py-4">Toplam Portföy</td>
+                                <td class="px-6 py-4 whitespace-nowrap">Toplam Portföy</td>
                                 <td class="px-6 py-4"></td>
-                                <td class="px-6 py-4 text-right" id="totalCost">0 ₺</td>
-                                <td class="px-6 py-4 text-right" id="totalValue">0 ₺</td>
-                                <td class="px-6 py-4 text-center">100%</td>
-                                <td class="px-6 py-4 text-right font-medium" id="totalProfitTL">0 ₺</td>
-                                <td class="px-6 py-4 text-right" id="totalChange">0%</td>
+                                <td class="px-6 py-4 text-right whitespace-nowrap" id="totalCost">0 ₺</td>
+                                <td class="px-6 py-4 text-right whitespace-nowrap" id="totalValue">0 ₺</td>
+                                <td class="px-6 py-4 text-center whitespace-nowrap">100%</td>
+                                <td class="px-6 py-4 text-right font-medium whitespace-nowrap" id="totalProfitTL">0 ₺</td>
+                                <td class="px-6 py-4 text-right whitespace-nowrap" id="totalChange">0%</td>
                             </tr>
                         </tfoot>
                     </table>
@@ -733,10 +733,11 @@
             if(btn) btn.innerHTML = '<i class="fa-solid fa-clock-rotate-left mr-2"></i>Geçmiş Verileri Çek';
         }
 
-        async function toggleLock() {
+        function toggleLock() {
             appState.frozenMonths[appState.currentViewMonth] = !appState.frozenMonths[appState.currentViewMonth];
-            await saveState();
             updateLockUI();
+            renderManagementView();
+            saveState(); // Arkada kaydet
         }
 
         function updateLockUI() {
@@ -762,10 +763,10 @@
                 const btn = document.getElementById(`tab-${t}`);
                 const view = document.getElementById(`view-${t}`);
                 if (t === tabId) {
-                    btn.className = "px-4 py-2 text-sm font-medium rounded-lg transition-all glass-button-tab text-white shadow-md";
+                    btn.className = "p-2 sm:px-4 sm:py-2 text-xl sm:text-sm font-medium rounded-lg transition-all glass-button-tab text-white shadow-md flex items-center justify-center";
                     view.classList.remove('hidden');
                 } else {
-                    btn.className = "px-4 py-2 text-sm font-medium rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all";
+                    btn.className = "p-2 sm:px-4 sm:py-2 text-xl sm:text-sm font-medium rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all flex items-center justify-center";
                     view.classList.add('hidden');
                 }
             });
@@ -1231,7 +1232,7 @@
             const tEl = document.getElementById('totalChange');
             const totalProfitTL = stats.totalValue - stats.totalCost;
             const tSign = stats.totalChange > 0 ? '+' : '';
-            const tColor = stats.totalChange >= 0 ? 'text-emerald-400' : 'text-rose-400';
+            const tColor = stats.totalChange >= 0 ? 'text-emerald-400 font-extrabold text-base sm:text-lg' : 'text-rose-400 font-extrabold text-base sm:text-lg';
             const pEl = document.getElementById('totalProfitTL');
             if (pEl) pEl.innerHTML = `<span class="${tColor}">${tSign}${formatMoney(totalProfitTL)}</span>`;
             
