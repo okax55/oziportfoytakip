@@ -1509,11 +1509,15 @@
 
                 if (isLine && dataPoints.length > 1) {
                     const displayData = shouldSlice ? dataPoints.slice(1) : dataPoints;
-                    datasets.push({
+                    const datasetConfig = {
                         label: item.name, data: displayData,
                         borderColor: item.color, backgroundColor: item.color,
                         borderWidth: 2, pointRadius: 2, tension: 0.3
-                    });
+                    };
+                    if (item.type === 'bench') {
+                        datasetConfig.borderDash = [5, 5];
+                    }
+                    datasets.push(datasetConfig);
                 } else if (!isLine) {
                     barData.push(finalReturn);
                     barBackgroundColors.push(item.color);
