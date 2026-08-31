@@ -883,6 +883,7 @@
                 btn.onclick = () => {
                     appState.currentPortfolioId = p.id;
                     toggleCustomDropdown('portfolioDropdownMenu');
+                    updatePortfolioDropdown();
                     renderMonthlyView();
                 };
                 pMenu.appendChild(btn);
@@ -1158,7 +1159,16 @@
                         x: { 
                             border: { dash: [5, 5], color: gridColor },
                             grid: { color: gridColor, drawTicks: false, tickBorderDash: [5, 5], borderDash: [5, 5] }, 
-                            ticks: { color: '#94a3b8', maxTicksLimit: 15 } 
+                            ticks: { 
+                                color: '#94a3b8', 
+                                autoSkip: false,
+                                maxRotation: 0,
+                                callback: function(val, index, ticks) {
+                                    const label = this.getLabelForValue(val);
+                                    if (index === 0 || index === ticks.length - 1) return label;
+                                    return index % 2 === 0 ? label : '';
+                                }
+                            } 
                         },
                         y: { 
                             border: { dash: [5, 5], color: gridColor },
