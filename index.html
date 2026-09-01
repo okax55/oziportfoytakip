@@ -479,6 +479,12 @@
                         <i class="fa-solid fa-triangle-exclamation mt-0.5 text-lg"></i>
                         <p><strong>Önemli Not:</strong> Yukarıdaki plana uyarken önce <strong>'SATIŞ YAP'</strong> emirlerini borsada gerçekleştirerek nakde dönmeniz önerilir. Böylece <strong>'ALIM YAP'</strong> emirleri için gerekli nakdi yaratmış olursunuz.</p>
                       </div>
+                      
+                      <div class="mt-6 flex justify-center pb-4 border-t pt-4">
+                        <button onclick="rebApplyAndSave()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold text-lg shadow-lg shadow-blue-500/30 transition transform hover:-translate-y-1 flex items-center gap-2">
+                          <i class="fa-solid fa-floppy-disk"></i> Portföye Uygula ve Kaydet
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -557,6 +563,18 @@
                 <button onclick="saveEditedAsset()" class="px-5 py-2.5 glass-button rounded-lg transition-colors shadow-lg">Kaydet</button>
             </div>
         </div>
+    </div>
+
+    <!-- Custom Alert Modal -->
+    <div id="alertModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[200] flex items-center justify-center p-4 opacity-0 transition-opacity">
+         <div class="glass-panel p-6 rounded-2xl w-full max-w-sm shadow-2xl flex flex-col items-center text-center transform scale-95 transition-transform" id="alertModalContent">
+            <div class="w-12 h-12 bg-amber-500/20 text-amber-500 rounded-full flex items-center justify-center mb-4 text-2xl">
+                <i class="fa-solid fa-bell"></i>
+            </div>
+            <h3 class="text-slate-900 dark:text-white text-lg font-bold mb-2">Sistem Mesajı</h3>
+            <p id="alertMessage" class="text-slate-500 dark:text-slate-400 text-sm mb-6"></p>
+            <button onclick="closeAlertModal()" class="w-full px-4 py-2 bg-gradient-to-r from-brand-500 to-blue-600 hover:from-brand-400 hover:to-blue-500 text-white rounded-lg transition-all shadow-lg shadow-brand-500/30">Tamam</button>
+         </div>
     </div>
 
     <div id="confirmModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[110] flex items-center justify-center p-4 opacity-0 transition-opacity">
@@ -820,7 +838,7 @@
                 
             } catch (e) {
                 console.error(e);
-                alert("Backend'e ulaşılamadı. Lütfen 'python server.py' komutunun çalıştığından emin olun.");
+                showAlert("Backend'e ulaşılamadı. Lütfen 'python server.py' komutunun çalıştığından emin olun.");
             }
         }
 
@@ -980,11 +998,11 @@
                     updateAllViews();
                 } else {
                     console.error("API Başarısız veya history eksik:", data);
-                    alert("API Hatası: " + (data.message || "Bilinmeyen hata"));
+                    showAlert("API Hatası: " + (data.message || "Bilinmeyen hata"));
                 }
             } catch (e) {
                 console.error(e);
-                alert("Geçmiş veri çekilirken hata oluştu: " + e.message);
+                showAlert("Geçmiş veri çekilirken hata oluştu: " + e.message);
             }
             
             if(btn) btn.innerHTML = '<i class="fa-solid fa-clock-rotate-left mr-2"></i>Geçmiş Verileri Çek';
@@ -1951,7 +1969,7 @@
 
         function openModal(id) {
             if (appState.frozenMonths[appState.currentViewMonth]) {
-                alert("Bu ay kilitli! Değişiklik yapmak için önce kilidi açın.");
+                showAlert("Bu ay kilitli! Değişiklik yapmak için önce kilidi açın.");
                 return;
             }
             const m = document.getElementById(id);
@@ -1960,12 +1978,30 @@
             setTimeout(() => { m.classList.remove('opacity-0'); c.classList.remove('scale-95'); }, 10);
         }
 
+        function showAlert(msg) {
+            document.getElementById('alertMessage').textContent = msg;
+            openModal('alertModal');
+        }
+
+        function closeAlertModal() {
+            const el = document.getElementById('alertModal');
+            el.classList.add('opacity-0');
+            if (el.children[0]) el.children[0].classList.add('scale-95');
+            setTimeout(() => el.classList.add('hidden'), 300);
+        }
+
         function closeConfirmModal() {
             closeModals();
         }
 
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModals();
+            }
+        });
+
         function closeModals() {
-            ['portfolioModal', 'assetModal', 'confirmModal', 'editPortfolioModal', 'editAssetModal', 'calcModal', 'rebalanceModal'].forEach(id => {
+            ['portfolioModal', 'assetModal', 'confirmModal', 'editPortfolioModal', 'editAssetModal', 'calcModal', 'rebalanceModal', 'alertModal'].forEach(id => {
                 const m = document.getElementById(id);
                 const c = document.getElementById(id + 'Content');
                 if(m) m.classList.add('opacity-0');
@@ -2071,7 +2107,7 @@
 
         function openEditAssetModal(pId, aId) {
             if (appState.frozenMonths[appState.currentViewMonth]) {
-                alert("Bu ay kilitli! Değişiklik yapmak için önce kilidi açın.");
+                showAlert("Bu ay kilitli! Değişiklik yapmak için önce kilidi açın.");
                 return;
             }
             const ports = appState.portfoliosData[appState.currentViewMonth];
@@ -2155,7 +2191,7 @@
 
         function openCalcModal() {
             if (appState.frozenMonths[appState.currentViewMonth]) {
-                alert("Uyarı: Bu ay kilitli olduğu için 'Uygula' butonuyla portföye kaydetme yapamazsınız, sadece hesaplama yapabilirsiniz.");
+                showAlert("Uyarı: Bu ay kilitli olduğu için 'Uygula' butonuyla portföye kaydetme yapamazsınız, sadece hesaplama yapabilirsiniz.");
             }
             populateCalcSelect();
             openModal('calcModal');
@@ -2253,14 +2289,14 @@
 
         function applyCalculatorToPortfolio() {
             if (appState.frozenMonths[appState.currentViewMonth]) {
-                alert("Bu ay kilitli! Uygulama yapmak için kilidi açmanız gerekir.");
+                showAlert("Bu ay kilitli! Uygulama yapmak için kilidi açmanız gerekir.");
                 return;
             }
 
             const select = document.getElementById('calcApplySelect');
             const val = select.value;
             if (!val) {
-                alert("Lütfen uygulamak istediğiniz hisseyi seçin.");
+                showAlert("Lütfen uygulamak istediğiniz hisseyi seçin.");
                 return;
             }
 
@@ -2293,7 +2329,7 @@
                     a.cost = parseFloat(newCost.toFixed(2));
                     saveState();
                     updateAllViews();
-                    alert("Hesaplama hisseye uygulandı!");
+                    showAlert("Hesaplama hisseye uygulandı!");
                     closeModals();
                 }
             }
@@ -2301,7 +2337,50 @@
         /* Algoritmik Portföy Asistanı JS */
         let rebCurrentStocks = Array.from({ length: 5 }, () => ({ id: Math.random().toString(), symbol: '', quantity: '', price: '' }));
         let rebTargetStocks = Array.from({ length: 5 }, () => ({ id: Math.random().toString(), symbol: '', price: '' }));
+        window.rebLastTargetHoldings = {};
         
+        function rebApplyAndSave() {
+            const pId = document.getElementById('rebAutoPortSelect').value;
+            if (!pId) {
+                showAlert("Lütfen işlemin uygulanacağı portföyü '1. Mevcut Portföy' bölümünden seçin.");
+                return;
+            }
+            if (appState.isMonthFrozen[appState.currentViewMonth]) {
+                showAlert("Bu ay kilitli! Uygulama yapmak için kilidi açmanız gerekir.");
+                return;
+            }
+            
+            if (!window.rebLastTargetHoldings || Object.keys(window.rebLastTargetHoldings).length === 0) {
+                showAlert("Uygulanacak hedef portföy bulunamadı.");
+                return;
+            }
+
+            const ports = appState.portfoliosData[appState.currentViewMonth] || [];
+            const p = ports.find(x => x.id === pId);
+            if (p) {
+                const newAssets = [];
+                for (const symbol in window.rebLastTargetHoldings) {
+                    const stock = window.rebLastTargetHoldings[symbol];
+                    if (stock.targetQuantity > 0) {
+                        newAssets.push({
+                            id: 'a_' + Date.now() + Math.random(),
+                            name: stock.symbol,
+                            amount: stock.targetQuantity,
+                            price: stock.price,
+                            cost: stock.price // Yeni maliyet olarak hedef fiyat alınır
+                        });
+                    }
+                }
+                
+                p.assets = newAssets;
+                saveState();
+                updateAllViews();
+                
+                showAlert("Portföy geçiş planı başarıyla uygulandı ve kaydedildi!");
+                closeModals();
+            }
+        }
+
         function openRebalanceModal() {
             const select = document.getElementById('rebAutoPortSelect');
             select.innerHTML = '<option value="">-- Portföy Seç --</option>';
@@ -2474,7 +2553,7 @@
             const validTarget = rebTargetStocks.filter(s => s.symbol.trim() !== '' && parseFloat(s.price) > 0);
 
             if (validTarget.length === 0) {
-                alert("Lütfen en az bir geçerli hedef hisse girin.");
+                showAlert("Lütfen en az bir geçerli hedef hisse girin.");
                 return;
             }
 
@@ -2515,6 +2594,7 @@
             });
 
             const allSymbols = new Set([...Object.keys(currentHoldingsMap), ...Object.keys(targetHoldings)]);
+            window.rebLastTargetHoldings = targetHoldings;
             const transactions = [];
 
             allSymbols.forEach(symbol => {
