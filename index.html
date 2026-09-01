@@ -359,59 +359,129 @@
 
     <!-- MODALS -->
     
-    <div id="rebalanceModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 opacity-0 transition-opacity">
-        <div class="glass-panel p-6 rounded-2xl w-full max-w-4xl shadow-2xl transform scale-95 transition-transform flex flex-col" id="rebalanceModalContent" style="max-height: 90vh;">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-slate-900 dark:text-white text-xl font-bold">Portföy Geçiş Planı (Eşit Dağılım)</h3>
-                <button onclick="closeModals()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
-                    <i class="fa-solid fa-xmark text-xl"></i>
-                </button>
-            </div>
-            
-            <div class="mb-4">
-                <label class="block text-slate-500 dark:text-slate-400 text-sm mb-2">Baz Alınacak Portföy</label>
-                <select id="rebalancePortfolioSelect" class="w-full glass-input rounded-lg p-3 text-slate-900 dark:text-white focus:border-brand-500 outline-none" onchange="loadRebalancePortfolio()">
-                    <option value="">-- Portföy Seçin --</option>
-                </select>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 p-4 rounded-xl bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-                <div class="flex justify-between">
-                    <span class="text-sm text-slate-500">Toplam Portföy Değeri:</span>
-                    <span id="rebalanceTotalValue" class="font-bold text-slate-900 dark:text-white">0 ₺</span>
+    <div id="rebalanceModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 opacity-0 transition-opacity overflow-y-auto">
+        <div class="bg-slate-50 rounded-2xl w-full max-w-6xl shadow-2xl transition-transform flex flex-col font-sans relative my-8" id="rebalanceModalContent">
+            <button onclick="closeModals()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors z-10">
+                <i class="fa-solid fa-xmark text-2xl"></i>
+            </button>
+            <div class="p-4 md:p-8 space-y-6">
+                <!-- Header -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
+                  <div>
+                    <h1 class="text-2xl font-bold text-slate-900">Algoritmik Portföy Asistanı</h1>
+                    <p class="text-slate-500 text-sm mt-1">Eşit ağırlıklı portföyler için otomatik geçiş ve lot hesaplama aracı</p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <label class="text-sm font-semibold text-slate-600">Boşta Nakit (TL):</label>
+                    <input type="number" id="rebCashBalance" class="w-32 px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="0.00" min="0">
+                  </div>
                 </div>
-                <div class="flex justify-between">
-                    <span class="text-sm text-brand-600 dark:text-brand-400 font-semibold">Hedef Hisse Başı Tutar (Eşit Bölünme):</span>
-                    <span id="rebalanceTargetValue" class="font-bold text-brand-600 dark:text-brand-400">0 ₺</span>
-                </div>
-            </div>
 
-            <div class="overflow-y-auto flex-grow mb-4 rounded-xl border border-slate-200 dark:border-slate-700">
-                <table class="w-full text-left border-collapse min-w-[600px]">
-                    <thead class="bg-slate-50 dark:bg-slate-800/80 sticky top-0 z-10 backdrop-blur-md">
-                        <tr>
-                            <th class="p-3 text-xs font-semibold text-slate-500 dark:text-slate-400">Hisse</th>
-                            <th class="p-3 text-xs font-semibold text-slate-500 dark:text-slate-400">Mevcut Lot</th>
-                            <th class="p-3 text-xs font-semibold text-slate-500 dark:text-slate-400">Fiyat (₺)</th>
-                            <th class="p-3 text-xs font-semibold text-slate-500 dark:text-slate-400 text-center">İşlem</th>
-                            <th class="p-3 text-xs font-semibold text-slate-500 dark:text-slate-400 text-right">Hedef Lot</th>
-                            <th class="p-3 text-xs font-semibold text-slate-500 dark:text-slate-400 text-right">İşlem Tutarı (₺)</th>
-                            <th class="p-3 text-xs font-semibold text-slate-500 dark:text-slate-400 text-center">İşlem</th>
-                        </tr>
-                    </thead>
-                    <tbody id="rebalanceTableBody" class="divide-y divide-slate-100 dark:divide-slate-800/50">
-                        <!-- JS ile doldurulacak -->
-                    </tbody>
-                </table>
-            </div>
-            
-            <div class="flex flex-col sm:flex-row gap-2 justify-between items-center border-t border-slate-200 dark:border-slate-700 pt-4">
-                <button onclick="addRebalanceRow()" class="px-4 py-2 glass-button rounded-lg text-sm font-medium shadow-sm flex items-center">
-                    <i class="fa-solid fa-plus mr-2"></i>Yeni Hisse Ekle
-                </button>
-                <button onclick="calculateRebalance()" class="px-6 py-2.5 glass-button rounded-lg text-sm font-medium shadow-lg bg-brand-500 text-white hover:bg-brand-600 transition-colors w-full sm:w-auto">
-                    Planı Hesapla
-                </button>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <!-- Sol Kolon: Mevcut Portföy -->
+                  <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col">
+                    <div class="bg-slate-800 p-4 text-white flex justify-between items-center">
+                      <div>
+                          <h2 class="text-lg font-semibold flex items-center gap-2">
+                            <i class="fa-solid fa-box-archive"></i> 1. Mevcut Portföy (Şu anki)
+                          </h2>
+                          <p class="text-slate-300 text-xs mt-1">Elindeki hisseleri ve anlık fiyatlarını gir.</p>
+                      </div>
+                      <select id="rebAutoPortSelect" onchange="rebLoadPortfolio()" class="text-sm bg-slate-700 text-white rounded p-1 outline-none">
+                          <option value="">-- Portföy Seç --</option>
+                      </select>
+                    </div>
+                    <div class="p-4 flex-grow">
+                      <div class="grid grid-cols-12 gap-2 mb-2 px-1 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                        <div class="col-span-4">Hisse Kodu</div>
+                        <div class="col-span-3">Adet (Lot)</div>
+                        <div class="col-span-4">Güncel Fiyat</div>
+                        <div class="col-span-1 text-center">Sil</div>
+                      </div>
+                      <div id="rebCurrentList" class="space-y-3"></div>
+                      <button onclick="rebAddCurrentRow()" class="mt-4 flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 transition">
+                        <i class="fa-solid fa-plus"></i> Yeni Satır Ekle
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Sağ Kolon: Hedef Portföy -->
+                  <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col">
+                    <div class="bg-blue-600 p-4 text-white">
+                      <h2 class="text-lg font-semibold flex items-center gap-2">
+                        <i class="fa-solid fa-bullseye"></i> 2. Yeni (Hedef) Portföy
+                      </h2>
+                      <p class="text-blue-100 text-xs mt-1">Bu ay geçiş yapılacak yeni hisseleri ve alış fiyatlarını gir.</p>
+                    </div>
+                    <div class="p-4 flex-grow">
+                      <div class="grid grid-cols-12 gap-2 mb-2 px-1 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                        <div class="col-span-6">Hisse Kodu</div>
+                        <div class="col-span-5">Hedef Alış Fiyatı</div>
+                        <div class="col-span-1 text-center">Sil</div>
+                      </div>
+                      <div id="rebTargetList" class="space-y-3"></div>
+                      <button onclick="rebAddTargetRow()" class="mt-4 flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 transition">
+                        <i class="fa-solid fa-plus"></i> Yeni Satır Ekle
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Hesapla Butonu -->
+                <div class="flex justify-center py-4">
+                  <button onclick="rebCalculate()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-xl font-bold text-lg shadow-lg shadow-emerald-200 transition transform hover:-translate-y-1 flex items-center gap-2">
+                    <i class="fa-solid fa-bolt"></i> Geçiş Planını Hesapla
+                  </button>
+                </div>
+
+                <!-- Sonuçlar -->
+                <div id="rebResults" class="hidden bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden mt-4 animate-fade-in">
+                  <div class="bg-slate-900 p-6 text-white text-center">
+                    <h2 class="text-2xl font-bold">Portföy Geçiş Planı</h2>
+                    <p class="text-slate-400 mt-1">Eşit ağırlıklı yeni portföye ulaşmak için yapmanız gereken işlemler.</p>
+                  </div>
+                  <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                      <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <p class="text-slate-500 text-sm font-medium">Toplam Portföy Büyüklüğü</p>
+                        <p id="rebResTotalValue" class="text-2xl font-bold text-slate-900">0 ₺</p>
+                      </div>
+                      <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                        <p class="text-blue-600 text-sm font-medium">Hisse Başı Hedef Bütçe (Eşit)</p>
+                        <p id="rebResBudget" class="text-2xl font-bold text-blue-900">0 ₺</p>
+                      </div>
+                      <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
+                        <p class="text-emerald-600 text-sm font-medium">İşlemler Sonrası Artan Nakit</p>
+                        <p id="rebResRemaining" class="text-2xl font-bold text-emerald-900">0 ₺</p>
+                        <p class="text-xs text-emerald-700 mt-1">(Küsuratlı lot alınamadığı için artan miktar)</p>
+                      </div>
+                    </div>
+
+                    <h3 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Gerçekleştirilecek İşlemler (Borsa Emirleri)</h3>
+                    <div id="rebNoAction" class="hidden text-center p-8 bg-slate-50 rounded-xl text-slate-500">
+                      <p>Mevcut portföyünüz ile hedef portföyünüz tamamen aynı.</p>
+                      <p>Herhangi bir alım/satım işlemi yapmanıza gerek yok!</p>
+                    </div>
+                    <div id="rebActionTableContainer" class="overflow-x-auto">
+                      <table class="w-full text-left border-collapse">
+                        <thead>
+                          <tr class="bg-slate-100 text-slate-600 text-sm">
+                            <th class="p-3 rounded-tl-lg font-semibold">İşlem</th>
+                            <th class="p-3 font-semibold">Hisse</th>
+                            <th class="p-3 font-semibold text-right">Adet (Lot)</th>
+                            <th class="p-3 font-semibold text-right">Fiyat</th>
+                            <th class="p-3 rounded-tr-lg font-semibold text-right">Toplam Hacim</th>
+                          </tr>
+                        </thead>
+                        <tbody id="rebActionTbody" class="divide-y divide-slate-100"></tbody>
+                      </table>
+                      <div class="mt-4 p-4 bg-yellow-50 rounded-lg text-sm text-yellow-800 border border-yellow-200 flex gap-3 items-start">
+                        <i class="fa-solid fa-triangle-exclamation mt-0.5 text-lg"></i>
+                        <p><strong>Önemli Not:</strong> Yukarıdaki plana uyarken önce <strong>'SATIŞ YAP'</strong> emirlerini borsada gerçekleştirerek nakde dönmeniz önerilir. Böylece <strong>'ALIM YAP'</strong> emirleri için gerekli nakdi yaratmış olursunuz.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
             </div>
         </div>
     </div>
@@ -2228,12 +2298,13 @@
                 }
             }
         }
-        /* Rebalance Modal Logic */
-        let rebalanceAssets = [];
+        /* Algoritmik Portföy Asistanı JS */
+        let rebCurrentStocks = Array.from({ length: 5 }, () => ({ id: Math.random().toString(), symbol: '', quantity: '', price: '' }));
+        let rebTargetStocks = Array.from({ length: 5 }, () => ({ id: Math.random().toString(), symbol: '', price: '' }));
         
         function openRebalanceModal() {
-            const select = document.getElementById('rebalancePortfolioSelect');
-            select.innerHTML = '<option value="">-- Portföy Seçin --</option>';
+            const select = document.getElementById('rebAutoPortSelect');
+            select.innerHTML = '<option value="">-- Portföy Seç --</option>';
             const ports = appState.portfoliosData[appState.currentViewMonth] || [];
             ports.forEach(p => {
                 const opt = document.createElement('option');
@@ -2242,162 +2313,269 @@
                 select.appendChild(opt);
             });
             
-            rebalanceAssets = [];
-            renderRebalanceTable();
-            document.getElementById('rebalanceTotalValue').textContent = '0 ₺';
-            document.getElementById('rebalanceTargetValue').textContent = '0 ₺';
+            if (rebCurrentStocks.length === 0) rebCurrentStocks = Array.from({ length: 5 }, () => ({ id: Math.random().toString(), symbol: '', quantity: '', price: '' }));
+            if (rebTargetStocks.length === 0) rebTargetStocks = Array.from({ length: 5 }, () => ({ id: Math.random().toString(), symbol: '', price: '' }));
+            
+            rebRenderCurrentList();
+            rebRenderTargetList();
+            document.getElementById('rebResults').classList.add('hidden');
+            document.getElementById('rebCashBalance').value = '';
+            
             openModal('rebalanceModal');
         }
 
-        function loadRebalancePortfolio() {
-            const pId = document.getElementById('rebalancePortfolioSelect').value;
-            if (!pId) {
-                rebalanceAssets = [];
-                renderRebalanceTable();
-                return;
-            }
+        function rebLoadPortfolio() {
+            const pId = document.getElementById('rebAutoPortSelect').value;
+            if (!pId) return;
             const ports = appState.portfoliosData[appState.currentViewMonth] || [];
             const p = ports.find(x => x.id === pId);
             if (p) {
-                rebalanceAssets = p.assets.map(a => {
+                rebCurrentStocks = p.assets.map(a => {
                     let sym = a.name.includes('.') ? a.name : a.name + '.IS';
                     let livePrice = appState.benchmarksData[appState.currentViewMonth]?.[sym] || a.price || a.cost || 0;
                     return {
-                        id: 'reb_' + Date.now() + Math.random(),
-                        name: a.name,
-                        amount: a.amount,
-                        price: livePrice,
-                        targetLot: 0,
-                        action: '',
-                        actionCost: 0
+                        id: Math.random().toString(),
+                        symbol: a.name,
+                        quantity: a.amount,
+                        price: livePrice
                     };
                 });
-                renderRebalanceTable();
-                calculateRebalance();
+                // Ensure at least 5 rows
+                while (rebCurrentStocks.length < 5) {
+                    rebCurrentStocks.push({ id: Math.random().toString(), symbol: '', quantity: '', price: '' });
+                }
+                rebRenderCurrentList();
             }
         }
 
-        function addRebalanceRow() {
-            rebalanceAssets.push({
-                id: 'reb_' + Date.now() + Math.random(),
-                name: '',
-                amount: 0,
-                price: 0,
-                targetLot: 0,
-                action: '',
-                actionCost: 0
-            });
-            renderRebalanceTable();
+        function getLivePrice(symbol) {
+            let sym = symbol.includes('.') ? symbol : symbol + '.IS';
+            return appState.benchmarksData[appState.currentViewMonth]?.[sym] || '';
         }
 
-        function removeRebalanceRow(id) {
-            rebalanceAssets = rebalanceAssets.filter(x => x.id !== id);
-            renderRebalanceTable();
-            calculateRebalance();
+        function rebAddCurrentRow() {
+            rebCurrentStocks.push({ id: Math.random().toString(), symbol: '', quantity: '', price: '' });
+            rebRenderCurrentList();
         }
 
-        function onRebalanceInput(id, field, value) {
-            const row = rebalanceAssets.find(x => x.id === id);
-            if (row) {
-                if (field === 'name') {
-                    row.name = value.toUpperCase();
-                    let sym = row.name.includes('.') ? row.name : row.name + '.IS';
-                    if (appState.benchmarksData[appState.currentViewMonth]?.[sym]) {
-                        row.price = appState.benchmarksData[appState.currentViewMonth][sym];
+        function rebAddTargetRow() {
+            rebTargetStocks.push({ id: Math.random().toString(), symbol: '', price: '' });
+            rebRenderTargetList();
+        }
+
+        function rebRemoveCurrentRow(id) {
+            rebCurrentStocks = rebCurrentStocks.filter(s => s.id !== id);
+            rebRenderCurrentList();
+        }
+
+        function rebRemoveTargetRow(id) {
+            rebTargetStocks = rebTargetStocks.filter(s => s.id !== id);
+            rebRenderTargetList();
+        }
+
+        function handleRebCurrentInput(id, field, value) {
+            const stock = rebCurrentStocks.find(s => s.id === id);
+            if (stock) {
+                if (field === 'symbol') {
+                    stock.symbol = value.toUpperCase();
+                    if (stock.symbol) {
+                        let lp = getLivePrice(stock.symbol);
+                        if (lp) stock.price = lp;
                     }
-                    renderRebalanceTable(); // Re-render to show updated price
-                } else if (field === 'amount') {
-                    row.amount = parseFloat(value) || 0;
-                } else if (field === 'price') {
-                    row.price = parseFloat(value) || 0;
+                    rebRenderCurrentList(); // Rerender to show auto-filled price
+                } else {
+                    stock[field] = value;
                 }
             }
         }
 
-        function calculateRebalance() {
-            if (rebalanceAssets.length === 0) return;
-            
-            // Re-read inputs in case of active edits
-            rebalanceAssets.forEach(row => {
-                const amountInput = document.getElementById(`rebAmount_${row.id}`);
-                const priceInput = document.getElementById(`rebPrice_${row.id}`);
-                if (amountInput) row.amount = parseFloat(amountInput.value) || 0;
-                if (priceInput) row.price = parseFloat(priceInput.value) || 0;
-            });
-
-            let totalValue = 0;
-            rebalanceAssets.forEach(row => {
-                totalValue += row.amount * row.price;
-            });
-            
-            const targetValuePerStock = totalValue / rebalanceAssets.length;
-            
-            document.getElementById('rebalanceTotalValue').textContent = formatCurrency(totalValue);
-            document.getElementById('rebalanceTargetValue').textContent = formatCurrency(targetValuePerStock);
-            
-            rebalanceAssets.forEach(row => {
-                if (row.price > 0) {
-                    row.targetLot = Math.round(targetValuePerStock / row.price);
+        function handleRebTargetInput(id, field, value) {
+            const stock = rebTargetStocks.find(s => s.id === id);
+            if (stock) {
+                if (field === 'symbol') {
+                    stock.symbol = value.toUpperCase();
+                    if (stock.symbol) {
+                        let lp = getLivePrice(stock.symbol);
+                        if (lp) stock.price = lp;
+                    }
+                    rebRenderTargetList(); // Rerender to show auto-filled price
                 } else {
-                    row.targetLot = 0;
+                    stock[field] = value;
                 }
-                
-                const diff = row.targetLot - row.amount;
-                if (diff > 0) {
-                    row.action = `AL: ${diff}`;
-                    row.actionCost = -(diff * row.price); // Negatif çünkü para çıkacak
-                } else if (diff < 0) {
-                    row.action = `SAT: ${Math.abs(diff)}`;
-                    row.actionCost = Math.abs(diff) * row.price; // Pozitif çünkü nakit girecek
-                } else {
-                    row.action = 'TUT';
-                    row.actionCost = 0;
-                }
-            });
-            
-            renderRebalanceTable();
+            }
         }
 
-        function renderRebalanceTable() {
-            const tbody = document.getElementById('rebalanceTableBody');
-            tbody.innerHTML = '';
-            
-            rebalanceAssets.forEach(row => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors";
-                
-                const costClass = row.actionCost > 0 ? "text-emerald-500" : (row.actionCost < 0 ? "text-rose-500" : "text-slate-500");
-                const actionBadge = row.action.includes('AL') ? '<span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold">' + row.action + '</span>' : 
-                                  row.action.includes('SAT') ? '<span class="bg-rose-100 text-rose-700 px-2 py-1 rounded text-xs font-bold">' + row.action + '</span>' : 
-                                  '<span class="bg-slate-100 text-slate-700 px-2 py-1 rounded text-xs font-bold">' + row.action + '</span>';
-
-                tr.innerHTML = `
-                    <td class="p-2">
-                        <input type="text" class="w-24 glass-input rounded p-1 text-sm text-slate-900 dark:text-white uppercase" value="${row.name}" onchange="onRebalanceInput('${row.id}', 'name', this.value)" placeholder="Hisse">
-                    </td>
-                    <td class="p-2">
-                        <input type="number" id="rebAmount_${row.id}" class="w-20 glass-input rounded p-1 text-sm text-slate-900 dark:text-white" value="${row.amount}" onchange="onRebalanceInput('${row.id}', 'amount', this.value)">
-                    </td>
-                    <td class="p-2">
-                        <input type="number" step="0.01" id="rebPrice_${row.id}" class="w-20 glass-input rounded p-1 text-sm text-slate-900 dark:text-white" value="${row.price.toFixed(2)}" onchange="onRebalanceInput('${row.id}', 'price', this.value)">
-                    </td>
-                    <td class="p-2 text-center">
-                        ${row.action ? actionBadge : '-'}
-                    </td>
-                    <td class="p-2 text-right font-medium text-slate-900 dark:text-white">
-                        ${row.targetLot}
-                    </td>
-                    <td class="p-2 text-right font-bold ${costClass}">
-                        ${row.actionCost !== 0 ? (row.actionCost > 0 ? '+' : '') + formatCurrency(row.actionCost) : '-'}
-                    </td>
-                    <td class="p-2 text-center">
-                        <button onclick="removeRebalanceRow('${row.id}')" class="text-rose-400 hover:text-rose-600 transition-colors">
+        function rebRenderCurrentList() {
+            const container = document.getElementById('rebCurrentList');
+            container.innerHTML = '';
+            rebCurrentStocks.forEach(stock => {
+                const row = document.createElement('div');
+                row.className = "grid grid-cols-12 gap-2 items-center";
+                row.innerHTML = `
+                    <div class="col-span-4">
+                        <input type="text" placeholder="Örn: THYAO" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none uppercase font-medium" value="${stock.symbol}" onchange="handleRebCurrentInput('${stock.id}', 'symbol', this.value)">
+                    </div>
+                    <div class="col-span-3">
+                        <input type="number" placeholder="0" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value="${stock.quantity}" oninput="handleRebCurrentInput('${stock.id}', 'quantity', this.value)" min="0">
+                    </div>
+                    <div class="col-span-4 relative">
+                        <input type="number" placeholder="0.00" class="w-full pl-3 pr-8 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value="${stock.price}" oninput="handleRebCurrentInput('${stock.id}', 'price', this.value)" min="0" step="0.01">
+                        <span class="absolute right-3 top-2.5 text-slate-400 text-sm">₺</span>
+                    </div>
+                    <div class="col-span-1 flex justify-center">
+                        <button onclick="rebRemoveCurrentRow('${stock.id}')" class="text-slate-400 hover:text-red-500 transition" title="Satırı Sil">
                             <i class="fa-solid fa-trash"></i>
                         </button>
-                    </td>
+                    </div>
                 `;
-                tbody.appendChild(tr);
+                container.appendChild(row);
             });
+        }
+
+        function rebRenderTargetList() {
+            const container = document.getElementById('rebTargetList');
+            container.innerHTML = '';
+            rebTargetStocks.forEach(stock => {
+                const row = document.createElement('div');
+                row.className = "grid grid-cols-12 gap-2 items-center";
+                row.innerHTML = `
+                    <div class="col-span-6">
+                        <input type="text" placeholder="Örn: TUPRS" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none uppercase font-medium" value="${stock.symbol}" onchange="handleRebTargetInput('${stock.id}', 'symbol', this.value)">
+                    </div>
+                    <div class="col-span-5 relative">
+                        <input type="number" placeholder="0.00" class="w-full pl-3 pr-8 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value="${stock.price}" oninput="handleRebTargetInput('${stock.id}', 'price', this.value)" min="0" step="0.01">
+                        <span class="absolute right-3 top-2.5 text-slate-400 text-sm">₺</span>
+                    </div>
+                    <div class="col-span-1 flex justify-center">
+                        <button onclick="rebRemoveTargetRow('${stock.id}')" class="text-slate-400 hover:text-red-500 transition" title="Satırı Sil">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function rebCalculate() {
+            // Read active inputs just in case
+            rebCurrentStocks.forEach((s, idx) => {
+                const inputs = document.getElementById('rebCurrentList').children[idx].querySelectorAll('input');
+                s.symbol = inputs[0].value.toUpperCase();
+                s.quantity = inputs[1].value;
+                s.price = inputs[2].value;
+            });
+            rebTargetStocks.forEach((s, idx) => {
+                const inputs = document.getElementById('rebTargetList').children[idx].querySelectorAll('input');
+                s.symbol = inputs[0].value.toUpperCase();
+                s.price = inputs[1].value;
+            });
+
+            const validCurrent = rebCurrentStocks.filter(s => s.symbol.trim() !== '' && parseFloat(s.quantity) > 0 && parseFloat(s.price) > 0);
+            const validTarget = rebTargetStocks.filter(s => s.symbol.trim() !== '' && parseFloat(s.price) > 0);
+
+            if (validTarget.length === 0) {
+                alert("Lütfen en az bir geçerli hedef hisse girin.");
+                return;
+            }
+
+            const currentStocksValue = validCurrent.reduce((total, stock) => total + (parseFloat(stock.quantity) * parseFloat(stock.price)), 0);
+            const totalCash = parseFloat(document.getElementById('rebCashBalance').value || 0);
+            const totalPortfolioValue = currentStocksValue + totalCash;
+
+            const budgetPerStock = totalPortfolioValue / validTarget.length;
+
+            const targetHoldings = {};
+            let totalTargetCost = 0;
+
+            validTarget.forEach(stock => {
+                const symbol = stock.symbol.toUpperCase().trim();
+                const price = parseFloat(stock.price);
+                const targetQuantity = Math.floor(budgetPerStock / price);
+                
+                targetHoldings[symbol] = {
+                    symbol: symbol,
+                    targetQuantity: targetQuantity,
+                    price: price
+                };
+                totalTargetCost += (targetQuantity * price);
+            });
+
+            const currentHoldingsMap = {};
+            validCurrent.forEach(stock => {
+                const symbol = stock.symbol.toUpperCase().trim();
+                if (currentHoldingsMap[symbol]) {
+                    currentHoldingsMap[symbol].quantity += parseFloat(stock.quantity);
+                    currentHoldingsMap[symbol].price = parseFloat(stock.price); // Son fiyatı alır
+                } else {
+                    currentHoldingsMap[symbol] = { 
+                        quantity: parseFloat(stock.quantity), 
+                        price: parseFloat(stock.price) 
+                    };
+                }
+            });
+
+            const allSymbols = new Set([...Object.keys(currentHoldingsMap), ...Object.keys(targetHoldings)]);
+            const transactions = [];
+
+            allSymbols.forEach(symbol => {
+                const currentQty = currentHoldingsMap[symbol]?.quantity || 0;
+                const currentPrice = currentHoldingsMap[symbol]?.price || 0;
+                const targetQty = targetHoldings[symbol]?.targetQuantity || 0;
+                const targetPrice = targetHoldings[symbol]?.price || currentPrice;
+
+                const diffQty = targetQty - currentQty;
+
+                if (diffQty !== 0) {
+                    transactions.push({
+                        symbol: symbol,
+                        action: diffQty > 0 ? 'AL' : 'SAT',
+                        quantity: Math.abs(diffQty),
+                        price: targetPrice,
+                        total: Math.abs(diffQty) * targetPrice
+                    });
+                }
+            });
+
+            transactions.sort((a, b) => {
+                if (a.action === 'SAT' && b.action === 'AL') return -1;
+                if (a.action === 'AL' && b.action === 'SAT') return 1;
+                return 0;
+            });
+
+            const remainingCash = totalPortfolioValue - totalTargetCost;
+
+            document.getElementById('rebResults').classList.remove('hidden');
+            document.getElementById('rebResTotalValue').textContent = totalPortfolioValue.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' ₺';
+            document.getElementById('rebResBudget').textContent = budgetPerStock.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' ₺';
+            document.getElementById('rebResRemaining').textContent = remainingCash.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' ₺';
+
+            const tbody = document.getElementById('rebActionTbody');
+            tbody.innerHTML = '';
+
+            if (transactions.length === 0) {
+                document.getElementById('rebNoAction').classList.remove('hidden');
+                document.getElementById('rebActionTableContainer').classList.add('hidden');
+            } else {
+                document.getElementById('rebNoAction').classList.add('hidden');
+                document.getElementById('rebActionTableContainer').classList.remove('hidden');
+
+                transactions.forEach(tx => {
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50 transition";
+                    const actionBadge = tx.action === 'AL' ? '<span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">🟢 ALIM YAP</span>' : '<span class="px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200">🔴 SATIŞ YAP</span>';
+                    const colorClass = tx.action === 'AL' ? 'text-emerald-600' : 'text-red-600';
+                    const sign = tx.action === 'AL' ? '-' : '+';
+                    
+                    tr.innerHTML = `
+                        <td class="p-3">${actionBadge}</td>
+                        <td class="p-3 font-bold text-slate-800">${tx.symbol}</td>
+                        <td class="p-3 text-right font-medium text-slate-700">${tx.quantity}</td>
+                        <td class="p-3 text-right text-slate-600">${tx.price.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</td>
+                        <td class="p-3 text-right font-bold ${colorClass}">${sign}${tx.total.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
         }
     </script>
 </body>
