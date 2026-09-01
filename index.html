@@ -433,29 +433,29 @@
                 </div>
 
                 <!-- Sonuçlar -->
-                <div id="rebResults" class="hidden bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden mt-4 animate-fade-in">
+                <div id="rebResults" class="hidden bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden mt-4 animate-fade-in">
                   <div class="bg-slate-900 p-6 text-white text-center">
                     <h2 class="text-2xl font-bold">Portföy Geçiş Planı</h2>
                     <p class="text-slate-400 mt-1">Eşit ağırlıklı yeni portföye ulaşmak için yapmanız gereken işlemler.</p>
                   </div>
                   <div class="p-6">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                      <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                        <p class="text-slate-500 text-sm font-medium">Toplam Portföy Büyüklüğü</p>
-                        <p id="rebResTotalValue" class="text-2xl font-bold text-slate-900">0 ₺</p>
+                      <div class="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Toplam Portföy Büyüklüğü</p>
+                        <p id="rebResTotalValue" class="text-2xl font-bold text-slate-900 dark:text-white">0 ₺</p>
                       </div>
-                      <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                        <p class="text-blue-600 text-sm font-medium">Hisse Başı Hedef Bütçe (Eşit)</p>
-                        <p id="rebResBudget" class="text-2xl font-bold text-blue-900">0 ₺</p>
+                      <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800/50">
+                        <p class="text-blue-600 dark:text-blue-400 text-sm font-medium">Hisse Başı Hedef Bütçe (Eşit)</p>
+                        <p id="rebResBudget" class="text-2xl font-bold text-blue-900 dark:text-blue-100">0 ₺</p>
                       </div>
-                      <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
-                        <p class="text-emerald-600 text-sm font-medium">İşlemler Sonrası Artan Nakit</p>
-                        <p id="rebResRemaining" class="text-2xl font-bold text-emerald-900">0 ₺</p>
-                        <p class="text-xs text-emerald-700 mt-1">(Küsuratlı lot alınamadığı için artan miktar)</p>
+                      <div class="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-xl border border-emerald-100 dark:border-emerald-800/50">
+                        <p class="text-emerald-600 dark:text-emerald-400 text-sm font-medium">İşlemler Sonrası Artan Nakit</p>
+                        <p id="rebResRemaining" class="text-2xl font-bold text-emerald-900 dark:text-emerald-100">0 ₺</p>
+                        <p class="text-xs text-emerald-700 dark:text-emerald-500 mt-1">(Küsuratlı lot alınamadığı için artan miktar)</p>
                       </div>
                     </div>
 
-                    <h3 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Gerçekleştirilecek İşlemler (Borsa Emirleri)</h3>
+                    <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-4 border-b dark:border-slate-700 pb-2">Gerçekleştirilecek İşlemler (Borsa Emirleri)</h3>
                     <div id="rebNoAction" class="hidden text-center p-8 bg-slate-50 dark:bg-slate-800 rounded-xl text-slate-500 dark:text-slate-400">
                       <p>Mevcut portföyünüz ile hedef portföyünüz tamamen aynı.</p>
                       <p>Herhangi bir alım/satım işlemi yapmanıza gerek yok!</p>
@@ -2721,7 +2721,7 @@
                 transactions.forEach(tx => {
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/50 transition";
-                    const actionBadge = tx.action === 'AL' ? '<span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">🟢 ALIM YAP</span>' : '<span class="px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200">🔴 SATIŞ YAP</span>';
+                    const actionBadge = tx.action === 'AL' ? '<span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">🟢 ALIM YAP</span>' : '<span class="px-3 py-1 rounded-full text-xs font-bold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800">🔴 SATIŞ YAP</span>';
                     const colorClass = tx.action === 'AL' ? 'text-emerald-600' : 'text-red-600';
                     const sign = tx.action === 'AL' ? '-' : '+';
                     
