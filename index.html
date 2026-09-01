@@ -1247,6 +1247,22 @@
             if (!skipRender) renderMonthlyChart();
         }
 
+        function getPortfolioStartDateStr(portId) {
+            const allMonths = Object.keys(appState.portfoliosData).sort();
+            for (const m of allMonths) {
+                const ports = appState.portfoliosData[m];
+                const p = ports.find(x => x.id === portId);
+                if (p && p.assets && p.assets.length > 0) {
+                    const parts = m.split('-');
+                    const year = parts[0];
+                    const month = parts[1];
+                    const monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+                    return monthNames[parseInt(month, 10) - 1] + " " + year;
+                }
+            }
+            return "Bilinmiyor";
+        }
+
         function getPortfolioStats(portfolio) {
             let totalCost = 0; let totalValue = 0;
             if(!portfolio || !portfolio.assets) return { totalCost:0, totalValue:0, totalChange:0, assetsWithStats:[] };
@@ -1871,6 +1887,7 @@
                         </div>
                         <div class="text-2xl font-bold ${statClass}">${finalReturn > 0 ? '+' : ''}${finalReturn.toFixed(2)}%</div>
                         <div class="text-xs text-slate-500 mt-1">Dönem Getirisi</div>
+                        ${item.type === "port" ? `<div class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Başlangıç: ${getPortfolioStartDateStr(key)}</div>` : ""}
                     </div>
                 `;
             });
@@ -1977,7 +1994,7 @@
                             <div class="flex items-center gap-2">
                                 <span class="w-3 h-3 rounded-full" style="background-color: ${p.color}"></span>
                                 <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                    ${p.name}
+                                    ${p.name} <span class="text-xs text-slate-500 dark:text-slate-400 font-normal ml-2">(${getPortfolioStartDateStr(p.id)})</span>
                                     <button onclick="editPortfolioName('${p.id}')" class="${isFrozen ? 'hidden' : ''} text-slate-400 hover:text-brand-500 transition-colors text-sm" title="İsmi Düzenle">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </button>
