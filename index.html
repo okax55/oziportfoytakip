@@ -1523,7 +1523,7 @@
                                 color: (ctx) => ctx.tick.value === 0 ? (document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)') : gridColor,
                                 drawTicks: false, tickBorderDash: [5, 5], borderDash: [5, 5] 
                             }, 
-                            ticks: { callback: v => '%' + v, color: '#94a3b8' } 
+                            ticks: { callback: v => '%' + Number(v).toFixed(2), color: '#94a3b8' } 
                         }
                     }
                 }
@@ -1676,7 +1676,8 @@
         function getPortfolioValueAndCost(pId, yyyy_mm, dateStr) {
             const ports = appState.portfoliosData[yyyy_mm];
             if (!ports) return null;
-            const p = ports.find(x => x.id === pId);
+            const pIdBase = pId.split('_')[0];
+            const p = ports.find(x => x.id.split('_')[0] === pIdBase);
             if (!p || p.assets.length === 0) return null;
 
             let totalValue = 0, totalCost = 0, hasAnyData = false;
@@ -1807,7 +1808,7 @@
                         });
                         finalReturn = dataPoints[dataPoints.length - 1];
                     } else {
-                        if (appState.compareTimeRange === 'this_month') {
+                        if (appState.compareTimeRange === 'this_month' && !isLine) {
                             const stats = getPortfolioStats(item.pData);
                             finalReturn = stats.totalChange;
                             dataPoints.push(finalReturn);
@@ -1914,7 +1915,7 @@
                         y: { 
                             border: { dash: [5, 5], color: gridColor },
                             grid: { color: gridColor, drawTicks: false, tickBorderDash: [5, 5], borderDash: [5, 5] }, 
-                            ticks: { callback: v => '%' + v, color: '#94a3b8' } 
+                            ticks: { callback: v => '%' + Number(v).toFixed(2), color: '#94a3b8' } 
                         }
                     }
                 }
@@ -2453,6 +2454,7 @@
                 rebCurrentStocks = p.assets.map(a => {
                     let sym = a.name.includes('.') ? a.name : a.name + '.IS';
                     let livePrice = appState.benchmarksData[appState.currentViewMonth]?.[sym] || a.price || a.cost || 0;
+                    if (livePrice) livePrice = Number(livePrice).toFixed(2);
                     return {
                         id: Math.random().toString(),
                         symbol: a.name,

@@ -1,5 +1,5 @@
 
-        const API_URL = 'http://127.0.0.1:5000/api';
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://127.0.0.1:5000/api' : '/api';
 
         function toggleTheme() {
             const html = document.documentElement;
@@ -10,8 +10,8 @@
             
             // Re-render charts for theme colors
             Chart.defaults.color = isDark ? '#94a3b8' : '#64748b';
-            if (document.getElementById('view-monthly').classList.contains('block')) renderMonthlyChart();
-            if (document.getElementById('view-compare').classList.contains('block')) renderCompareView();
+            if (!document.getElementById('view-monthly').classList.contains('hidden')) renderMonthlyChart();
+            if (!document.getElementById('view-compare').classList.contains('hidden')) renderCompareView();
         }
         
         // Initial load
@@ -29,7 +29,7 @@
             });
         }
 
-        const chartColors = ["#6366f1", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#3b82f6", "#ef4444", "#06b6d4"];
+        const chartColors = ["#10b981", "#ec4899", "#f59e0b", "#8b5cf6", "#14b8a6", "#d946ef", "#f43f5e", "#84cc16"];
 
         let appState = {
             portfoliosData: {}, // { "2026-08": [ {id, name, assets} ] }
@@ -72,10 +72,28 @@
                         const lastMonth = months[months.length - 1];
                         if (lastMonth < actualMonth) {
                             appState.frozenMonths[lastMonth] = true;
-                            appState.portfoliosData[actualMonth] = JSON.parse(JSON.stringify(appState.portfoliosData[lastMonth]));
+                            
+                            const newPorts = JSON.parse(JSON.stringify(appState.portfoliosData[lastMonth]));
+                            newPorts.forEach(p => {
+                                // ID çakışmasını önlemek için ay damgası ekliyoruz
+                                const baseId = p.id.split('_')[0];
+                                p.id = baseId + '_' + actualMonth.replace('-', '');
+                                p.month = actualMonth; // Güvenlik için
+                                p.dailyHistory = {};
+                                p.assets.forEach(a => {
+                                    const baseAId = a.id.split('_')[0];
+                                    a.id = baseAId + '_' + actualMonth.replace('-', '');
+                                    a.portfolio_id = p.id;
+                                    if (a.price) {
+                                        a.cost = a.price; // Kapanış fiyatını yeni maliyet olarak belirle
+                                    }
+                                });
+                            });
+                            
+                            appState.portfoliosData[actualMonth] = newPorts;
                             appState.benchmarksData[actualMonth] = JSON.parse(JSON.stringify(appState.benchmarksData[lastMonth] || {}));
                             appState.frozenMonths[actualMonth] = false;
-                            await saveState();
+                            saveState();
                         }
                     } else {
                         appState.portfoliosData[actualMonth] = [];
@@ -86,25 +104,70 @@
                 
                 appState.currentViewMonth = actualMonth;
                 
+                // Başlangıç grafik statelerini ve UI görünümünü senkronize et
+                if (!appState.compareTimeRange) appState.compareTimeRange = 'this_month';
+                if (!appState.compareChartType) appState.compareChartType = (appState.compareTimeRange === 'this_month') ? 'bar' : 'line';
+                if (!appState.monthlyChartType) appState.monthlyChartType = 'line';
+                
+                // Arka planda sessiz otomatik fiyat güncelleme (Her 60 saniyede bir)
+                refreshPrices();
+                setInterval(refreshPrices, 60000);
+
+                // Buton görünümlerini mevcut state'e göre ayarla
+                setTimeout(() => {
+                    updateFilterButtons('compareTimeFilters', appState.compareTimeRange);
+                    toggleCompareChartType(appState.compareChartType);
+                    toggleChartType(appState.monthlyChartType);
+                }, 50);
+                
                 if (!appState.activeBenchmarks || appState.activeBenchmarks.length === 0) {
-                    appState.activeBenchmarks = ['ALTIN', 'XU100.IS'];
+                    const currentPorts = appState.portfoliosData[actualMonth] || [];
+                    appState.activeBenchmarks = currentPorts.map(p => p.id);
                 }
 
-                if(appState.portfoliosData[appState.currentViewMonth].length > 0){
-                    appState.currentPortfolioId = appState.portfoliosData[appState.currentViewMonth][0].id;
+                if(appState.portfoliosData[appState.currentViewMonth].length > 0) {
+                    const ports = appState.portfoliosData[appState.currentViewMonth];
+                    let found = ports.find(p=>p.id === appState.currentPortfolioId);
+                    if (!found && appState.currentPortfolioId) {
+                        const baseId = appState.currentPortfolioId.split('_')[0];
+                        found = ports.find(p => p.id.startsWith(baseId));
+                    }
+                    if (found) {
+                        appState.currentPortfolioId = found.id;
+                    } else {
+                        appState.currentPortfolioId = ports[0].id;
+                    }
+                }
+                // Senkronizasyon (Grafik tipi ve filtre butonları başlangıç state'i)
+                if (!appState.compareTimeRange) appState.compareTimeRange = 'this_month';
+                updateFilterButtons('compareTimeFilters', appState.compareTimeRange);
+                if (!appState.compareChartType) appState.compareChartType = (appState.compareTimeRange === 'this_month') ? 'bar' : 'line';
+                toggleCompareChartType(appState.compareChartType);
+                if (!appState.monthlyChartType) appState.monthlyChartType = 'line';
+                toggleChartType(appState.monthlyChartType, true);
+                
+                // Fix any existing portfolio colors that clash with benchmarks or are too close to blue
+                const bColors = ["#eab308", "#ef4444", "#3b82f6", "#a855f7", "#6366f1"];
+                let colorChanged = false;
+                Object.values(appState.portfoliosData).forEach(ports => {
+                    ports.forEach((p, idx) => {
+                        if (bColors.includes(p.color)) {
+                            p.color = chartColors[idx % chartColors.length];
+                            colorChanged = true;
+                        }
+                    });
+                });
+                
+                if (colorChanged) {
+                    saveState();
                 }
                 
                 initDropdowns();
                 updateAllViews();
                 
-                // İlk açılışta güncel ay donuk değilse fiyatları çek
-                if(!appState.frozenMonths[appState.currentViewMonth]) {
-                    refreshPrices();
-                }
-                
             } catch (e) {
                 console.error(e);
-                alert("Backend'e ulaşılamadı. Lütfen 'python server.py' komutunun çalıştığından emin olun.");
+                showAlert("Backend'e ulaşılamadı. Lütfen 'python server.py' komutunun çalıştığından emin olun.");
             }
         }
 
@@ -120,22 +183,22 @@
         }
 
         async function refreshPrices() {
-            if (appState.frozenMonths[appState.currentViewMonth]) {
-                alert("Bu ay kilitli! Fiyatları canlı çekmek için önce sağ üstten kilidi açın.");
-                return;
-            }
-            
-            const btn = document.getElementById('btnRefresh');
-            if(btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Güncelleniyor...';
-            
             try {
+                const d = new Date();
+                const actualMonth = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}`;
+                
+                // Eğer bulunduğumuz ay kilitliyse veya aktif ay ile eşleşmiyorsa geçmiş fiyatları güncelleme!
+                if (appState.frozenMonths[actualMonth]) return;
+
                 let symbols = new Set(['ALTIN', 'XU100.IS', 'NASDAQ', 'SP500']);
-                const ports = appState.portfoliosData[appState.currentViewMonth] || [];
+                const ports = appState.portfoliosData[actualMonth] || [];
                 ports.forEach(p => p.assets.forEach(a => {
-                    let fetchName = a.name.includes('.') ? a.name : a.name + '.IS';
+                    let fetchName = (a.name === 'ALTIN' || a.name === 'NASDAQ' || a.name === 'SP500') ? a.name : (a.name.includes('.') ? a.name : a.name + '.IS');
                     symbols.add(fetchName);
                 }));
                 
+                if(symbols.size === 0) return;
+
                 const res = await fetch(`${API_URL}/prices`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
@@ -145,74 +208,88 @@
                 const data = await res.json();
                 if (data.status === "success") {
                     const prices = data.prices;
+                    const todayStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
                     
-                    const todayStr = new Date().toISOString().split('T')[0];
+                    let madeChanges = false;
+                    
                     ports.forEach(p => {
                         p.assets.forEach(a => {
-                            let fetchName = a.name.includes('.') ? a.name : a.name + '.IS';
-                            if (prices[fetchName]) {
+                            let fetchName = (a.name === 'ALTIN' || a.name === 'NASDAQ' || a.name === 'SP500') ? a.name : (a.name.includes('.') ? a.name : a.name + '.IS');
+                            if (prices[fetchName] && a.price !== prices[fetchName]) {
                                 a.price = prices[fetchName];
+                                madeChanges = true;
                             }
                         });
                         const stats = getPortfolioStats(p);
                         if (!p.dailyHistory) p.dailyHistory = {};
-                        p.dailyHistory[todayStr] = stats.totalChange;
-                    });
-                    
-                    if (!appState.benchmarksData[appState.currentViewMonth]) appState.benchmarksData[appState.currentViewMonth] = {};
-                    ['ALTIN', 'XU100.IS', 'NASDAQ', 'SP500'].forEach(bk => {
-                        if (prices[bk]) {
-                            appState.benchmarksData[appState.currentViewMonth][bk] = prices[bk];
-                            if (!appState.benchmarksHistory) appState.benchmarksHistory = {};
-                            if (!appState.benchmarksHistory[bk]) appState.benchmarksHistory[bk] = {};
-                            appState.benchmarksHistory[bk][todayStr] = prices[bk];
+                        if (p.dailyHistory[todayStr] !== stats.totalChange) {
+                            p.dailyHistory[todayStr] = stats.totalChange;
+                            madeChanges = true;
                         }
                     });
                     
-                    await saveState();
-                    updateAllViews();
+                    if (!appState.benchmarksData[actualMonth]) appState.benchmarksData[actualMonth] = {};
+                    ['ALTIN', 'XU100.IS', 'NASDAQ', 'SP500'].forEach(bk => {
+                        if (prices[bk]) {
+                            if (appState.benchmarksData[actualMonth][bk] !== prices[bk]) {
+                                appState.benchmarksData[actualMonth][bk] = prices[bk];
+                                madeChanges = true;
+                            }
+                            if (!appState.benchmarksHistory) appState.benchmarksHistory = {};
+                            if (!appState.benchmarksHistory[bk]) appState.benchmarksHistory[bk] = {};
+                            if (appState.benchmarksHistory[bk][todayStr] !== prices[bk]) {
+                                appState.benchmarksHistory[bk][todayStr] = prices[bk];
+                                madeChanges = true;
+                            }
+                        }
+                    });
+                    
+                    if (madeChanges) {
+                        saveState();
+                        updateAllViews();
+                    }
                 }
-            } catch (e) {
-                console.error(e);
-            }
-            
-            if(btn) btn.innerHTML = '<i class="fa-solid fa-bolt mr-2"></i>Canlı Fiyatları Çek';
+            } catch(e) { console.error("Fiyat güncelleme hatası:", e); }
         }
 
-        async function fetchHistory() {
-            if (appState.frozenMonths[appState.currentViewMonth]) {
-                alert("Bu ay kilitli! Geçmiş verileri çekmek için önce kilidi açın.");
-                return;
-            }
-            
+        async function fetchHistory(range = 'this_month') {
             const btn = document.getElementById('btnFetchHistory');
             if(btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Çekiliyor...';
             
+            // Harita: UI Range -> yfinance period
+            const periodMap = {
+                'this_month': '1mo', '1w': '1mo', '1m': '1mo',
+                '3m': '3mo', '6m': '6mo', 'ytd': 'ytd', '1y': '1y', '2y': '2y'
+            };
+            const yfPeriod = periodMap[range] || '1mo';
+
             try {
                 let symbols = new Set(['ALTIN', 'XU100.IS', 'NASDAQ', 'SP500']);
-                const ports = appState.portfoliosData[appState.currentViewMonth] || [];
-                ports.forEach(p => p.assets.forEach(a => {
-                    let fetchName = a.name.includes('.') ? a.name : a.name + '.IS';
-                    symbols.add(fetchName);
-                }));
+                // Bütün geçmiş aylardaki portföylerin hisselerini de ekleyelim ki geriye dönük hesaplama yapılabilsin
+                Object.values(appState.portfoliosData).forEach(ports => {
+                    ports.forEach(p => p.assets.forEach(a => {
+                        let fetchName = a.name.includes('.') ? a.name : a.name + '.IS';
+                        symbols.add(fetchName);
+                    }));
+                });
                 
                 const res = await fetch(`${API_URL}/history`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({symbols: Array.from(symbols), period: "1mo"})
+                    body: JSON.stringify({symbols: Array.from(symbols), period: yfPeriod})
                 });
                 
                 const data = await res.json();
                 if (data.status === "success" && data.history) {
+                    // (Bu kısımda değişiklik yok, sadece catch bloğunu değiştirmek için bir üst scope'u da tutuyoruz, ancak hata yapmamak için else ekleyelim)
                     const history = data.history;
                     
                     if (!appState.benchmarksHistory) appState.benchmarksHistory = {};
-                    ['ALTIN', 'XU100.IS', 'NASDAQ', 'SP500'].forEach(bk => {
-                        if (history[bk]) {
-                            appState.benchmarksHistory[bk] = Object.assign(appState.benchmarksHistory[bk] || {}, history[bk]);
-                        }
+                    Object.keys(history).forEach(sym => {
+                        appState.benchmarksHistory[sym] = Object.assign(appState.benchmarksHistory[sym] || {}, history[sym]);
                     });
                     
+                    const ports = appState.portfoliosData[appState.currentViewMonth] || [];
                     ports.forEach(p => {
                         if (!p.dailyHistory) p.dailyHistory = {};
                         
@@ -261,21 +338,25 @@
                         }
                     });
                     
-                    await saveState();
+                    saveState();
                     updateAllViews();
+                } else {
+                    console.error("API Başarısız veya history eksik:", data);
+                    showAlert("API Hatası: " + (data.message || "Bilinmeyen hata"));
                 }
             } catch (e) {
                 console.error(e);
-                alert("Geçmiş veri çekilirken hata oluştu.");
+                showAlert("Geçmiş veri çekilirken hata oluştu: " + e.message);
             }
             
             if(btn) btn.innerHTML = '<i class="fa-solid fa-clock-rotate-left mr-2"></i>Geçmiş Verileri Çek';
         }
 
-        async function toggleLock() {
+        function toggleLock() {
             appState.frozenMonths[appState.currentViewMonth] = !appState.frozenMonths[appState.currentViewMonth];
-            await saveState();
             updateLockUI();
+            renderManagementView();
+            saveState(); // Arkada kaydet
         }
 
         function updateLockUI() {
@@ -301,75 +382,179 @@
                 const btn = document.getElementById(`tab-${t}`);
                 const view = document.getElementById(`view-${t}`);
                 if (t === tabId) {
-                    btn.classList.add('tab-active');
-                    btn.classList.remove('text-slate-500', 'dark:text-slate-400', 'border-transparent');
+                    btn.className = "p-2 sm:px-4 sm:py-2 text-xl sm:text-sm font-medium rounded-lg transition-all glass-button-tab text-white shadow-md flex items-center justify-center";
                     view.classList.remove('hidden');
                 } else {
-                    btn.classList.remove('tab-active');
-                    btn.classList.add('text-slate-500', 'dark:text-slate-400', 'border-transparent');
+                    btn.className = "p-2 sm:px-4 sm:py-2 text-xl sm:text-sm font-medium rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all flex items-center justify-center";
                     view.classList.add('hidden');
                 }
             });
         }
 
+        function updateFilterButtons(containerId, activeRange) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            const buttons = container.querySelectorAll('button.time-filter-btn, button.compare-time-filter-btn');
+            buttons.forEach(btn => {
+                if (btn.getAttribute('data-range') === activeRange) {
+                    btn.className = (containerId === 'timeFilters' ? 'time-filter-btn' : 'compare-time-filter-btn') + " px-2.5 py-1 text-xs font-medium rounded-md bg-brand-500 text-white shadow transition-colors";
+                } else {
+                    btn.className = (containerId === 'timeFilters' ? 'time-filter-btn' : 'compare-time-filter-btn') + " px-2.5 py-1 text-xs font-medium rounded-md bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors";
+                }
+            });
+        }
+
+        async function setTimeRange(range) {
+            appState.monthlyTimeRange = range;
+            updateFilterButtons('timeFilters', range);
+            await fetchHistory(range);
+            renderMonthlyView();
+        }
+
+        async function setCompareTimeRange(range) {
+            appState.compareTimeRange = range;
+            updateFilterButtons('compareTimeFilters', range);
+            
+            const btnContainer = document.getElementById('btnCompareLineChart').parentElement;
+            if (range === 'this_month') {
+                btnContainer.classList.add('hidden');
+                btnContainer.classList.remove('flex');
+                toggleCompareChartType('bar', true); 
+            } else {
+                btnContainer.classList.remove('hidden');
+                btnContainer.classList.add('flex');
+                toggleCompareChartType('line', true);
+            }
+            await fetchHistory(range);
+            renderCompareView();
+        }
+
+        function toggleCustomDropdown(id) {
+            const menu = document.getElementById(id);
+            const isVisible = !menu.classList.contains('invisible');
+            
+            document.querySelectorAll('[id$="DropdownMenu"]').forEach(el => {
+                el.classList.add('opacity-0', 'invisible', 'scale-95');
+                el.classList.remove('opacity-100', 'scale-100');
+            });
+
+            if (!isVisible) {
+                menu.classList.remove('opacity-0', 'invisible', 'scale-95');
+                menu.classList.add('opacity-100', 'scale-100');
+            }
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.group')) {
+                document.querySelectorAll('[id$="DropdownMenu"]').forEach(el => {
+                    el.classList.add('opacity-0', 'invisible', 'scale-95');
+                    el.classList.remove('opacity-100', 'scale-100');
+                });
+            }
+        });
+
         function initDropdowns() {
-            const mSelector = document.getElementById('monthSelector');
-            mSelector.innerHTML = '';
+            const mMenu = document.getElementById('monthDropdownMenu');
+            const mmMenu = document.getElementById('manageMonthDropdownMenu');
+            if (mMenu) mMenu.innerHTML = '';
+            if (mmMenu) mmMenu.innerHTML = '';
             
             const trMonths = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
-            
             const months = Object.keys(appState.portfoliosData).sort().reverse();
+            
             months.forEach(m => {
-                const opt = document.createElement('option');
-                opt.value = m; 
-                
                 const [yyyy, mm] = m.split('-');
-                opt.textContent = `${trMonths[parseInt(mm) - 1]} ${yyyy}`;
+                const text = `${trMonths[parseInt(mm, 10) - 1]} ${yyyy}`;
                 
-                if(m === appState.currentViewMonth) opt.selected = true;
-                mSelector.appendChild(opt);
-            });
-            mSelector.onchange = (e) => { 
-                appState.currentViewMonth = e.target.value; 
-                // Portföy id'si yeni ayda yoksa ilkini seç
-                const ports = appState.portfoliosData[appState.currentViewMonth];
-                if(ports && ports.length > 0) {
-                    if(!ports.find(p=>p.id === appState.currentPortfolioId)) {
-                        appState.currentPortfolioId = ports[0].id;
-                    }
+                if(m === appState.currentViewMonth) {
+                    if (document.getElementById('monthDropdownText')) document.getElementById('monthDropdownText').textContent = text;
+                    if (document.getElementById('manageMonthDropdownText')) document.getElementById('manageMonthDropdownText').textContent = text;
                 }
-                updateAllViews(); 
-            };
+                
+                const btnClass = `w-full text-left px-4 py-2 text-sm transition-colors ${m === appState.currentViewMonth ? 'bg-brand-500/20 text-brand-600 dark:text-brand-400 font-bold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'}`;
+                
+                if (mMenu) {
+                    const btn = document.createElement('button');
+                    btn.className = btnClass;
+                    btn.textContent = text;
+                    btn.onclick = () => {
+                        appState.currentViewMonth = m;
+                        const ports = appState.portfoliosData[appState.currentViewMonth];
+                        if(ports && ports.length > 0) {
+                            let found = ports.find(p=>p.id === appState.currentPortfolioId);
+                            if (!found && appState.currentPortfolioId) {
+                                const baseId = appState.currentPortfolioId.split('_')[0];
+                                found = ports.find(p => p.id.startsWith(baseId));
+                            }
+                            if (found) {
+                                appState.currentPortfolioId = found.id;
+                            } else {
+                                appState.currentPortfolioId = ports[0].id;
+                            }
+                        }
+                        toggleCustomDropdown('monthDropdownMenu');
+                        updateAllViews();
+                    };
+                    mMenu.appendChild(btn);
+                }
+                
+                if (mmMenu) {
+                    const btn2 = document.createElement('button');
+                    btn2.className = btnClass;
+                    btn2.textContent = text;
+                    btn2.onclick = () => {
+                        appState.currentViewMonth = m;
+                        const ports = appState.portfoliosData[appState.currentViewMonth];
+                        if(ports && ports.length > 0) {
+                            if(!ports.find(p=>p.id === appState.currentPortfolioId)) {
+                                appState.currentPortfolioId = ports[0].id;
+                            }
+                        }
+                        toggleCustomDropdown('manageMonthDropdownMenu');
+                        updateAllViews();
+                    };
+                    mmMenu.appendChild(btn2);
+                }
+            });
             
             updatePortfolioDropdown();
         }
 
         function updatePortfolioDropdown() {
-            const pSelector = document.getElementById('portfolioSelector');
-            pSelector.innerHTML = '';
+            const pMenu = document.getElementById('portfolioDropdownMenu');
+            pMenu.innerHTML = '';
             const currentPorts = appState.portfoliosData[appState.currentViewMonth] || [];
             
             currentPorts.forEach(p => {
-                const opt = document.createElement('option');
-                opt.value = p.id; opt.textContent = p.name;
-                if(p.id === appState.currentPortfolioId) opt.selected = true;
-                pSelector.appendChild(opt);
+                if(p.id === appState.currentPortfolioId) {
+                    document.getElementById('portfolioDropdownText').textContent = p.name;
+                }
+                
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left px-4 py-2 text-sm transition-colors flex items-center gap-2 ${p.id === appState.currentPortfolioId ? 'bg-brand-500/20 text-brand-600 dark:text-brand-400 font-bold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'}`;
+                btn.innerHTML = `<span class="w-2.5 h-2.5 rounded-full" style="background-color: ${p.color}"></span> <span class="truncate">${p.name}</span>`;
+                btn.onclick = () => {
+                    appState.currentPortfolioId = p.id;
+                    toggleCustomDropdown('portfolioDropdownMenu');
+                    updatePortfolioDropdown();
+                    renderMonthlyView();
+                };
+                pMenu.appendChild(btn);
             });
-            pSelector.onchange = (e) => { appState.currentPortfolioId = e.target.value; renderMonthlyView(); };
         }
 
-        function toggleChartType(type) {
+        function toggleChartType(type, skipRender = false) {
             appState.monthlyChartType = type;
             const btnLine = document.getElementById('btnLineChart');
             const btnBar = document.getElementById('btnBarChart');
             if (type === 'line') {
-                btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md bg-brand-500 text-white shadow transition-colors";
-                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:text-white transition-colors";
+                btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md glass-button transition-colors";
+                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors";
             } else {
-                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md bg-brand-500 text-white shadow transition-colors";
-                btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:text-white transition-colors";
+                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md glass-button transition-colors";
+                btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors";
             }
-            renderMonthlyChart();
+            if (!skipRender) renderMonthlyChart();
         }
 
         function getPortfolioStats(portfolio) {
@@ -434,19 +619,23 @@
             if (labels.length === 1) return { data: [finalChange], profitData: [finalProfit] };
             
             const [year, month] = yearMonth.split('-');
+            const stats = getPortfolioStats(portfolio);
             
             let knownPoints = [];
             
             for (let i = 0; i < labels.length; i++) {
                 const dayMatch = labels[i].match(/\d+/);
                 if (!dayMatch) continue;
-                const day = parseInt(dayMatch[0]);
+                const day = parseInt(dayMatch[0], 10);
                 const dateStr = `${year}-${month}-${String(day).padStart(2, '0')}`;
                 
                 if (portfolio.dailyHistory && portfolio.dailyHistory[dateStr] !== undefined) {
                     const dataPoint = portfolio.dailyHistory[dateStr];
                     const percentVal = typeof dataPoint === 'object' ? dataPoint.percent : dataPoint;
-                    const profitVal = typeof dataPoint === 'object' ? dataPoint.profit : 0;
+                    // Approximate profit if not stored as object
+                    const profitVal = typeof dataPoint === 'object' && dataPoint.profit !== undefined 
+                        ? dataPoint.profit 
+                        : (percentVal / 100) * stats.totalCost;
                     
                     const existingIdx = knownPoints.findIndex(k => k.index === i);
                     if (existingIdx >= 0) {
@@ -541,6 +730,8 @@
                 });
             }
 
+            const gridColor = document.documentElement.classList.contains('dark') ? 'rgba(148, 163, 184, 0.15)' : 'rgba(15, 23, 42, 0.25)';
+
             mChart = new Chart(ctx, {
                 type: appState.monthlyChartType,
                 data: {
@@ -555,8 +746,16 @@
                         pointRadius: 0,
                         pointHoverRadius: 5,
                         pointBackgroundColor: borderColors,
-                        fill: true,
-                        borderRadius: isLine ? 0 : 4,
+                        fill: isLine ? {
+                            target: 'origin',
+                            above: 'rgba(16, 185, 129, 0.25)',
+                            below: 'rgba(244, 63, 94, 0.25)'
+                        } : true,
+                        segment: isLine ? {
+                            borderColor: ctx => ctx.p0.parsed.y < 0 && ctx.p1.parsed.y < 0 ? '#f43f5e' : (ctx.p0.parsed.y >= 0 && ctx.p1.parsed.y >= 0 ? '#10b981' : '#94a3b8')
+                        } : undefined,
+                        borderRadius: isLine ? 0 : 6,
+                        maxBarThickness: 40,
                     }]
                 },
                 options: {
@@ -566,10 +765,11 @@
                         legend: { display: false }, 
                         tooltip: { 
                             enabled: true,
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            backgroundColor: 'rgba(15, 23, 42, 0.7)',
+                            backdropFilter: 'blur(10px)',
                             titleColor: '#fff',
                             bodyColor: '#cbd5e1',
-                            borderColor: '#334155',
+                            borderColor: 'rgba(255,255,255,0.1)',
                             borderWidth: 1,
                             callbacks: {
                                 title: function(context) {
@@ -580,10 +780,20 @@
                                             const day = dayMatch[0];
                                             const [year, month] = appState.currentViewMonth.split('-');
                                             const trMonths = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
-                                            return `${day} ${trMonths[parseInt(month) - 1]} ${year} Durumu`;
+                                            return `${day} ${trMonths[parseInt(month, 10) - 1]} ${year} Durumu`;
                                         }
                                     }
                                     return context[0].label + ' Durumu';
+                                },
+                                labelColor: function(context) {
+                                    const val = context.parsed.y;
+                                    const color = val < 0 ? '#f43f5e' : (appState.monthlyChartType === 'line' ? '#10b981' : context.dataset.backgroundColor[context.dataIndex]);
+                                    return {
+                                        borderColor: color,
+                                        backgroundColor: color,
+                                        borderWidth: 0,
+                                        borderRadius: 2
+                                    };
                                 },
                                 label: function(context) {
                                     const val = context.parsed.y;
@@ -603,8 +813,28 @@
                         } 
                     },
                     scales: {
-                        x: { display: true, grid: { color: '#334155', drawBorder: false }, ticks: { color: '#94a3b8', maxTicksLimit: 15 } },
-                        y: { grid: { color: '#334155', drawBorder: false }, ticks: { callback: v => '%' + v, color: '#94a3b8' } }
+                        x: { 
+                            border: { dash: [5, 5], color: gridColor },
+                            grid: { color: gridColor, drawTicks: false, tickBorderDash: [5, 5], borderDash: [5, 5] }, 
+                            ticks: { 
+                                color: '#94a3b8', 
+                                autoSkip: false,
+                                maxRotation: 0,
+                                callback: function(val, index, ticks) {
+                                    const label = this.getLabelForValue(val);
+                                    if (index === 0 || index === ticks.length - 1) return label;
+                                    return index % 2 === 0 ? label : '';
+                                }
+                            } 
+                        },
+                        y: { 
+                            border: { dash: [5, 5], color: gridColor },
+                            grid: { 
+                                color: (ctx) => ctx.tick.value === 0 ? (document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)') : gridColor,
+                                drawTicks: false, tickBorderDash: [5, 5], borderDash: [5, 5] 
+                            }, 
+                            ticks: { callback: v => '%' + v, color: '#94a3b8' } 
+                        }
                     }
                 }
             });
@@ -623,6 +853,8 @@
             }
 
             stats.assetsWithStats.forEach(asset => {
+                let fetchName = asset.name.includes('.') ? asset.name : asset.name + '.IS';
+                const logoUrl = `https://financialmodelingprep.com/image-stock/${fetchName}.png`;
                 const changeClass = asset.change >= 0 ? 'text-emerald-400' : 'text-rose-400';
                 const changeIcon = asset.change >= 0 ? '<i class="fa-solid fa-arrow-trend-up mr-1"></i>' : '<i class="fa-solid fa-arrow-trend-down mr-1"></i>';
                 const changeSign = asset.change > 0 ? '+' : '';
@@ -630,20 +862,23 @@
                 const profitSign = profitTL > 0 ? '+' : '';
 
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-700/30 transition-colors">
-                        <td class="px-6 py-4 font-medium text-white flex items-center">
-                            <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold mr-3 border border-slate-300 dark:border-slate-600">
-                                ${asset.name.substring(0,2)}
+                    <tr class="hover:bg-slate-400/10 transition-colors">
+                        <td class="px-6 py-4 font-bold text-base text-slate-900 dark:text-white flex items-center tracking-wide">
+                            <div class="relative w-8 h-8 mr-3">
+                                <img src="${logoUrl}" alt="${asset.name}" class="w-8 h-8 rounded-full object-cover border border-slate-300 dark:border-slate-600 bg-white" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white absolute inset-0" style="display:none;">
+                                    ${asset.name.substring(0,2)}
+                                </div>
                             </div>
                             ${asset.name}
                         </td>
                         <td class="px-6 py-4 text-right">${asset.amount}</td>
                         <td class="px-6 py-4 text-right">${formatMoney(asset.cost)}</td>
-                        <td class="px-6 py-4 text-right font-medium text-white">${formatMoney(asset.price)}</td>
+                        <td class="px-6 py-4 text-right font-medium text-slate-900 dark:text-white">${formatMoney(asset.price)}</td>
                         <td class="px-6 py-4 text-center">
                             <div class="flex items-center justify-center">
                                 <span class="mr-2 w-10 text-right">${asset.weight.toFixed(1)}%</span>
-                                <div class="w-16 bg-slate-700 rounded-full h-1.5">
+                                <div class="w-16 bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
                                     <div class="bg-brand-500 h-1.5 rounded-full" style="width: ${asset.weight}%"></div>
                                 </div>
                             </div>
@@ -662,7 +897,7 @@
             const tEl = document.getElementById('totalChange');
             const totalProfitTL = stats.totalValue - stats.totalCost;
             const tSign = stats.totalChange > 0 ? '+' : '';
-            const tColor = stats.totalChange >= 0 ? 'text-emerald-400' : 'text-rose-400';
+            const tColor = stats.totalChange >= 0 ? 'text-emerald-400 font-extrabold text-base sm:text-lg' : 'text-rose-400 font-extrabold text-base sm:text-lg';
             const pEl = document.getElementById('totalProfitTL');
             if (pEl) pEl.innerHTML = `<span class="${tColor}">${tSign}${formatMoney(totalProfitTL)}</span>`;
             
@@ -671,22 +906,125 @@
             </span>`;
         }
 
-        function toggleCompareChartType(type) {
+        function toggleCompareChartType(type, skipRender = false) {
             appState.compareChartType = type;
             const btnLine = document.getElementById('btnCompareLineChart');
             const btnBar = document.getElementById('btnCompareBarChart');
             if (type === 'line') {
-                btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md bg-brand-500 text-white shadow transition-colors";
-                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:text-white transition-colors";
+                btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md glass-button transition-colors";
+                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors";
             } else {
-                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md bg-brand-500 text-white shadow transition-colors";
-                btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:text-white transition-colors";
+                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md glass-button transition-colors";
+                btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors";
             }
-            renderCompareView();
+            if (!skipRender) renderCompareView();
+        }
+
+        function getTradingDaysForRange(range) {
+            const today = new Date();
+            let startDate = new Date();
+            const yyyy_mm = appState.currentViewMonth;
+            const [cYear, cMonth] = yyyy_mm.split('-');
+
+            if (range === 'this_month') {
+                startDate = new Date(cYear, parseInt(cMonth) - 1, 1);
+                let endDate = new Date(cYear, parseInt(cMonth), 0);
+                if (today < endDate) endDate = today;
+                
+                const dates = [];
+                for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                    if (d.getDay() !== 0 && d.getDay() !== 6) {
+                        dates.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
+                    }
+                }
+                if (dates.length > 0) {
+                    let fd = new Date(dates[0]);
+                    fd.setDate(fd.getDate() - 1);
+                    while (fd.getDay() === 0 || fd.getDay() === 6) fd.setDate(fd.getDate() - 1);
+                    dates.unshift(`${fd.getFullYear()}-${String(fd.getMonth()+1).padStart(2, '0')}-${String(fd.getDate()).padStart(2, '0')}`);
+                }
+                return dates;
+            }
+
+            if (range === '1w') startDate.setDate(today.getDate() - 7);
+            else if (range === '1m') startDate.setMonth(today.getMonth() - 1);
+            else if (range === '3m') startDate.setMonth(today.getMonth() - 3);
+            else if (range === '6m') startDate.setMonth(today.getMonth() - 6);
+            else if (range === 'ytd') { startDate.setMonth(0); startDate.setDate(1); }
+            else if (range === '1y') startDate.setFullYear(today.getFullYear() - 1);
+            else if (range === '2y') startDate.setFullYear(today.getFullYear() - 2);
+
+            const startStr = `${startDate.getFullYear()}-${String(startDate.getMonth()+1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`;
+            const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+            let dates = [];
+            for (let d = new Date(startDate); d <= today; d.setDate(d.getDate() + 1)) {
+                if (d.getDay() !== 0 && d.getDay() !== 6) {
+                    dates.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
+                }
+            }
+            if (dates.length > 0 && (range === 'ytd' || dates[0] > startStr)) {
+                let fd = new Date(dates[0]);
+                fd.setDate(fd.getDate() - 1);
+                while (fd.getDay() === 0 || fd.getDay() === 6) fd.setDate(fd.getDate() - 1);
+                dates.unshift(`${fd.getFullYear()}-${String(fd.getMonth()+1).padStart(2, '0')}-${String(fd.getDate()).padStart(2, '0')}`);
+            }
+            return dates;
+        }
+
+        const prevDateCache = {};
+        function getPrevDateStr(dateStr, offset) {
+            const cacheKey = dateStr + '_' + offset;
+            if (prevDateCache[cacheKey]) return prevDateCache[cacheKey];
+            const prevD = new Date(dateStr);
+            prevD.setDate(prevD.getDate() - offset);
+            const prevStr = `${prevD.getFullYear()}-${String(prevD.getMonth()+1).padStart(2, '0')}-${String(prevD.getDate()).padStart(2, '0')}`;
+            prevDateCache[cacheKey] = prevStr;
+            return prevStr;
+        }
+
+        function getPortfolioValueAndCost(pId, yyyy_mm, dateStr) {
+            const ports = appState.portfoliosData[yyyy_mm];
+            if (!ports) return null;
+            const p = ports.find(x => x.id === pId);
+            if (!p || p.assets.length === 0) return null;
+
+            let totalValue = 0, totalCost = 0, hasAnyData = false;
+            p.assets.forEach(a => {
+                let price = null;
+                let fetchName = (a.name === 'ALTIN' || a.name === 'NASDAQ' || a.name === 'SP500') ? a.name : (a.name.includes('.') ? a.name : a.name + '.IS');
+                
+                if (dateStr === appState.lastUpdatedDate) {
+                    price = (typeof assetValues !== 'undefined' ? assetValues[fetchName] : null) || a.price;
+                } else if (appState.benchmarksHistory[fetchName] && appState.benchmarksHistory[fetchName][dateStr] !== undefined) {
+                    price = appState.benchmarksHistory[fetchName][dateStr];
+                } else {
+                    if (appState.benchmarksHistory[fetchName]) {
+                        for (let offset = 1; offset <= 7; offset++) {
+                            const prevStr = getPrevDateStr(dateStr, offset);
+                            if (appState.benchmarksHistory[fetchName][prevStr] !== undefined) {
+                                price = appState.benchmarksHistory[fetchName][prevStr];
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                if (price === null) price = a.price || a.cost;
+                
+                if (price) {
+                    totalValue += a.amount * price;
+                    totalCost += a.amount * a.cost;
+                    hasAnyData = true;
+                }
+            });
+            if (!hasAnyData || totalCost === 0) return null;
+            return { value: totalValue, cost: totalCost };
         }
 
         function renderCompareView() {
             if (!appState.compareChartType) appState.compareChartType = 'line';
+            if (!appState.compareTimeRange) appState.compareTimeRange = 'this_month';
             
             const container = document.getElementById('benchmarkToggles');
             container.innerHTML = '';
@@ -695,14 +1033,9 @@
             const benchmarkNames = { "ALTIN": "Altın (Gram)", "XU100.IS": "BIST 100", "NASDAQ": "NASDAQ", "SP500": "S&P 500" };
             
             const currentPorts = appState.portfoliosData[appState.currentViewMonth] || [];
-            
             const allOptions = {};
-            currentPorts.forEach(p => {
-                allOptions[p.id] = { name: p.name, color: p.color, type: 'port', pData: p };
-            });
-            ['ALTIN', 'XU100.IS', 'NASDAQ', 'SP500'].forEach(b => {
-                allOptions[b] = { name: benchmarkNames[b], color: benchmarkColors[b], type: 'bench' };
-            });
+            currentPorts.forEach(p => { allOptions[p.id] = { name: p.name, color: p.color, type: 'port', pData: p }; });
+            ['ALTIN', 'XU100.IS', 'NASDAQ', 'SP500'].forEach(b => { allOptions[b] = { name: benchmarkNames[b], color: benchmarkColors[b], type: 'bench' }; });
 
             for (const [key, item] of Object.entries(allOptions)) {
                 const isChecked = appState.activeBenchmarks.includes(key);
@@ -719,23 +1052,39 @@
             const ctx = document.getElementById('compareChart').getContext('2d');
             if (cChart) cChart.destroy();
 
-            const datasets = [];
-            const statsContainer = document.getElementById('comparisonStats');
-            statsContainer.innerHTML = '';
-            
+            const dates = getTradingDaysForRange(appState.compareTimeRange);
             const isLine = appState.compareChartType === 'line';
+            
+            const trMonths = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
             let chartLabels = [];
-            if (isLine) {
-                chartLabels = getTradingDays(appState.currentViewMonth);
-            } else {
+            const shouldSlice = (appState.compareTimeRange === 'this_month' || appState.compareTimeRange === 'ytd');
+            
+            if (isLine && dates.length > 1) {
+                const displayDates = shouldSlice ? dates.slice(1) : dates;
+                chartLabels = displayDates.map(d => {
+                    const [y, m, day] = d.split('-');
+                    return `${parseInt(day, 10)} ${trMonths[parseInt(m, 10) - 1]}`;
+                });
+            } else if (!isLine) {
                 appState.activeBenchmarks.forEach(key => {
                     const item = allOptions[key];
                     if(item) chartLabels.push(item.name);
                 });
             }
-            
+
+            const lastTradingDays = {};
+            Object.keys(appState.portfoliosData).forEach(yyyy_mm => {
+                if (appState.benchmarksHistory && appState.benchmarksHistory['XU100.IS']) {
+                    const days = Object.keys(appState.benchmarksHistory['XU100.IS']).filter(d => d.startsWith(yyyy_mm)).sort();
+                    if (days.length > 0) lastTradingDays[yyyy_mm] = days[days.length - 1];
+                }
+            });
+
+            const datasets = [];
             const barData = [];
             const barBackgroundColors = [];
+            const statsContainer = document.getElementById('comparisonStats');
+            statsContainer.innerHTML = '';
 
             appState.activeBenchmarks.forEach(key => {
                 const item = allOptions[key];
@@ -744,122 +1093,118 @@
                 let dataPoints = [];
                 let finalReturn = 0;
                 
-                if (isLine) {
-                    const [year, month] = appState.currentViewMonth.split('-');
-                    let firstBaseValue = null;
-                    
-                    chartLabels.forEach((label, i) => {
-                        const dayMatch = label.match(/\d+/);
-                        if (!dayMatch) return;
-                        const dateStr = `${year}-${month}-${String(dayMatch[0]).padStart(2, '0')}`;
-                        
-                        if (item.type === 'bench') {
-                            const val = (appState.benchmarksHistory && appState.benchmarksHistory[key]) ? appState.benchmarksHistory[key][dateStr] : undefined;
+                if (dates.length > 0) {
+                    if (item.type === 'bench') {
+                        let firstBaseValue = null;
+                        dates.forEach(dateStr => {
+                            let val = (appState.benchmarksHistory && appState.benchmarksHistory[key]) ? appState.benchmarksHistory[key][dateStr] : undefined;
+                            
+                            if (val === undefined && appState.benchmarksHistory && appState.benchmarksHistory[key]) {
+                                for (let offset = 1; offset <= 7; offset++) {
+                                    const prevStr = getPrevDateStr(dateStr, offset);
+                                    val = appState.benchmarksHistory[key][prevStr];
+                                    if (val !== undefined) break;
+                                }
+                            }
+                            
                             if (val !== undefined) {
                                 if (firstBaseValue === null) firstBaseValue = val;
-                                const ret = firstBaseValue > 0 ? ((val - firstBaseValue) / firstBaseValue) * 100 : 0;
-                                dataPoints.push(ret);
-                                finalReturn = ret;
+                                const ret = firstBaseValue > 0 ? ((val - firstBaseValue) / firstBaseValue) : 0;
+                                dataPoints.push(ret * 100);
                             } else {
                                 dataPoints.push(dataPoints.length > 0 ? dataPoints[dataPoints.length - 1] : 0);
                             }
-                        } else {
-                            let pRet = 0;
-                            if (item.pData.dailyHistory && item.pData.dailyHistory[dateStr] !== undefined) {
-                                const dp = item.pData.dailyHistory[dateStr];
-                                pRet = typeof dp === 'object' ? dp.percent : dp;
-                            } else if (dataPoints.length > 0) {
-                                pRet = dataPoints[dataPoints.length - 1];
-                            }
-                            dataPoints.push(pRet);
-                            finalReturn = pRet;
-                        }
-                    });
-                    
-                    datasets.push({
-                        label: item.name,
-                        data: dataPoints,
-                        borderColor: item.color,
-                        backgroundColor: item.color,
-                        borderWidth: 2,
-                        pointRadius: 3,
-                        tension: 0.3
-                    });
-                } else {
-                    if (item.type === 'bench') {
-                        const [year, month] = appState.currentViewMonth.split('-');
-                        let firstVal = null, lastVal = null;
-                        if (appState.benchmarksHistory && appState.benchmarksHistory[key]) {
-                            const hist = appState.benchmarksHistory[key];
-                            const days = Object.keys(hist).filter(d => d.startsWith(`${year}-${month}-`)).sort();
-                            if (days.length > 0) {
-                                firstVal = hist[days[0]];
-                                lastVal = hist[days[days.length - 1]];
-                            }
-                        }
-                        if (firstVal && firstVal > 0) {
-                            finalReturn = ((lastVal - firstVal) / firstVal) * 100;
-                        }
+                        });
+                        finalReturn = dataPoints[dataPoints.length - 1];
                     } else {
-                        const stats = getPortfolioStats(item.pData);
-                        finalReturn = stats.totalChange;
+                        if (appState.compareTimeRange === 'this_month') {
+                            const stats = getPortfolioStats(item.pData);
+                            finalReturn = stats.totalChange;
+                            dataPoints.push(finalReturn);
+                        } else if (dates.length > 0) {
+                            let currentMonth = dates[0].substring(0, 7);
+                            let compoundBase = 1.0;
+                            dates.forEach(dateStr => {
+                                const yyyy_mm = dateStr.substring(0, 7);
+                                if (yyyy_mm !== currentMonth) {
+                                    let endOfMonthRet = 0;
+                                    if (lastTradingDays[currentMonth]) {
+                                        const vc = getPortfolioValueAndCost(key, currentMonth, lastTradingDays[currentMonth]);
+                                        if (vc) endOfMonthRet = (vc.value - vc.cost) / vc.cost;
+                                    }
+                                    compoundBase *= (1 + endOfMonthRet);
+                                    currentMonth = yyyy_mm;
+                                }
+                                
+                                let currentRet = 0;
+                                const vc = getPortfolioValueAndCost(key, currentMonth, dateStr);
+                                if (vc) currentRet = (vc.value - vc.cost) / vc.cost;
+                                
+                                const totalRet = (compoundBase * (1 + currentRet)) - 1;
+                                dataPoints.push(totalRet * 100);
+                            });
+                            
+                            if (dataPoints.length > 0) {
+                                const firstRet = dataPoints[0] / 100;
+                                dataPoints = dataPoints.map(r => (((1 + r / 100) / (1 + firstRet)) - 1) * 100);
+                            }
+                            finalReturn = dataPoints[dataPoints.length - 1];
+                        } else {
+                            finalReturn = 0;
+                        }
                     }
+                }
+
+                if (isLine && dataPoints.length > 1) {
+                    const displayData = shouldSlice ? dataPoints.slice(1) : dataPoints;
+                    const datasetConfig = {
+                        label: item.name, data: displayData,
+                        borderColor: item.color, backgroundColor: item.color,
+                        borderWidth: 2, pointRadius: 2, tension: 0.3
+                    };
+                    if (item.type === 'bench') {
+                        datasetConfig.borderDash = [5, 5];
+                    }
+                    datasets.push(datasetConfig);
+                } else if (!isLine) {
                     barData.push(finalReturn);
                     barBackgroundColors.push(item.color);
                 }
 
                 const statClass = finalReturn >= 0 ? 'text-emerald-400' : 'text-rose-400';
                 statsContainer.innerHTML += `
-                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow flex flex-col justify-between">
+                    <div class="glass-panel p-4 rounded-xl shadow-lg flex flex-col justify-between">
                         <div class="flex items-center mb-2">
                             <span class="w-3 h-3 rounded-full mr-2" style="background-color: ${item.color}"></span>
                             <span class="text-sm text-slate-700 dark:text-slate-300 font-medium truncate">${item.name}</span>
                         </div>
                         <div class="text-2xl font-bold ${statClass}">${finalReturn > 0 ? '+' : ''}${finalReturn.toFixed(2)}%</div>
-                        <div class="text-xs text-slate-500 mt-1">Aylık Getiri</div>
+                        <div class="text-xs text-slate-500 mt-1">Dönem Getirisi</div>
                     </div>
                 `;
             });
             
             if (!isLine) {
-                datasets.push({
-                    label: 'Getiri (%)',
-                    data: barData,
-                    backgroundColor: barBackgroundColors,
-                    borderWidth: 0,
-                    borderRadius: 4
-                });
+                datasets.push({ label: 'Getiri (%)', data: barData, backgroundColor: barBackgroundColors, borderWidth: 0, borderRadius: 6, maxBarThickness: 40 });
             }
+
+            const gridColor = document.documentElement.classList.contains('dark') ? 'rgba(148, 163, 184, 0.15)' : 'rgba(15, 23, 42, 0.25)';
 
             cChart = new Chart(ctx, {
                 type: isLine ? 'line' : 'bar',
-                data: {
-                    labels: chartLabels,
-                    datasets: datasets
-                },
+                data: { labels: chartLabels, datasets: datasets },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     interaction: { mode: 'index', intersect: false },
                     plugins: {
                         legend: { display: isLine },
                         tooltip: {
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleColor: '#fff',
-                            bodyColor: '#cbd5e1',
-                            borderColor: '#334155',
-                            borderWidth: 1,
+                            backgroundColor: 'rgba(15, 23, 42, 0.7)',
+                            backdropFilter: 'blur(10px)',
+                            titleColor: '#fff', bodyColor: '#cbd5e1', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
                             callbacks: {
                                 title: function(context) {
-                                    if (isLine) {
-                                        const label = context[0].label;
-                                        const dayMatch = label.match(/\d+/);
-                                        if (dayMatch) {
-                                            const day = dayMatch[0];
-                                            const [year, month] = appState.currentViewMonth.split('-');
-                                            const trMonths = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
-                                            return `${day} ${trMonths[parseInt(month) - 1]} ${year} Durumu`;
-                                        }
-                                    }
+                                    if (isLine) return context[0].label + ' Durumu';
                                     return context[0].label;
                                 },
                                 label: function(context) {
@@ -871,22 +1216,30 @@
                         }
                     },
                     scales: {
-                        x: { grid: { color: '#334155', drawBorder: false }, ticks: { color: '#94a3b8' } },
-                        y: { grid: { color: '#334155', drawBorder: false }, ticks: { color: '#94a3b8' } }
+                        x: { 
+                            border: { dash: [5, 5], color: gridColor },
+                            grid: { color: gridColor, drawTicks: false, tickBorderDash: [5, 5], borderDash: [5, 5] }, 
+                            ticks: { color: '#94a3b8', maxTicksLimit: 15 } 
+                        },
+                        y: { 
+                            border: { dash: [5, 5], color: gridColor },
+                            grid: { color: gridColor, drawTicks: false, tickBorderDash: [5, 5], borderDash: [5, 5] }, 
+                            ticks: { callback: v => '%' + v, color: '#94a3b8' } 
+                        }
                     }
                 }
             });
         }
 
-        window.toggleBenchmark = async function(checkbox) {
+        window.toggleBenchmark = function(checkbox) {
             const val = checkbox.value;
             if (checkbox.checked && !appState.activeBenchmarks.includes(val)) {
                 appState.activeBenchmarks.push(val);
             } else {
                 appState.activeBenchmarks = appState.activeBenchmarks.filter(b => b !== val);
             }
-            await saveState();
             renderCompareView();
+            saveState();
         };
 
         function renderManagementView() {
@@ -902,14 +1255,25 @@
                     trs = `<tr><td colspan="4" class="py-4 text-center text-slate-500 text-sm">Varlık bulunamadı.</td></tr>`;
                 } else {
                     p.assets.forEach(a => {
+                        let fetchName = a.name.includes('.') ? a.name : a.name + '.IS';
+                        const logoUrl = `https://financialmodelingprep.com/image-stock/${fetchName}.png`;
                         trs += `
-                            <tr class="hover:bg-slate-700/30">
-                                <td class="py-2 font-medium text-white">${a.name}</td>
+                            <tr class="hover:bg-slate-400/10 transition-colors">
+                                <td class="py-2 font-bold text-base text-slate-900 dark:text-white tracking-wide flex items-center">
+                                    <div class="relative w-6 h-6 mr-2">
+                                        <img src="${logoUrl}" alt="${a.name}" class="w-6 h-6 rounded-full object-cover border border-slate-300 dark:border-slate-600 bg-white" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                        <div class="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-[10px] font-bold border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white absolute inset-0" style="display:none;">
+                                            ${a.name.substring(0,2)}
+                                        </div>
+                                    </div>
+                                    ${a.name}
+                                </td>
                                 <td class="py-2 text-right">${a.amount}</td>
                                 <td class="py-2 text-right">${a.cost.toFixed(2)} ₺</td>
                                 <td class="py-2 text-right">${(a.price || a.cost).toFixed(2)} ₺</td>
                                 <td class="py-2 text-right">
-                                    <button onclick="confirmDeleteAsset('${p.id}', '${a.id}')" class="${isFrozen ? 'hidden' : ''} text-rose-400 hover:text-rose-300 p-1"><i class="fa-solid fa-xmark"></i></button>
+                                    <button onclick="openEditAssetModal('${p.id}', '${a.id}')" class="${isFrozen ? 'hidden' : ''} text-brand-400 hover:text-brand-300 p-1 mr-1" title="Düzenle"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button onclick="confirmDeleteAsset('${p.id}', '${a.id}')" class="${isFrozen ? 'hidden' : ''} text-rose-400 hover:text-rose-300 p-1" title="Sil"><i class="fa-solid fa-xmark"></i></button>
                                 </td>
                             </tr>
                         `;
@@ -917,11 +1281,16 @@
                 }
 
                 container.innerHTML += `
-                    <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg overflow-hidden flex flex-col">
-                        <div class="p-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 flex justify-between items-center">
+                    <div class="glass-panel rounded-2xl shadow-xl overflow-hidden flex flex-col">
+                        <div class="p-4 border-b border-white/20 dark:border-white/5 flex justify-between items-center">
                             <div class="flex items-center gap-2">
                                 <span class="w-3 h-3 rounded-full" style="background-color: ${p.color}"></span>
-                                <h3 class="text-lg font-bold text-slate-900 dark:text-white">${p.name}</h3>
+                                <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                    ${p.name}
+                                    <button onclick="editPortfolioName('${p.id}')" class="${isFrozen ? 'hidden' : ''} text-slate-400 hover:text-brand-500 transition-colors text-sm" title="İsmi Düzenle">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+                                </h3>
                             </div>
                             <div class="flex gap-2 ${isFrozen ? 'hidden' : ''}">
                                 <button onclick="openAssetModal('${p.id}')" class="text-sm bg-brand-500/20 text-brand-400 hover:bg-brand-500 hover:text-white px-3 py-1.5 rounded transition-colors" title="Hisse Ekle"><i class="fa-solid fa-plus"></i></button>
@@ -951,7 +1320,7 @@
 
         function openModal(id) {
             if (appState.frozenMonths[appState.currentViewMonth]) {
-                alert("Bu ay kilitli! Değişiklik yapmak için önce kilidi açın.");
+                showAlert("Bu ay kilitli! Değişiklik yapmak için önce kilidi açın.");
                 return;
             }
             const m = document.getElementById(id);
@@ -960,12 +1329,30 @@
             setTimeout(() => { m.classList.remove('opacity-0'); c.classList.remove('scale-95'); }, 10);
         }
 
+        function showAlert(msg) {
+            document.getElementById('alertMessage').textContent = msg;
+            openModal('alertModal');
+        }
+
+        function closeAlertModal() {
+            const el = document.getElementById('alertModal');
+            el.classList.add('opacity-0');
+            if (el.children[0]) el.children[0].classList.add('scale-95');
+            setTimeout(() => el.classList.add('hidden'), 300);
+        }
+
         function closeConfirmModal() {
             closeModals();
         }
 
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModals();
+            }
+        });
+
         function closeModals() {
-            ['portfolioModal', 'assetModal', 'confirmModal'].forEach(id => {
+            ['portfolioModal', 'assetModal', 'confirmModal', 'editPortfolioModal', 'editAssetModal', 'calcModal', 'rebalanceModal', 'alertModal'].forEach(id => {
                 const m = document.getElementById(id);
                 const c = document.getElementById(id + 'Content');
                 if(m) m.classList.add('opacity-0');
@@ -977,6 +1364,9 @@
             document.getElementById('assetAmount').value = '';
             document.getElementById('assetCost').value = '';
             document.getElementById('assetPrice').value = '';
+            document.getElementById('editAssetAmount').value = '';
+            document.getElementById('editAssetCost').value = '';
+            document.getElementById('editAssetPrice').value = '';
         }
 
         function openPortfolioModal() { openModal('portfolioModal'); }
@@ -988,10 +1378,15 @@
             const newId = 'p' + Date.now();
             const color = chartColors[appState.portfoliosData[appState.currentViewMonth].length % chartColors.length];
             
-            appState.portfoliosData[appState.currentViewMonth].push({ id: newId, name: name, color: color, assets: [] });
+            appState.portfoliosData[appState.currentViewMonth].push({ id: newId, name: name, color: color, assets: [], dailyHistory: {} });
             appState.currentPortfolioId = newId; 
             
-            await saveState();
+            if (!appState.activeBenchmarks.includes(newId)) {
+                appState.activeBenchmarks.push(newId);
+            }
+            
+            saveState();
+            updateAllViews();
             closeModals();
             updateAllViews();
         }
@@ -1001,6 +1396,31 @@
             document.getElementById('confirmMessage').textContent = "Bu portföyü ve içindeki tüm hisseleri silmek istediğinize emin misiniz?";
             document.getElementById('confirmBtn').onclick = executeDelete;
             openModal('confirmModal');
+        }
+
+        function editPortfolioName(id) {
+            const ports = appState.portfoliosData[appState.currentViewMonth];
+            const portfolio = ports.find(p => p.id === id);
+            if (!portfolio) return;
+            
+            document.getElementById('editPortfolioId').value = id;
+            document.getElementById('editPortName').value = portfolio.name;
+            openModal('editPortfolioModal');
+        }
+
+        async function saveEditedPortfolioName() {
+            const id = document.getElementById('editPortfolioId').value;
+            const newName = document.getElementById('editPortName').value.trim();
+            if (!newName) return;
+
+            const ports = appState.portfoliosData[appState.currentViewMonth];
+            const portfolio = ports.find(p => p.id === id);
+            if (portfolio) {
+                portfolio.name = newName;
+                saveState();
+                updateAllViews();
+            }
+            closeModals();
         }
 
         function openAssetModal(portfolioId) {
@@ -1025,14 +1445,60 @@
             
             if(portfolio) {
                 portfolio.assets.push({ id: 'a' + Date.now(), name, amount, cost, price });
-                await saveState();
+                saveState();
             }
 
             closeModals();
             updateAllViews();
             
             // Yeni hisse eklenince fiyatları arka planda güncelle (kilitli değil zaten)
+            fetchHistory(appState.monthlyTimeRange || 'this_month');
             refreshPrices();
+        }
+
+        function openEditAssetModal(pId, aId) {
+            if (appState.frozenMonths[appState.currentViewMonth]) {
+                showAlert("Bu ay kilitli! Değişiklik yapmak için önce kilidi açın.");
+                return;
+            }
+            const ports = appState.portfoliosData[appState.currentViewMonth];
+            const p = ports.find(x => x.id === pId);
+            if (!p) return;
+            const a = p.assets.find(x => x.id === aId);
+            if (!a) return;
+
+            document.getElementById('editTargetPortfolioId').value = pId;
+            document.getElementById('editTargetAssetId').value = aId;
+            document.getElementById('editAssetAmount').value = a.amount;
+            document.getElementById('editAssetCost').value = a.cost;
+            document.getElementById('editAssetPrice').value = a.price || a.cost;
+
+            openModal('editAssetModal');
+        }
+
+        async function saveEditedAsset() {
+            const pId = document.getElementById('editTargetPortfolioId').value;
+            const aId = document.getElementById('editTargetAssetId').value;
+            const amount = parseFloat(document.getElementById('editAssetAmount').value);
+            const cost = parseFloat(document.getElementById('editAssetCost').value);
+            let price = parseFloat(document.getElementById('editAssetPrice').value);
+
+            if (isNaN(amount) || isNaN(cost)) return;
+            if (isNaN(price)) price = cost;
+
+            const ports = appState.portfoliosData[appState.currentViewMonth];
+            const p = ports.find(x => x.id === pId);
+            if (p) {
+                const a = p.assets.find(x => x.id === aId);
+                if (a) {
+                    a.amount = amount;
+                    a.cost = cost;
+                    a.price = price;
+                    saveState();
+                    updateAllViews();
+                }
+            }
+            closeModals();
         }
 
         function confirmDeleteAsset(pId, aId) {
@@ -1047,7 +1513,9 @@
             const ports = appState.portfoliosData[appState.currentViewMonth];
             
             if (type === 'portfolio') {
-                appState.portfoliosData[appState.currentViewMonth] = ports.filter(p => p.id !== pId);
+                Object.keys(appState.portfoliosData).forEach(m => {
+                    appState.portfoliosData[m] = appState.portfoliosData[m].filter(p => p.id !== pId);
+                });
                 appState.activeBenchmarks = appState.activeBenchmarks.filter(b => b !== pId);
                 if(appState.currentPortfolioId === pId) {
                     appState.currentPortfolioId = appState.portfoliosData[appState.currentViewMonth].length > 0 ? appState.portfoliosData[appState.currentViewMonth][0].id : null;
@@ -1057,15 +1525,491 @@
                 if(p) p.assets = p.assets.filter(a => a.id !== aId);
             }
             
-            await saveState();
+            saveState();
             closeModals();
             updateAllViews();
         }
 
         function updateAllViews() {
-            updatePortfolioDropdown();
+            initDropdowns();
             renderMonthlyView();
             renderManagementView();
             renderCompareView();
+        }
+
+        /* Calculator JS Logic */
+        let currentCalcTab = 'avg';
+
+        function openCalcModal() {
+            if (appState.frozenMonths[appState.currentViewMonth]) {
+                showAlert("Uyarı: Bu ay kilitli olduğu için 'Uygula' butonuyla portföye kaydetme yapamazsınız, sadece hesaplama yapabilirsiniz.");
+            }
+            populateCalcSelect();
+            openModal('calcModal');
+        }
+
+        function switchCalcTab(tab) {
+            currentCalcTab = tab;
+            const btnAvg = document.getElementById('calcTab-avg');
+            const btnSplit = document.getElementById('calcTab-split');
+            const viewAvg = document.getElementById('calcView-avg');
+            const viewSplit = document.getElementById('calcView-split');
+
+            if (tab === 'avg') {
+                btnAvg.className = "flex-1 py-2 text-sm font-medium border-b-2 border-brand-500 text-brand-600 dark:text-brand-400 transition-colors";
+                btnSplit.className = "flex-1 py-2 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors";
+                viewAvg.classList.remove('hidden');
+                viewSplit.classList.add('hidden');
+            } else {
+                btnSplit.className = "flex-1 py-2 text-sm font-medium border-b-2 border-brand-500 text-brand-600 dark:text-brand-400 transition-colors";
+                btnAvg.className = "flex-1 py-2 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors";
+                viewSplit.classList.remove('hidden');
+                viewAvg.classList.add('hidden');
+            }
+            populateCalcSelect();
+        }
+
+        function populateCalcSelect() {
+            const select = document.getElementById('calcApplySelect');
+            select.innerHTML = '<option value="">-- Hisse Seç --</option>';
+            const ports = appState.portfoliosData[appState.currentViewMonth] || [];
+            
+            ports.forEach(p => {
+                const group = document.createElement('optgroup');
+                group.label = p.name;
+                p.assets.forEach(a => {
+                    const opt = document.createElement('option');
+                    opt.value = `${p.id}_${a.id}`;
+                    opt.textContent = a.name;
+                    // Store current values for easy fill
+                    opt.dataset.amount = a.amount;
+                    opt.dataset.cost = a.cost;
+                    group.appendChild(opt);
+                });
+                if(p.assets.length > 0) select.appendChild(group);
+            });
+
+            select.onchange = (e) => {
+                const opt = select.options[select.selectedIndex];
+                if (opt.value) {
+                    const amt = opt.dataset.amount;
+                    const cost = opt.dataset.cost;
+                    if (currentCalcTab === 'avg') {
+                        document.getElementById('calcAvgCurrentLot').value = amt;
+                        document.getElementById('calcAvgCurrentCost').value = cost;
+                        runAvgCalc();
+                    } else {
+                        document.getElementById('calcSplitCurrentLot').value = amt;
+                        document.getElementById('calcSplitCurrentCost').value = cost;
+                        runSplitCalc();
+                    }
+                }
+            };
+        }
+
+        function runAvgCalc() {
+            const curLot = parseFloat(document.getElementById('calcAvgCurrentLot').value) || 0;
+            const curCost = parseFloat(document.getElementById('calcAvgCurrentCost').value) || 0;
+            const addLot = parseFloat(document.getElementById('calcAvgAddLot').value) || 0;
+            const addPrice = parseFloat(document.getElementById('calcAvgAddPrice').value) || 0;
+
+            const totalOld = curLot * curCost;
+            const totalAdd = addLot * addPrice;
+            const totalLot = curLot + addLot;
+            const newCost = totalLot > 0 ? (totalOld + totalAdd) / totalLot : 0;
+
+            document.getElementById('calcAvgResLot').textContent = totalLot.toFixed(2).replace(/\.00$/, '');
+            document.getElementById('calcAvgResCost').textContent = formatMoney(totalAdd);
+            document.getElementById('calcAvgResAvg').textContent = formatMoney(newCost);
+        }
+
+        function runSplitCalc() {
+            const curLot = parseFloat(document.getElementById('calcSplitCurrentLot').value) || 0;
+            const curCost = parseFloat(document.getElementById('calcSplitCurrentCost').value) || 0;
+            const ratio = parseFloat(document.getElementById('calcSplitRatio').value) || 0;
+
+            const totalOldValue = curLot * curCost;
+            const extraLot = curLot * (ratio / 100);
+            const totalLot = curLot + extraLot;
+            const newCost = totalLot > 0 ? totalOldValue / totalLot : 0;
+
+            document.getElementById('calcSplitResAdd').textContent = extraLot.toFixed(2).replace(/\.00$/, '');
+            document.getElementById('calcSplitResLot').textContent = totalLot.toFixed(2).replace(/\.00$/, '');
+            document.getElementById('calcSplitResAvg').textContent = formatMoney(newCost);
+        }
+
+        function applyCalculatorToPortfolio() {
+            if (appState.frozenMonths[appState.currentViewMonth]) {
+                showAlert("Bu ay kilitli! Uygulama yapmak için kilidi açmanız gerekir.");
+                return;
+            }
+
+            const select = document.getElementById('calcApplySelect');
+            const val = select.value;
+            if (!val) {
+                showAlert("Lütfen uygulamak istediğiniz hisseyi seçin.");
+                return;
+            }
+
+            let newLot = 0;
+            let newCost = 0;
+
+            if (currentCalcTab === 'avg') {
+                const curLot = parseFloat(document.getElementById('calcAvgCurrentLot').value) || 0;
+                const curCost = parseFloat(document.getElementById('calcAvgCurrentCost').value) || 0;
+                const addLot = parseFloat(document.getElementById('calcAvgAddLot').value) || 0;
+                const addPrice = parseFloat(document.getElementById('calcAvgAddPrice').value) || 0;
+                newLot = curLot + addLot;
+                newCost = newLot > 0 ? ((curLot * curCost) + (addLot * addPrice)) / newLot : 0;
+            } else {
+                const curLot = parseFloat(document.getElementById('calcSplitCurrentLot').value) || 0;
+                const curCost = parseFloat(document.getElementById('calcSplitCurrentCost').value) || 0;
+                const ratio = parseFloat(document.getElementById('calcSplitRatio').value) || 0;
+                newLot = curLot + (curLot * (ratio / 100));
+                newCost = newLot > 0 ? (curLot * curCost) / newLot : 0;
+            }
+
+            if (newLot <= 0) return;
+
+            const [pId, aId] = val.split('_');
+            const p = appState.portfoliosData[appState.currentViewMonth].find(x => x.id === pId);
+            if (p) {
+                const a = p.assets.find(x => x.id === aId);
+                if (a) {
+                    a.amount = parseFloat(newLot.toFixed(2));
+                    a.cost = parseFloat(newCost.toFixed(2));
+                    saveState();
+                    updateAllViews();
+                    showAlert("Hesaplama hisseye uygulandı!");
+                    closeModals();
+                }
+            }
+        }
+        /* Algoritmik Portföy Asistanı JS */
+        let rebCurrentStocks = Array.from({ length: 5 }, () => ({ id: Math.random().toString(), symbol: '', quantity: '', price: '' }));
+        let rebTargetStocks = Array.from({ length: 5 }, () => ({ id: Math.random().toString(), symbol: '', price: '' }));
+        window.rebLastTargetHoldings = {};
+        
+        function rebApplyAndSave() {
+            const pId = document.getElementById('rebAutoPortSelect').value;
+            if (!pId) {
+                showAlert("Lütfen işlemin uygulanacağı portföyü '1. Mevcut Portföy' bölümünden seçin.");
+                return;
+            }
+            if (appState.isMonthFrozen[appState.currentViewMonth]) {
+                showAlert("Bu ay kilitli! Uygulama yapmak için kilidi açmanız gerekir.");
+                return;
+            }
+            
+            if (!window.rebLastTargetHoldings || Object.keys(window.rebLastTargetHoldings).length === 0) {
+                showAlert("Uygulanacak hedef portföy bulunamadı.");
+                return;
+            }
+
+            const ports = appState.portfoliosData[appState.currentViewMonth] || [];
+            const p = ports.find(x => x.id === pId);
+            if (p) {
+                const newAssets = [];
+                for (const symbol in window.rebLastTargetHoldings) {
+                    const stock = window.rebLastTargetHoldings[symbol];
+                    if (stock.targetQuantity > 0) {
+                        newAssets.push({
+                            id: 'a_' + Date.now() + Math.random(),
+                            name: stock.symbol,
+                            amount: stock.targetQuantity,
+                            price: stock.price,
+                            cost: stock.price // Yeni maliyet olarak hedef fiyat alınır
+                        });
+                    }
+                }
+                
+                p.assets = newAssets;
+                saveState();
+                updateAllViews();
+                
+                showAlert("Portföy geçiş planı başarıyla uygulandı ve kaydedildi!");
+                closeModals();
+            }
+        }
+
+        function openRebalanceModal() {
+            const select = document.getElementById('rebAutoPortSelect');
+            select.innerHTML = '<option value="">-- Portföy Seç --</option>';
+            const ports = appState.portfoliosData[appState.currentViewMonth] || [];
+            ports.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id;
+                opt.textContent = p.name;
+                select.appendChild(opt);
+            });
+            
+            if (rebCurrentStocks.length === 0) rebCurrentStocks = Array.from({ length: 5 }, () => ({ id: Math.random().toString(), symbol: '', quantity: '', price: '' }));
+            if (rebTargetStocks.length === 0) rebTargetStocks = Array.from({ length: 5 }, () => ({ id: Math.random().toString(), symbol: '', price: '' }));
+            
+            rebRenderCurrentList();
+            rebRenderTargetList();
+            document.getElementById('rebResults').classList.add('hidden');
+            document.getElementById('rebCashBalance').value = '';
+            
+            openModal('rebalanceModal');
+        }
+
+        function rebLoadPortfolio() {
+            const pId = document.getElementById('rebAutoPortSelect').value;
+            if (!pId) return;
+            const ports = appState.portfoliosData[appState.currentViewMonth] || [];
+            const p = ports.find(x => x.id === pId);
+            if (p) {
+                rebCurrentStocks = p.assets.map(a => {
+                    let sym = a.name.includes('.') ? a.name : a.name + '.IS';
+                    let livePrice = appState.benchmarksData[appState.currentViewMonth]?.[sym] || a.price || a.cost || 0;
+                    return {
+                        id: Math.random().toString(),
+                        symbol: a.name,
+                        quantity: a.amount,
+                        price: livePrice
+                    };
+                });
+                // Ensure at least 5 rows
+                while (rebCurrentStocks.length < 5) {
+                    rebCurrentStocks.push({ id: Math.random().toString(), symbol: '', quantity: '', price: '' });
+                }
+                rebRenderCurrentList();
+            }
+        }
+
+        function getLivePrice(symbol) {
+            let sym = symbol.includes('.') ? symbol : symbol + '.IS';
+            return appState.benchmarksData[appState.currentViewMonth]?.[sym] || '';
+        }
+
+        function rebAddCurrentRow() {
+            rebCurrentStocks.push({ id: Math.random().toString(), symbol: '', quantity: '', price: '' });
+            rebRenderCurrentList();
+        }
+
+        function rebAddTargetRow() {
+            rebTargetStocks.push({ id: Math.random().toString(), symbol: '', price: '' });
+            rebRenderTargetList();
+        }
+
+        function rebRemoveCurrentRow(id) {
+            rebCurrentStocks = rebCurrentStocks.filter(s => s.id !== id);
+            rebRenderCurrentList();
+        }
+
+        function rebRemoveTargetRow(id) {
+            rebTargetStocks = rebTargetStocks.filter(s => s.id !== id);
+            rebRenderTargetList();
+        }
+
+        function handleRebCurrentInput(id, field, value) {
+            const stock = rebCurrentStocks.find(s => s.id === id);
+            if (stock) {
+                if (field === 'symbol') {
+                    stock.symbol = value.toUpperCase();
+                    if (stock.symbol) {
+                        let lp = getLivePrice(stock.symbol);
+                        if (lp) stock.price = lp;
+                    }
+                    rebRenderCurrentList(); // Rerender to show auto-filled price
+                } else {
+                    stock[field] = value;
+                }
+            }
+        }
+
+        function handleRebTargetInput(id, field, value) {
+            const stock = rebTargetStocks.find(s => s.id === id);
+            if (stock) {
+                if (field === 'symbol') {
+                    stock.symbol = value.toUpperCase();
+                    if (stock.symbol) {
+                        let lp = getLivePrice(stock.symbol);
+                        if (lp) stock.price = lp;
+                    }
+                    rebRenderTargetList(); // Rerender to show auto-filled price
+                } else {
+                    stock[field] = value;
+                }
+            }
+        }
+
+        function rebRenderCurrentList() {
+            const container = document.getElementById('rebCurrentList');
+            container.innerHTML = '';
+            rebCurrentStocks.forEach(stock => {
+                const row = document.createElement('div');
+                row.className = "grid grid-cols-12 gap-2 items-center";
+                row.innerHTML = `
+                    <div class="col-span-4">
+                        <input type="text" placeholder="Örn: THYAO" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none uppercase font-medium" value="${stock.symbol}" onchange="handleRebCurrentInput('${stock.id}', 'symbol', this.value)">
+                    </div>
+                    <div class="col-span-3">
+                        <input type="number" placeholder="0" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value="${stock.quantity}" oninput="handleRebCurrentInput('${stock.id}', 'quantity', this.value)" min="0">
+                    </div>
+                    <div class="col-span-4 relative">
+                        <input type="number" placeholder="0.00" class="w-full pl-3 pr-8 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value="${stock.price}" oninput="handleRebCurrentInput('${stock.id}', 'price', this.value)" min="0" step="0.01">
+                        <span class="absolute right-3 top-2.5 text-slate-400 text-sm">₺</span>
+                    </div>
+                    <div class="col-span-1 flex justify-center">
+                        <button onclick="rebRemoveCurrentRow('${stock.id}')" class="text-slate-400 hover:text-red-500 transition" title="Satırı Sil">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function rebRenderTargetList() {
+            const container = document.getElementById('rebTargetList');
+            container.innerHTML = '';
+            rebTargetStocks.forEach(stock => {
+                const row = document.createElement('div');
+                row.className = "grid grid-cols-12 gap-2 items-center";
+                row.innerHTML = `
+                    <div class="col-span-6">
+                        <input type="text" placeholder="Örn: TUPRS" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none uppercase font-medium" value="${stock.symbol}" onchange="handleRebTargetInput('${stock.id}', 'symbol', this.value)">
+                    </div>
+                    <div class="col-span-5 relative">
+                        <input type="number" placeholder="0.00" class="w-full pl-3 pr-8 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value="${stock.price}" oninput="handleRebTargetInput('${stock.id}', 'price', this.value)" min="0" step="0.01">
+                        <span class="absolute right-3 top-2.5 text-slate-400 text-sm">₺</span>
+                    </div>
+                    <div class="col-span-1 flex justify-center">
+                        <button onclick="rebRemoveTargetRow('${stock.id}')" class="text-slate-400 hover:text-red-500 transition" title="Satırı Sil">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function rebCalculate() {
+            // Read active inputs just in case
+            rebCurrentStocks.forEach((s, idx) => {
+                const inputs = document.getElementById('rebCurrentList').children[idx].querySelectorAll('input');
+                s.symbol = inputs[0].value.toUpperCase();
+                s.quantity = inputs[1].value;
+                s.price = inputs[2].value;
+            });
+            rebTargetStocks.forEach((s, idx) => {
+                const inputs = document.getElementById('rebTargetList').children[idx].querySelectorAll('input');
+                s.symbol = inputs[0].value.toUpperCase();
+                s.price = inputs[1].value;
+            });
+
+            const validCurrent = rebCurrentStocks.filter(s => s.symbol.trim() !== '' && parseFloat(s.quantity) > 0 && parseFloat(s.price) > 0);
+            const validTarget = rebTargetStocks.filter(s => s.symbol.trim() !== '' && parseFloat(s.price) > 0);
+
+            if (validTarget.length === 0) {
+                showAlert("Lütfen en az bir geçerli hedef hisse girin.");
+                return;
+            }
+
+            const currentStocksValue = validCurrent.reduce((total, stock) => total + (parseFloat(stock.quantity) * parseFloat(stock.price)), 0);
+            const totalCash = parseFloat(document.getElementById('rebCashBalance').value || 0);
+            const totalPortfolioValue = currentStocksValue + totalCash;
+
+            const budgetPerStock = totalPortfolioValue / validTarget.length;
+
+            const targetHoldings = {};
+            let totalTargetCost = 0;
+
+            validTarget.forEach(stock => {
+                const symbol = stock.symbol.toUpperCase().trim();
+                const price = parseFloat(stock.price);
+                const targetQuantity = Math.floor(budgetPerStock / price);
+                
+                targetHoldings[symbol] = {
+                    symbol: symbol,
+                    targetQuantity: targetQuantity,
+                    price: price
+                };
+                totalTargetCost += (targetQuantity * price);
+            });
+
+            const currentHoldingsMap = {};
+            validCurrent.forEach(stock => {
+                const symbol = stock.symbol.toUpperCase().trim();
+                if (currentHoldingsMap[symbol]) {
+                    currentHoldingsMap[symbol].quantity += parseFloat(stock.quantity);
+                    currentHoldingsMap[symbol].price = parseFloat(stock.price); // Son fiyatı alır
+                } else {
+                    currentHoldingsMap[symbol] = { 
+                        quantity: parseFloat(stock.quantity), 
+                        price: parseFloat(stock.price) 
+                    };
+                }
+            });
+
+            const allSymbols = new Set([...Object.keys(currentHoldingsMap), ...Object.keys(targetHoldings)]);
+            window.rebLastTargetHoldings = targetHoldings;
+            const transactions = [];
+
+            allSymbols.forEach(symbol => {
+                const currentQty = currentHoldingsMap[symbol]?.quantity || 0;
+                const currentPrice = currentHoldingsMap[symbol]?.price || 0;
+                const targetQty = targetHoldings[symbol]?.targetQuantity || 0;
+                const targetPrice = targetHoldings[symbol]?.price || currentPrice;
+
+                const diffQty = targetQty - currentQty;
+
+                if (diffQty !== 0) {
+                    transactions.push({
+                        symbol: symbol,
+                        action: diffQty > 0 ? 'AL' : 'SAT',
+                        quantity: Math.abs(diffQty),
+                        price: targetPrice,
+                        total: Math.abs(diffQty) * targetPrice
+                    });
+                }
+            });
+
+            transactions.sort((a, b) => {
+                if (a.action === 'SAT' && b.action === 'AL') return -1;
+                if (a.action === 'AL' && b.action === 'SAT') return 1;
+                return 0;
+            });
+
+            const remainingCash = totalPortfolioValue - totalTargetCost;
+
+            document.getElementById('rebResults').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('rebResults').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 50);
+            
+            document.getElementById('rebResTotalValue').textContent = totalPortfolioValue.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' ₺';
+            document.getElementById('rebResBudget').textContent = budgetPerStock.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' ₺';
+            document.getElementById('rebResRemaining').textContent = remainingCash.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' ₺';
+
+            const tbody = document.getElementById('rebActionTbody');
+            tbody.innerHTML = '';
+
+            if (transactions.length === 0) {
+                document.getElementById('rebNoAction').classList.remove('hidden');
+                document.getElementById('rebActionTableContainer').classList.add('hidden');
+            } else {
+                document.getElementById('rebNoAction').classList.add('hidden');
+                document.getElementById('rebActionTableContainer').classList.remove('hidden');
+
+                transactions.forEach(tx => {
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50 transition";
+                    const actionBadge = tx.action === 'AL' ? '<span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">🟢 ALIM YAP</span>' : '<span class="px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200">🔴 SATIŞ YAP</span>';
+                    const colorClass = tx.action === 'AL' ? 'text-emerald-600' : 'text-red-600';
+                    const sign = tx.action === 'AL' ? '-' : '+';
+                    
+                    tr.innerHTML = `
+                        <td class="p-3">${actionBadge}</td>
+                        <td class="p-3 font-bold text-slate-800">${tx.symbol}</td>
+                        <td class="p-3 text-right font-medium text-slate-700">${tx.quantity}</td>
+                        <td class="p-3 text-right text-slate-600">${tx.price.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</td>
+                        <td class="p-3 text-right font-bold ${colorClass}">${sign}${tx.total.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
         }
     
