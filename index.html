@@ -645,7 +645,8 @@
                 }, 50);
                 
                 if (!appState.activeBenchmarks || appState.activeBenchmarks.length === 0) {
-                    appState.activeBenchmarks = ['ALTIN', 'XU100.IS'];
+                    const currentPorts = appState.portfoliosData[actualMonth] || [];
+                    appState.activeBenchmarks = currentPorts.map(p => p.id);
                 }
 
                 if(appState.portfoliosData[appState.currentViewMonth].length > 0){
@@ -1863,6 +1864,7 @@
             }
             
             saveState();
+            updateAllViews();
             closeModals();
             updateAllViews();
         }
