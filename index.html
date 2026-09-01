@@ -326,6 +326,14 @@
                     <p class="text-slate-500 dark:text-slate-400 text-sm">Seçili aydaki portföylerinizi yönetin.</p>
                 </div>
                 <div class="flex flex-wrap items-center gap-3">
+                    <div class="relative group z-50">
+                        <button id="manageMonthDropdownBtn" onclick="toggleCustomDropdown('manageMonthDropdownMenu')" class="glass-input px-4 py-2 rounded-xl text-sm font-bold text-slate-900 dark:text-white focus:outline-none flex justify-between items-center w-40 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all shadow-sm">
+                            <span id="manageMonthDropdownText">Ay Seç</span>
+                            <i class="fa-solid fa-chevron-down text-xs opacity-60 ml-2"></i>
+                        </button>
+                        <div id="manageMonthDropdownMenu" class="absolute left-0 top-full mt-2 w-40 glass-panel rounded-xl shadow-2xl opacity-0 invisible transition-all duration-200 transform origin-top scale-95 flex flex-col py-2 max-h-60 overflow-y-auto border border-slate-200/50 dark:border-slate-700/50">
+                        </div>
+                    </div>
                     <!-- Kilit Butonu -->
                     <button id="btnToggleLock" onclick="toggleLock()" class="glass-input px-4 py-2 text-sm font-medium rounded-lg transition-colors shadow-sm flex items-center">
                         <i class="fa-solid fa-lock mr-2" id="lockIcon"></i><span id="lockText">Kilitli</span>
@@ -386,6 +394,34 @@
             <div class="flex justify-end gap-3 mt-6">
                 <button onclick="closeModals()" class="px-5 py-2.5 glass-input text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">İptal</button>
                 <button onclick="saveAsset()" class="px-5 py-2.5 glass-button rounded-lg transition-colors shadow-lg">Ekle</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="editAssetModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 opacity-0 transition-opacity">
+        <div class="glass-panel p-6 rounded-2xl w-full max-w-md shadow-2xl transform scale-95 transition-transform" id="editAssetModalContent">
+            <h3 class="text-slate-900 dark:text-white text-xl font-bold mb-4">Hisse Düzenle</h3>
+            <input type="hidden" id="editTargetPortfolioId">
+            <input type="hidden" id="editTargetAssetId">
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-slate-500 dark:text-slate-400 text-sm mb-1">Adet</label>
+                        <input type="number" id="editAssetAmount" class="w-full glass-input rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none" onkeypress="if(event.key === 'Enter') saveEditedAsset()">
+                    </div>
+                    <div>
+                        <label class="block text-slate-500 dark:text-slate-400 text-sm mb-1">Birim Maliyet (₺)</label>
+                        <input type="number" id="editAssetCost" step="0.01" class="w-full glass-input rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none" onkeypress="if(event.key === 'Enter') saveEditedAsset()">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-slate-500 dark:text-slate-400 text-sm mb-1">Güncel Fiyat</label>
+                    <input type="number" id="editAssetPrice" step="0.01" class="w-full glass-input rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none" onkeypress="if(event.key === 'Enter') saveEditedAsset()">
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 mt-6">
+                <button onclick="closeModals()" class="px-5 py-2.5 glass-input text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">İptal</button>
+                <button onclick="saveEditedAsset()" class="px-5 py-2.5 glass-button rounded-lg transition-colors shadow-lg">Kaydet</button>
             </div>
         </div>
     </div>
@@ -490,7 +526,13 @@
                         const lastMonth = months[months.length - 1];
                         if (lastMonth < actualMonth) {
                             appState.frozenMonths[lastMonth] = true;
-                            appState.portfoliosData[actualMonth] = JSON.parse(JSON.stringify(appState.portfoliosData[lastMonth]));
+                            
+                            const newPorts = JSON.parse(JSON.stringify(appState.portfoliosData[lastMonth]));
+                            newPorts.forEach(p => {
+                                p.dailyHistory = {};
+                            });
+                            
+                            appState.portfoliosData[actualMonth] = newPorts;
                             appState.benchmarksData[actualMonth] = JSON.parse(JSON.stringify(appState.benchmarksData[lastMonth] || {}));
                             appState.frozenMonths[actualMonth] = false;
                             saveState();
@@ -572,11 +614,6 @@
         }
 
         async function refreshPrices() {
-            if (appState.frozenMonths[appState.currentViewMonth]) {
-                alert("Bu ay kilitli! Fiyatları canlı çekmek için önce sağ üstten kilidi açın.");
-                return;
-            }
-            
             const btn = document.getElementById('btnRefresh');
             if(btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Güncelleniyor...';
             
@@ -834,7 +871,9 @@
 
         function initDropdowns() {
             const mMenu = document.getElementById('monthDropdownMenu');
-            mMenu.innerHTML = '';
+            const mmMenu = document.getElementById('manageMonthDropdownMenu');
+            if (mMenu) mMenu.innerHTML = '';
+            if (mmMenu) mmMenu.innerHTML = '';
             
             const trMonths = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
             const months = Object.keys(appState.portfoliosData).sort().reverse();
@@ -844,24 +883,47 @@
                 const text = `${trMonths[parseInt(mm) - 1]} ${yyyy}`;
                 
                 if(m === appState.currentViewMonth) {
-                    document.getElementById('monthDropdownText').textContent = text;
+                    if (document.getElementById('monthDropdownText')) document.getElementById('monthDropdownText').textContent = text;
+                    if (document.getElementById('manageMonthDropdownText')) document.getElementById('manageMonthDropdownText').textContent = text;
                 }
                 
-                const btn = document.createElement('button');
-                btn.className = `w-full text-left px-4 py-2 text-sm transition-colors ${m === appState.currentViewMonth ? 'bg-brand-500/20 text-brand-600 dark:text-brand-400 font-bold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'}`;
-                btn.textContent = text;
-                btn.onclick = () => {
-                    appState.currentViewMonth = m;
-                    const ports = appState.portfoliosData[appState.currentViewMonth];
-                    if(ports && ports.length > 0) {
-                        if(!ports.find(p=>p.id === appState.currentPortfolioId)) {
-                            appState.currentPortfolioId = ports[0].id;
+                const btnClass = `w-full text-left px-4 py-2 text-sm transition-colors ${m === appState.currentViewMonth ? 'bg-brand-500/20 text-brand-600 dark:text-brand-400 font-bold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'}`;
+                
+                if (mMenu) {
+                    const btn = document.createElement('button');
+                    btn.className = btnClass;
+                    btn.textContent = text;
+                    btn.onclick = () => {
+                        appState.currentViewMonth = m;
+                        const ports = appState.portfoliosData[appState.currentViewMonth];
+                        if(ports && ports.length > 0) {
+                            if(!ports.find(p=>p.id === appState.currentPortfolioId)) {
+                                appState.currentPortfolioId = ports[0].id;
+                            }
                         }
-                    }
-                    toggleCustomDropdown('monthDropdownMenu');
-                    updateAllViews();
-                };
-                mMenu.appendChild(btn);
+                        toggleCustomDropdown('monthDropdownMenu');
+                        updateAllViews();
+                    };
+                    mMenu.appendChild(btn);
+                }
+                
+                if (mmMenu) {
+                    const btn2 = document.createElement('button');
+                    btn2.className = btnClass;
+                    btn2.textContent = text;
+                    btn2.onclick = () => {
+                        appState.currentViewMonth = m;
+                        const ports = appState.portfoliosData[appState.currentViewMonth];
+                        if(ports && ports.length > 0) {
+                            if(!ports.find(p=>p.id === appState.currentPortfolioId)) {
+                                appState.currentPortfolioId = ports[0].id;
+                            }
+                        }
+                        toggleCustomDropdown('manageMonthDropdownMenu');
+                        updateAllViews();
+                    };
+                    mmMenu.appendChild(btn2);
+                }
             });
             
             updatePortfolioDropdown();
@@ -1624,7 +1686,8 @@
                                 <td class="py-2 text-right">${a.cost.toFixed(2)} ₺</td>
                                 <td class="py-2 text-right">${(a.price || a.cost).toFixed(2)} ₺</td>
                                 <td class="py-2 text-right">
-                                    <button onclick="confirmDeleteAsset('${p.id}', '${a.id}')" class="${isFrozen ? 'hidden' : ''} text-rose-400 hover:text-rose-300 p-1"><i class="fa-solid fa-xmark"></i></button>
+                                    <button onclick="openEditAssetModal('${p.id}', '${a.id}')" class="${isFrozen ? 'hidden' : ''} text-brand-400 hover:text-brand-300 p-1 mr-1" title="Düzenle"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button onclick="confirmDeleteAsset('${p.id}', '${a.id}')" class="${isFrozen ? 'hidden' : ''} text-rose-400 hover:text-rose-300 p-1" title="Sil"><i class="fa-solid fa-xmark"></i></button>
                                 </td>
                             </tr>
                         `;
@@ -1685,7 +1748,7 @@
         }
 
         function closeModals() {
-            ['portfolioModal', 'assetModal', 'confirmModal', 'editPortfolioModal'].forEach(id => {
+            ['portfolioModal', 'assetModal', 'confirmModal', 'editPortfolioModal', 'editAssetModal'].forEach(id => {
                 const m = document.getElementById(id);
                 const c = document.getElementById(id + 'Content');
                 if(m) m.classList.add('opacity-0');
@@ -1697,6 +1760,9 @@
             document.getElementById('assetAmount').value = '';
             document.getElementById('assetCost').value = '';
             document.getElementById('assetPrice').value = '';
+            document.getElementById('editAssetAmount').value = '';
+            document.getElementById('editAssetCost').value = '';
+            document.getElementById('editAssetPrice').value = '';
         }
 
         function openPortfolioModal() { openModal('portfolioModal'); }
@@ -1785,6 +1851,51 @@
             refreshPrices();
         }
 
+        function openEditAssetModal(pId, aId) {
+            if (appState.frozenMonths[appState.currentViewMonth]) {
+                alert("Bu ay kilitli! Değişiklik yapmak için önce kilidi açın.");
+                return;
+            }
+            const ports = appState.portfoliosData[appState.currentViewMonth];
+            const p = ports.find(x => x.id === pId);
+            if (!p) return;
+            const a = p.assets.find(x => x.id === aId);
+            if (!a) return;
+
+            document.getElementById('editTargetPortfolioId').value = pId;
+            document.getElementById('editTargetAssetId').value = aId;
+            document.getElementById('editAssetAmount').value = a.amount;
+            document.getElementById('editAssetCost').value = a.cost;
+            document.getElementById('editAssetPrice').value = a.price || a.cost;
+
+            openModal('editAssetModal');
+        }
+
+        async function saveEditedAsset() {
+            const pId = document.getElementById('editTargetPortfolioId').value;
+            const aId = document.getElementById('editTargetAssetId').value;
+            const amount = parseFloat(document.getElementById('editAssetAmount').value);
+            const cost = parseFloat(document.getElementById('editAssetCost').value);
+            let price = parseFloat(document.getElementById('editAssetPrice').value);
+
+            if (isNaN(amount) || isNaN(cost)) return;
+            if (isNaN(price)) price = cost;
+
+            const ports = appState.portfoliosData[appState.currentViewMonth];
+            const p = ports.find(x => x.id === pId);
+            if (p) {
+                const a = p.assets.find(x => x.id === aId);
+                if (a) {
+                    a.amount = amount;
+                    a.cost = cost;
+                    a.price = price;
+                    saveState();
+                    updateAllViews();
+                }
+            }
+            closeModals();
+        }
+
         function confirmDeleteAsset(pId, aId) {
             appState.deleteQueue = { type: 'asset', pId, aId };
             document.getElementById('confirmMessage').textContent = "Bu hisseyi portföyden çıkarmak istediğinize emin misiniz?";
@@ -1813,7 +1924,7 @@
         }
 
         function updateAllViews() {
-            updatePortfolioDropdown();
+            initDropdowns();
             renderMonthlyView();
             renderManagementView();
             renderCompareView();
