@@ -162,9 +162,7 @@
                 </div>
                 <div class="flex items-center gap-2 sm:gap-4">
                     <div class="hidden md:flex items-center gap-2 mr-2">
-                        <button id="btnRefresh" onclick="refreshPrices()" class="glass-button-green px-3 py-1.5 text-xs font-medium rounded-lg flex items-center">
-                            <i class="fa-solid fa-bolt mr-1"></i>Canlı Fiyat
-                        </button>
+                        <!-- Canlı Fiyat Butonu Kaldırıldı (Arka planda otomatik çalışıyor) -->
                         <button id="btnFetchHistory" onclick="fetchHistory()" class="glass-button px-3 py-1.5 text-xs font-medium rounded-lg flex items-center">
                             <i class="fa-solid fa-clock-rotate-left mr-1"></i>Geçmiş Veri
                         </button>
@@ -763,8 +761,15 @@
                             
                             const newPorts = JSON.parse(JSON.stringify(appState.portfoliosData[lastMonth]));
                             newPorts.forEach(p => {
+                                // ID çakışmasını önlemek için ay damgası ekliyoruz
+                                const baseId = p.id.split('_')[0];
+                                p.id = baseId + '_' + actualMonth.replace('-', '');
+                                p.month = actualMonth; // Güvenlik için
                                 p.dailyHistory = {};
                                 p.assets.forEach(a => {
+                                    const baseAId = a.id.split('_')[0];
+                                    a.id = baseAId + '_' + actualMonth.replace('-', '');
+                                    a.portfolio_id = p.id;
                                     if (a.price) {
                                         a.cost = a.price; // Kapanış fiyatını yeni maliyet olarak belirle
                                     }
@@ -790,6 +795,10 @@
                 if (!appState.compareChartType) appState.compareChartType = (appState.compareTimeRange === 'this_month') ? 'bar' : 'line';
                 if (!appState.monthlyChartType) appState.monthlyChartType = 'line';
                 
+                // Arka planda sessiz otomatik fiyat güncelleme (Her 60 saniyede bir)
+                refreshPrices();
+                setInterval(refreshPrices, 60000);
+
                 // Buton görünümlerini mevcut state'e göre ayarla
                 setTimeout(() => {
                     updateFilterButtons('compareTimeFilters', appState.compareTimeRange);
@@ -802,10 +811,19 @@
                     appState.activeBenchmarks = currentPorts.map(p => p.id);
                 }
 
-                if(appState.portfoliosData[appState.currentViewMonth].length > 0){
-                    appState.currentPortfolioId = appState.portfoliosData[appState.currentViewMonth][0].id;
+                if(appState.portfoliosData[appState.currentViewMonth].length > 0) {
+                    const ports = appState.portfoliosData[appState.currentViewMonth];
+                    let found = ports.find(p=>p.id === appState.currentPortfolioId);
+                    if (!found && appState.currentPortfolioId) {
+                        const baseId = appState.currentPortfolioId.split('_')[0];
+                        found = ports.find(p => p.id.startsWith(baseId));
+                    }
+                    if (found) {
+                        appState.currentPortfolioId = found.id;
+                    } else {
+                        appState.currentPortfolioId = ports[0].id;
+                    }
                 }
-                
                 // Senkronizasyon (Grafik tipi ve filtre butonları başlangıç state'i)
                 if (!appState.compareTimeRange) appState.compareTimeRange = 'this_month';
                 updateFilterButtons('compareTimeFilters', appState.compareTimeRange);
@@ -833,9 +851,6 @@
                 initDropdowns();
                 updateAllViews();
                 
-                // Otomatik fiyat yenilemeyi kaldırdık, çok yavaşlatıyordu.
-                // Sadece kullanıcı "Fiyatları Yenile" butonuna bastığında güncellenecek.
-                
             } catch (e) {
                 console.error(e);
                 showAlert("Backend'e ulaşılamadı. Lütfen 'python server.py' komutunun çalıştığından emin olun.");
@@ -854,17 +869,22 @@
         }
 
         async function refreshPrices() {
-            const btn = document.getElementById('btnRefresh');
-            if(btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Güncelleniyor...';
-            
             try {
+                const d = new Date();
+                const actualMonth = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}`;
+                
+                // Eğer bulunduğumuz ay kilitliyse veya aktif ay ile eşleşmiyorsa geçmiş fiyatları güncelleme!
+                if (appState.frozenMonths[actualMonth]) return;
+
                 let symbols = new Set(['ALTIN', 'XU100.IS', 'NASDAQ', 'SP500']);
-                const ports = appState.portfoliosData[appState.currentViewMonth] || [];
+                const ports = appState.portfoliosData[actualMonth] || [];
                 ports.forEach(p => p.assets.forEach(a => {
                     let fetchName = (a.name === 'ALTIN' || a.name === 'NASDAQ' || a.name === 'SP500') ? a.name : (a.name.includes('.') ? a.name : a.name + '.IS');
                     symbols.add(fetchName);
                 }));
                 
+                if(symbols.size === 0) return;
+
                 const res = await fetch(`${API_URL}/prices`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
@@ -874,35 +894,35 @@
                 const data = await res.json();
                 if (data.status === "success") {
                     const prices = data.prices;
-                    const today = new Date();
-                    const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                    const todayStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                    
+                    let madeChanges = false;
+                    
                     ports.forEach(p => {
                         p.assets.forEach(a => {
                             let fetchName = (a.name === 'ALTIN' || a.name === 'NASDAQ' || a.name === 'SP500') ? a.name : (a.name.includes('.') ? a.name : a.name + '.IS');
-                            if (prices[fetchName]) {
+                            if (prices[fetchName] && a.price !== prices[fetchName]) {
                                 a.price = prices[fetchName];
+                                madeChanges = true;
                             }
                         });
                         const stats = getPortfolioStats(p);
                         if (!p.dailyHistory) p.dailyHistory = {};
-                        p.dailyHistory[todayStr] = stats.totalChange;
-                    });
-                    
-                    if (!appState.benchmarksData[appState.currentViewMonth]) appState.benchmarksData[appState.currentViewMonth] = {};
-                    ['ALTIN', 'XU100.IS', 'NASDAQ', 'SP500'].forEach(bk => {
-                        if (prices[bk]) {
-                            appState.benchmarksData[appState.currentViewMonth][bk] = prices[bk];
-                            if (!appState.benchmarksHistory) appState.benchmarksHistory = {};
-                            if (!appState.benchmarksHistory[bk]) appState.benchmarksHistory[bk] = {};
-                            appState.benchmarksHistory[bk][todayStr] = prices[bk];
+                        if (p.dailyHistory[todayStr] !== stats.totalChange) {
+                            p.dailyHistory[todayStr] = stats.totalChange;
+                            madeChanges = true;
                         }
                     });
                     
-                    saveState();
-                    updateAllViews();
-                }
-            } catch (e) {
-                console.error(e);
+                    if (!appState.benchmarksData[actualMonth]) appState.benchmarksData[actualMonth] = {};
+                    ['ALTIN', 'XU100.IS', 'NASDAQ', 'SP500'].forEach(bk => {
+                        if (prices[bk]) {
+                            if (appState.benchmarksData[actualMonth][bk] !== prices[bk]) {
+                                appState.benchmarksData[actualMonth][bk] = prices[bk];
+                                madeChanges = true;
+                            }
+                            if (!appState.benchmarksHistory) appState.benchmarksHistory = {};
+                            if (!appState.benchmarksHistory[bk]) appState.benchmarksHistory[bk] = {};
             }
             
             if(btn) btn.innerHTML = '<i class="fa-solid fa-bolt mr-2"></i>Canlı Fiyatları Çek';
@@ -1137,7 +1157,14 @@
                         appState.currentViewMonth = m;
                         const ports = appState.portfoliosData[appState.currentViewMonth];
                         if(ports && ports.length > 0) {
-                            if(!ports.find(p=>p.id === appState.currentPortfolioId)) {
+                            let found = ports.find(p=>p.id === appState.currentPortfolioId);
+                            if (!found && appState.currentPortfolioId) {
+                                const baseId = appState.currentPortfolioId.split('_')[0];
+                                found = ports.find(p => p.id.startsWith(baseId));
+                            }
+                            if (found) {
+                                appState.currentPortfolioId = found.id;
+                            } else {
                                 appState.currentPortfolioId = ports[0].id;
                             }
                         }
