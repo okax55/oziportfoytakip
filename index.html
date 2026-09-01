@@ -168,6 +168,9 @@
                         <button id="btnFetchHistory" onclick="fetchHistory()" class="glass-button px-3 py-1.5 text-xs font-medium rounded-lg flex items-center">
                             <i class="fa-solid fa-clock-rotate-left mr-1"></i>Geçmiş Veri
                         </button>
+                        <button onclick="openCalcModal()" class="glass-button px-3 py-1.5 text-xs font-medium rounded-lg flex items-center bg-gradient-to-r from-orange-500 to-amber-500 shadow-orange-500/30">
+                            <i class="fa-solid fa-calculator mr-1"></i>Hesap Makinesi
+                        </button>
                     </div>
                     <div class="flex glass-input p-1 rounded-xl shadow-sm">
                         <button id="tab-monthly" class="p-2 sm:px-4 sm:py-2 text-xl sm:text-sm font-medium rounded-lg transition-all glass-button-tab text-white shadow-md flex items-center justify-center" onclick="switchTab('monthly')">
@@ -880,7 +883,7 @@
             
             months.forEach(m => {
                 const [yyyy, mm] = m.split('-');
-                const text = `${trMonths[parseInt(mm) - 1]} ${yyyy}`;
+                const text = `${trMonths[parseInt(mm, 10) - 1]} ${yyyy}`;
                 
                 if(m === appState.currentViewMonth) {
                     if (document.getElementById('monthDropdownText')) document.getElementById('monthDropdownText').textContent = text;
@@ -1028,19 +1031,23 @@
             if (labels.length === 1) return { data: [finalChange], profitData: [finalProfit] };
             
             const [year, month] = yearMonth.split('-');
+            const stats = getPortfolioStats(portfolio);
             
             let knownPoints = [];
             
             for (let i = 0; i < labels.length; i++) {
                 const dayMatch = labels[i].match(/\d+/);
                 if (!dayMatch) continue;
-                const day = parseInt(dayMatch[0]);
+                const day = parseInt(dayMatch[0], 10);
                 const dateStr = `${year}-${month}-${String(day).padStart(2, '0')}`;
                 
                 if (portfolio.dailyHistory && portfolio.dailyHistory[dateStr] !== undefined) {
                     const dataPoint = portfolio.dailyHistory[dateStr];
                     const percentVal = typeof dataPoint === 'object' ? dataPoint.percent : dataPoint;
-                    const profitVal = typeof dataPoint === 'object' ? dataPoint.profit : 0;
+                    // Approximate profit if not stored as object
+                    const profitVal = typeof dataPoint === 'object' && dataPoint.profit !== undefined 
+                        ? dataPoint.profit 
+                        : (percentVal / 100) * stats.totalCost;
                     
                     const existingIdx = knownPoints.findIndex(k => k.index === i);
                     if (existingIdx >= 0) {
@@ -1477,7 +1484,7 @@
                 const displayDates = shouldSlice ? dates.slice(1) : dates;
                 chartLabels = displayDates.map(d => {
                     const [y, m, day] = d.split('-');
-                    return `${parseInt(day)} ${trMonths[parseInt(m) - 1]}`;
+                    return `${parseInt(day, 10)} ${trMonths[parseInt(m, 10) - 1]}`;
                 });
             } else if (!isLine) {
                 appState.activeBenchmarks.forEach(key => {
@@ -1748,7 +1755,7 @@
         }
 
         function closeModals() {
-            ['portfolioModal', 'assetModal', 'confirmModal', 'editPortfolioModal', 'editAssetModal'].forEach(id => {
+            ['portfolioModal', 'assetModal', 'confirmModal', 'editPortfolioModal', 'editAssetModal', 'calcModal'].forEach(id => {
                 const m = document.getElementById(id);
                 const c = document.getElementById(id + 'Content');
                 if(m) m.classList.add('opacity-0');
@@ -1928,6 +1935,155 @@
             renderMonthlyView();
             renderManagementView();
             renderCompareView();
+        }
+
+        /* Calculator JS Logic */
+        let currentCalcTab = 'avg';
+
+        function openCalcModal() {
+            if (appState.frozenMonths[appState.currentViewMonth]) {
+                alert("Uyarı: Bu ay kilitli olduğu için 'Uygula' butonuyla portföye kaydetme yapamazsınız, sadece hesaplama yapabilirsiniz.");
+            }
+            populateCalcSelect();
+            openModal('calcModal');
+        }
+
+        function switchCalcTab(tab) {
+            currentCalcTab = tab;
+            const btnAvg = document.getElementById('calcTab-avg');
+            const btnSplit = document.getElementById('calcTab-split');
+            const viewAvg = document.getElementById('calcView-avg');
+            const viewSplit = document.getElementById('calcView-split');
+
+            if (tab === 'avg') {
+                btnAvg.className = "flex-1 py-2 text-sm font-medium border-b-2 border-brand-500 text-brand-600 dark:text-brand-400 transition-colors";
+                btnSplit.className = "flex-1 py-2 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors";
+                viewAvg.classList.remove('hidden');
+                viewSplit.classList.add('hidden');
+            } else {
+                btnSplit.className = "flex-1 py-2 text-sm font-medium border-b-2 border-brand-500 text-brand-600 dark:text-brand-400 transition-colors";
+                btnAvg.className = "flex-1 py-2 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors";
+                viewSplit.classList.remove('hidden');
+                viewAvg.classList.add('hidden');
+            }
+            populateCalcSelect();
+        }
+
+        function populateCalcSelect() {
+            const select = document.getElementById('calcApplySelect');
+            select.innerHTML = '<option value="">-- Hisse Seç --</option>';
+            const ports = appState.portfoliosData[appState.currentViewMonth] || [];
+            
+            ports.forEach(p => {
+                const group = document.createElement('optgroup');
+                group.label = p.name;
+                p.assets.forEach(a => {
+                    const opt = document.createElement('option');
+                    opt.value = `${p.id}_${a.id}`;
+                    opt.textContent = a.name;
+                    // Store current values for easy fill
+                    opt.dataset.amount = a.amount;
+                    opt.dataset.cost = a.cost;
+                    group.appendChild(opt);
+                });
+                if(p.assets.length > 0) select.appendChild(group);
+            });
+
+            select.onchange = (e) => {
+                const opt = select.options[select.selectedIndex];
+                if (opt.value) {
+                    const amt = opt.dataset.amount;
+                    const cost = opt.dataset.cost;
+                    if (currentCalcTab === 'avg') {
+                        document.getElementById('calcAvgCurrentLot').value = amt;
+                        document.getElementById('calcAvgCurrentCost').value = cost;
+                        runAvgCalc();
+                    } else {
+                        document.getElementById('calcSplitCurrentLot').value = amt;
+                        document.getElementById('calcSplitCurrentCost').value = cost;
+                        runSplitCalc();
+                    }
+                }
+            };
+        }
+
+        function runAvgCalc() {
+            const curLot = parseFloat(document.getElementById('calcAvgCurrentLot').value) || 0;
+            const curCost = parseFloat(document.getElementById('calcAvgCurrentCost').value) || 0;
+            const addLot = parseFloat(document.getElementById('calcAvgAddLot').value) || 0;
+            const addPrice = parseFloat(document.getElementById('calcAvgAddPrice').value) || 0;
+
+            const totalOld = curLot * curCost;
+            const totalAdd = addLot * addPrice;
+            const totalLot = curLot + addLot;
+            const newCost = totalLot > 0 ? (totalOld + totalAdd) / totalLot : 0;
+
+            document.getElementById('calcAvgResLot').textContent = totalLot.toFixed(2).replace(/\.00$/, '');
+            document.getElementById('calcAvgResCost').textContent = formatMoney(totalAdd);
+            document.getElementById('calcAvgResAvg').textContent = formatMoney(newCost);
+        }
+
+        function runSplitCalc() {
+            const curLot = parseFloat(document.getElementById('calcSplitCurrentLot').value) || 0;
+            const curCost = parseFloat(document.getElementById('calcSplitCurrentCost').value) || 0;
+            const ratio = parseFloat(document.getElementById('calcSplitRatio').value) || 0;
+
+            const totalOldValue = curLot * curCost;
+            const extraLot = curLot * (ratio / 100);
+            const totalLot = curLot + extraLot;
+            const newCost = totalLot > 0 ? totalOldValue / totalLot : 0;
+
+            document.getElementById('calcSplitResAdd').textContent = extraLot.toFixed(2).replace(/\.00$/, '');
+            document.getElementById('calcSplitResLot').textContent = totalLot.toFixed(2).replace(/\.00$/, '');
+            document.getElementById('calcSplitResAvg').textContent = formatMoney(newCost);
+        }
+
+        function applyCalculatorToPortfolio() {
+            if (appState.frozenMonths[appState.currentViewMonth]) {
+                alert("Bu ay kilitli! Uygulama yapmak için kilidi açmanız gerekir.");
+                return;
+            }
+
+            const select = document.getElementById('calcApplySelect');
+            const val = select.value;
+            if (!val) {
+                alert("Lütfen uygulamak istediğiniz hisseyi seçin.");
+                return;
+            }
+
+            let newLot = 0;
+            let newCost = 0;
+
+            if (currentCalcTab === 'avg') {
+                const curLot = parseFloat(document.getElementById('calcAvgCurrentLot').value) || 0;
+                const curCost = parseFloat(document.getElementById('calcAvgCurrentCost').value) || 0;
+                const addLot = parseFloat(document.getElementById('calcAvgAddLot').value) || 0;
+                const addPrice = parseFloat(document.getElementById('calcAvgAddPrice').value) || 0;
+                newLot = curLot + addLot;
+                newCost = newLot > 0 ? ((curLot * curCost) + (addLot * addPrice)) / newLot : 0;
+            } else {
+                const curLot = parseFloat(document.getElementById('calcSplitCurrentLot').value) || 0;
+                const curCost = parseFloat(document.getElementById('calcSplitCurrentCost').value) || 0;
+                const ratio = parseFloat(document.getElementById('calcSplitRatio').value) || 0;
+                newLot = curLot + (curLot * (ratio / 100));
+                newCost = newLot > 0 ? (curLot * curCost) / newLot : 0;
+            }
+
+            if (newLot <= 0) return;
+
+            const [pId, aId] = val.split('_');
+            const p = appState.portfoliosData[appState.currentViewMonth].find(x => x.id === pId);
+            if (p) {
+                const a = p.assets.find(x => x.id === aId);
+                if (a) {
+                    a.amount = parseFloat(newLot.toFixed(2));
+                    a.cost = parseFloat(newCost.toFixed(2));
+                    saveState();
+                    updateAllViews();
+                    alert("Hesaplama hisseye uygulandı!");
+                    closeModals();
+                }
+            }
         }
     </script>
 </body>
