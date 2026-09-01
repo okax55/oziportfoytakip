@@ -1453,35 +1453,16 @@
             const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
             let dates = [];
-            if (appState.benchmarksHistory && appState.benchmarksHistory['XU100.IS']) {
-                const allDays = Object.keys(appState.benchmarksHistory['XU100.IS']).sort();
-                dates = allDays.filter(d => d >= startStr && d <= todayStr);
-                
-                if (dates.length > 0) {
-                    if (range === 'ytd' || dates[0] > startStr) {
-                        const firstDateIdx = allDays.indexOf(dates[0]);
-                        if (firstDateIdx > 0) {
-                            dates.unshift(allDays[firstDateIdx - 1]);
-                        } else {
-                            let fd = new Date(dates[0]);
-                            fd.setDate(fd.getDate() - 1);
-                            while (fd.getDay() === 0 || fd.getDay() === 6) fd.setDate(fd.getDate() - 1);
-                            dates.unshift(`${fd.getFullYear()}-${String(fd.getMonth()+1).padStart(2, '0')}-${String(fd.getDate()).padStart(2, '0')}`);
-                        }
-                    }
+            for (let d = new Date(startDate); d <= today; d.setDate(d.getDate() + 1)) {
+                if (d.getDay() !== 0 && d.getDay() !== 6) {
+                    dates.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
                 }
-            } else {
-                for (let d = new Date(startDate); d <= today; d.setDate(d.getDate() + 1)) {
-                    if (d.getDay() !== 0 && d.getDay() !== 6) {
-                        dates.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
-                    }
-                }
-                if (dates.length > 0 && (range === 'ytd' || dates[0] > startStr)) {
-                    let fd = new Date(dates[0]);
-                    fd.setDate(fd.getDate() - 1);
-                    while (fd.getDay() === 0 || fd.getDay() === 6) fd.setDate(fd.getDate() - 1);
-                    dates.unshift(`${fd.getFullYear()}-${String(fd.getMonth()+1).padStart(2, '0')}-${String(fd.getDate()).padStart(2, '0')}`);
-                }
+            }
+            if (dates.length > 0 && (range === 'ytd' || dates[0] > startStr)) {
+                let fd = new Date(dates[0]);
+                fd.setDate(fd.getDate() - 1);
+                while (fd.getDay() === 0 || fd.getDay() === 6) fd.setDate(fd.getDate() - 1);
+                dates.unshift(`${fd.getFullYear()}-${String(fd.getMonth()+1).padStart(2, '0')}-${String(fd.getDate()).padStart(2, '0')}`);
             }
             return dates;
         }
