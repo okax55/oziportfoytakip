@@ -1996,7 +1996,9 @@
             const ports = appState.portfoliosData[appState.currentViewMonth];
             
             if (type === 'portfolio') {
-                appState.portfoliosData[appState.currentViewMonth] = ports.filter(p => p.id !== pId);
+                Object.keys(appState.portfoliosData).forEach(m => {
+                    appState.portfoliosData[m] = appState.portfoliosData[m].filter(p => p.id !== pId);
+                });
                 appState.activeBenchmarks = appState.activeBenchmarks.filter(b => b !== pId);
                 if(appState.currentPortfolioId === pId) {
                     appState.currentPortfolioId = appState.portfoliosData[appState.currentViewMonth].length > 0 ? appState.portfoliosData[appState.currentViewMonth][0].id : null;
