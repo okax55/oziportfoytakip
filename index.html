@@ -2404,12 +2404,25 @@
                 for (const symbol in window.rebLastTargetHoldings) {
                     const stock = window.rebLastTargetHoldings[symbol];
                     if (stock.targetQuantity > 0) {
+                        let finalCost = stock.price;
+                        const existingAsset = p.assets.find(a => (a.name || "").toUpperCase() === stock.symbol.toUpperCase());
+                        if (existingAsset) {
+                            const currentAmount = parseFloat(existingAsset.amount || 0);
+                            const currentCost = parseFloat(existingAsset.cost || 0);
+                            const targetAmount = parseFloat(stock.targetQuantity);
+                            if (targetAmount > currentAmount) {
+                                const diffAmount = targetAmount - currentAmount;
+                                finalCost = ((currentAmount * currentCost) + (diffAmount * stock.price)) / targetAmount;
+                            } else {
+                                finalCost = currentCost;
+                            }
+                        }
                         newAssets.push({
                             id: 'a_' + Date.now() + Math.random(),
                             name: stock.symbol,
                             amount: stock.targetQuantity,
                             price: stock.price,
-                            cost: stock.price // Yeni maliyet olarak hedef fiyat alınır
+                            cost: parseFloat(finalCost.toFixed(2))
                         });
                     }
                 }
