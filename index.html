@@ -923,9 +923,19 @@
                             }
                             if (!appState.benchmarksHistory) appState.benchmarksHistory = {};
                             if (!appState.benchmarksHistory[bk]) appState.benchmarksHistory[bk] = {};
-            }
-            
-            if(btn) btn.innerHTML = '<i class="fa-solid fa-bolt mr-2"></i>Canlı Fiyatları Çek';
+                            if (appState.benchmarksHistory[bk][todayStr] !== prices[bk]) {
+                                appState.benchmarksHistory[bk][todayStr] = prices[bk];
+                                madeChanges = true;
+                            }
+                        }
+                    });
+                    
+                    if (madeChanges) {
+                        saveState();
+                        updateAllViews();
+                    }
+                }
+            } catch(e) { console.error("Fiyat güncelleme hatası:", e); }
         }
 
         async function fetchHistory(range = 'this_month') {
