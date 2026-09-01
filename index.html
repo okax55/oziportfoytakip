@@ -359,8 +359,8 @@
 
     <!-- MODALS -->
     
-    <div id="rebalanceModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 opacity-0 transition-opacity overflow-y-auto">
-        <div class="bg-slate-50 rounded-2xl w-full max-w-6xl shadow-2xl transition-transform flex flex-col font-sans relative my-8" id="rebalanceModalContent">
+    <div id="rebalanceModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-start justify-center p-4 pt-4 md:pt-10 opacity-0 transition-opacity overflow-y-auto">
+        <div class="bg-slate-50 rounded-2xl w-full max-w-6xl shadow-2xl transition-transform flex flex-col font-sans relative mb-16" id="rebalanceModalContent">
             <button onclick="closeModals()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors z-10">
                 <i class="fa-solid fa-xmark text-2xl"></i>
             </button>
@@ -2545,6 +2545,10 @@
             const remainingCash = totalPortfolioValue - totalTargetCost;
 
             document.getElementById('rebResults').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('rebResults').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 50);
+            
             document.getElementById('rebResTotalValue').textContent = totalPortfolioValue.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' ₺';
             document.getElementById('rebResBudget').textContent = budgetPerStock.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' ₺';
             document.getElementById('rebResRemaining').textContent = remainingCash.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' ₺';
