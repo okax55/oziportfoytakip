@@ -1393,6 +1393,26 @@
             return { data, profitData };
         }
 
+        const crosshairPlugin = {
+            id: 'crosshair',
+            afterDraw: chart => {
+                if (chart.tooltip?._active?.length) {
+                    let x = chart.tooltip._active[0].element.x;
+                    let yAxis = chart.scales.y;
+                    let ctx = chart.ctx;
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.moveTo(x, yAxis.top);
+                    ctx.lineTo(x, yAxis.bottom);
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)';
+                    ctx.setLineDash([5, 5]);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }
+        };
+
         function renderMonthlyChart() {
             const ctx = document.getElementById('monthlyChart').getContext('2d');
             const ports = appState.portfoliosData[appState.currentViewMonth] || [];
@@ -1448,10 +1468,13 @@
                         customProfits: profitData,
                         borderColor: borderColors,
                         backgroundColor: bgColors,
-                        borderWidth: isLine ? 2 : 0,
+                        borderWidth: isLine ? 3 : 0,
+                          tension: isLine ? 0.4 : 0,
                         pointRadius: 0,
-                        pointHoverRadius: 5,
-                        pointBackgroundColor: borderColors,
+                          pointHoverRadius: 6,
+                          pointHoverBorderWidth: 3,
+                          pointHoverBackgroundColor: '#fff',
+                          pointBackgroundColor: borderColors,
                         fill: isLine ? {
                             target: 'origin',
                             above: 'rgba(16, 185, 129, 0.25)',
@@ -1464,15 +1487,18 @@
                         maxBarThickness: 40,
                     }]
                 },
+                plugins: [crosshairPlugin],
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     interaction: { mode: 'index', intersect: false },
                     plugins: { 
                         legend: { display: false }, 
                         tooltip: { 
-                            enabled: true,
-                            backgroundColor: 'rgba(15, 23, 42, 0.7)',
-                            backdropFilter: 'blur(10px)',
+                              enabled: true,
+                              backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                              backdropFilter: 'blur(10px)',
+                              usePointStyle: true,
+                              boxPadding: 6,
                             titleColor: '#fff',
                             bodyColor: '#cbd5e1',
                             borderColor: 'rgba(255,255,255,0.1)',
@@ -1521,7 +1547,7 @@
                     scales: {
                         x: { 
                             border: { dash: [5, 5], color: gridColor },
-                            grid: { color: gridColor, drawTicks: false, tickBorderDash: [5, 5], borderDash: [5, 5] }, 
+                              grid: { display: false }, 
                             ticks: { 
                                 color: '#94a3b8', 
                                 autoSkip: false,
@@ -1747,7 +1773,7 @@
             for (const [key, item] of Object.entries(allOptions)) {
                 const isChecked = appState.activeBenchmarks.includes(key);
                 const label = document.createElement('label');
-                label.className = `cursor-pointer flex items-center px-4 py-2 rounded-full border transition-all select-none ${isChecked ? 'bg-slate-700 border-slate-500 text-white' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-500'}`;
+                label.className = `cursor-pointer flex items-center px-4 py-1.5 rounded-full border transition-all select-none shadow-sm ${isChecked ? 'bg-slate-800 dark:bg-slate-800 border-slate-700 text-white shadow-md' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-600'}`;
                 label.innerHTML = `
                     <input type="checkbox" value="${key}" class="hidden" ${isChecked ? 'checked' : ''} onchange="toggleBenchmark(this)">
                     <span class="w-3 h-3 rounded-full mr-2 inline-block" style="background-color: ${item.color}"></span>
@@ -1901,14 +1927,17 @@
             cChart = new Chart(ctx, {
                 type: isLine ? 'line' : 'bar',
                 data: { labels: chartLabels, datasets: datasets },
+                plugins: [crosshairPlugin],
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     interaction: { mode: 'index', intersect: false },
                     plugins: {
                         legend: { display: isLine },
                         tooltip: {
-                            backgroundColor: 'rgba(15, 23, 42, 0.7)',
-                            backdropFilter: 'blur(10px)',
+                              usePointStyle: true,
+                              boxPadding: 6,
+                              backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                              backdropFilter: 'blur(10px)',
                             titleColor: '#fff', bodyColor: '#cbd5e1', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
                             callbacks: {
                                 title: function(context) {
@@ -1926,7 +1955,7 @@
                     scales: {
                         x: { 
                             border: { dash: [5, 5], color: gridColor },
-                            grid: { color: gridColor, drawTicks: false, tickBorderDash: [5, 5], borderDash: [5, 5] }, 
+                              grid: { display: false }, 
                             ticks: { color: '#94a3b8', maxTicksLimit: 15 } 
                         },
                         y: { 
