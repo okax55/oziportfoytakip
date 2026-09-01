@@ -1486,16 +1486,26 @@
 
             let totalValue = 0, totalCost = 0, hasAnyData = false;
             p.assets.forEach(a => {
+                let price = null;
                 let fetchName = (a.name === 'ALTIN' || a.name === 'NASDAQ' || a.name === 'SP500') ? a.name : (a.name.includes('.') ? a.name : a.name + '.IS');
-                let price = (appState.benchmarksHistory[fetchName] || {})[dateStr];
                 
-                if (!price) {
-                    for (let offset = 1; offset <= 7; offset++) {
-                        const prevStr = getPrevDateStr(dateStr, offset);
-                        price = (appState.benchmarksHistory[fetchName] || {})[prevStr];
-                        if (price !== undefined) break;
+                if (dateStr === appState.lastUpdatedDate) {
+                    price = (typeof assetValues !== 'undefined' ? assetValues[fetchName] : null) || a.price;
+                } else if (appState.benchmarksHistory[fetchName] && appState.benchmarksHistory[fetchName][dateStr] !== undefined) {
+                    price = appState.benchmarksHistory[fetchName][dateStr];
+                } else {
+                    if (appState.benchmarksHistory[fetchName]) {
+                        for (let offset = 1; offset <= 7; offset++) {
+                            const prevStr = getPrevDateStr(dateStr, offset);
+                            if (appState.benchmarksHistory[fetchName][prevStr] !== undefined) {
+                                price = appState.benchmarksHistory[fetchName][prevStr];
+                                break;
+                            }
+                        }
                     }
                 }
+                
+                if (price === null) price = a.price || a.cost;
                 
                 if (price) {
                     totalValue += a.amount * price;
