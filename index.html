@@ -478,7 +478,7 @@
                         <p><strong>Önemli Not:</strong> Yukarıdaki plana uyarken önce <strong>'SATIŞ YAP'</strong> emirlerini borsada gerçekleştirerek nakde dönmeniz önerilir. Böylece <strong>'ALIM YAP'</strong> emirleri için gerekli nakdi yaratmış olursunuz.</p>
                       </div>
                       
-                      <div class="mt-6 flex justify-center pb-4 border-t pt-4">
+                      <div id="rebNewPortfolioPreviewContainer" class="mt-8 pt-6 hidden"></div><div class="mt-6 flex justify-center pb-4 border-t pt-4">
                         <button onclick="rebApplyAndSave()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold text-lg shadow-lg shadow-blue-500/30 transition transform hover:-translate-y-1 flex items-center gap-2">
                           <i class="fa-solid fa-floppy-disk"></i> Portföye Uygula ve Kaydet
                         </button>
@@ -2387,7 +2387,7 @@
                 showAlert("Lütfen işlemin uygulanacağı portföyü '1. Mevcut Portföy' bölümünden seçin.");
                 return;
             }
-            if (appState.isMonthFrozen[appState.currentViewMonth]) {
+            if (appState.frozenMonths[appState.currentViewMonth]) {
                 showAlert("Bu ay kilitli! Uygulama yapmak için kilidi açmanız gerekir.");
                 return;
             }
@@ -2579,7 +2579,6 @@
         }
 
         function rebCalculate() {
-            // Read active inputs just in case
             rebCurrentStocks.forEach((s, idx) => {
                 const inputs = document.getElementById('rebCurrentList').children[idx].querySelectorAll('input');
                 s.symbol = inputs[0].value.toUpperCase();
@@ -2627,7 +2626,7 @@
                 const symbol = stock.symbol.toUpperCase().trim();
                 if (currentHoldingsMap[symbol]) {
                     currentHoldingsMap[symbol].quantity += parseFloat(stock.quantity);
-                    currentHoldingsMap[symbol].price = parseFloat(stock.price); // Son fiyatı alır
+                    currentHoldingsMap[symbol].price = parseFloat(stock.price);
                 } else {
                     currentHoldingsMap[symbol] = { 
                         quantity: parseFloat(stock.quantity), 
@@ -2659,13 +2658,46 @@
                 }
             });
 
-            transactions.sort((a, b) => {
-                if (a.action === 'SAT' && b.action === 'AL') return -1;
-                if (a.action === 'AL' && b.action === 'SAT') return 1;
-                return 0;
-            });
-
-            const remainingCash = totalPortfolioValue - totalTargetCost;
+            let remainingCash = totalPortfolioValue - totalTargetCost;
+            let affordableStocks = validTarget.map(s => s.symbol.toUpperCase().trim())
+                                              .sort((a, b) => targetHoldings[a].price - targetHoldings[b].price);
+            
+            let canBuyMore = true;
+            while (canBuyMore && remainingCash > 0) {
+                canBuyMore = false;
+                for (let sym of affordableStocks) {
+                    let price = targetHoldings[sym].price;
+                    if (remainingCash >= price) {
+                        targetHoldings[sym].targetQuantity += 1;
+                        remainingCash -= price;
+                        totalTargetCost += price;
+                        
+                        let existingAl = transactions.find(t => t.symbol === sym && t.action === 'AL');
+                        if (existingAl) {
+                            existingAl.quantity += 1;
+                            existingAl.total += price;
+                        } else {
+                            let existingSat = transactions.find(t => t.symbol === sym && t.action === 'SAT');
+                            if (existingSat) {
+                                existingSat.quantity -= 1;
+                                existingSat.total -= price;
+                                if (existingSat.quantity === 0) {
+                                    transactions.splice(transactions.indexOf(existingSat), 1);
+                                }
+                            } else {
+                                transactions.push({
+                                    symbol: sym,
+                                    action: 'AL',
+                                    quantity: 1,
+                                    price: price,
+                                    total: price
+                                });
+                            }
+                        }
+                        canBuyMore = true;
+                    }
+                }
+            }
 
             document.getElementById('rebResults').classList.remove('hidden');
             setTimeout(() => {
@@ -2702,6 +2734,58 @@
                     `;
                     tbody.appendChild(tr);
                 });
+            }
+
+            // Yeni Portföy Önizlemesi Oluştur
+            const previewContainer = document.getElementById('rebNewPortfolioPreviewContainer');
+            if (previewContainer) {
+                let previewHTML = `
+                <h3 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2 mt-4">Yeni Portföy Önizlemesi</h3>
+                <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+                    <table class="w-full text-left border-collapse text-sm whitespace-nowrap">
+                        <thead class="bg-slate-100 text-slate-600 font-medium">
+                            <tr>
+                                <th class="p-3 rounded-tl-lg">Hisse</th>
+                                <th class="p-3 text-right">Lot Sayısı</th>
+                                <th class="p-3 text-right">Birim Maliyet</th>
+                                <th class="p-3 rounded-tr-lg text-right">Toplam Tutar</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                `;
+                
+                let newTotal = 0;
+                for (const sym in targetHoldings) {
+                    const item = targetHoldings[sym];
+                    if (item.targetQuantity > 0) {
+                        const itemTotal = item.targetQuantity * item.price;
+                        newTotal += itemTotal;
+                        previewHTML += `
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="p-3 font-bold text-slate-800">${item.symbol}</td>
+                                <td class="p-3 text-right font-medium text-slate-700">${item.targetQuantity}</td>
+                                <td class="p-3 text-right text-slate-600">${item.price.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</td>
+                                <td class="p-3 text-right font-bold text-slate-800">${itemTotal.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</td>
+                            </tr>
+                        `;
+                    }
+                }
+                
+                previewHTML += `
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4 flex flex-col md:flex-row justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <div class="text-sm text-slate-600 mb-2 md:mb-0">
+                        Dağıtılamayan Kalan Nakit: <span class="font-bold text-slate-800 ml-1">${remainingCash.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</span>
+                    </div>
+                    <div class="text-lg font-bold text-slate-800">
+                        Hisselerin Genel Toplamı: <span class="text-emerald-600 ml-2">${newTotal.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</span>
+                    </div>
+                </div>
+                `;
+                previewContainer.innerHTML = previewHTML;
+                previewContainer.classList.remove('hidden');
             }
         }
     </script>
