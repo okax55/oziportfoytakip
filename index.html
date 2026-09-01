@@ -806,10 +806,9 @@
                     toggleChartType(appState.monthlyChartType);
                 }, 50);
                 
-                if (!appState.activeBenchmarks || appState.activeBenchmarks.length === 0) {
-                    const currentPorts = appState.portfoliosData[actualMonth] || [];
-                    appState.activeBenchmarks = currentPorts.map(p => p.id);
-                }
+                // Varsayılan olarak sadece portföyleri seç
+                const currentPorts = appState.portfoliosData[actualMonth] || [];
+                appState.activeBenchmarks = currentPorts.map(p => p.id);
 
                 if(appState.portfoliosData[appState.currentViewMonth].length > 0) {
                     const ports = appState.portfoliosData[appState.currentViewMonth];
@@ -850,6 +849,10 @@
                 
                 initDropdowns();
                 updateAllViews();
+                
+                // Kaydedilmiş sekmeye dön
+                const savedTab = localStorage.getItem('ozi_currentTab') || 'monthly';
+                switchTab(savedTab);
                 
             } catch (e) {
                 console.error(e);
@@ -1063,6 +1066,7 @@
         }
 
         function switchTab(tabId) {
+            localStorage.setItem('ozi_currentTab', tabId);
             const tabs = ['monthly', 'compare', 'manage'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab-${t}`);
@@ -2005,7 +2009,7 @@
         }
 
         function openModal(id) {
-            if (appState.frozenMonths[appState.currentViewMonth]) {
+            if (appState.frozenMonths[appState.currentViewMonth] && id !== 'calcModal' && id !== 'rebalanceModal' && id !== 'settingsModal') {
                 showAlert("Bu ay kilitli! Değişiklik yapmak için önce kilidi açın.");
                 return;
             }
