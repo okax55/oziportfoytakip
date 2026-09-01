@@ -616,6 +616,11 @@
                             const newPorts = JSON.parse(JSON.stringify(appState.portfoliosData[lastMonth]));
                             newPorts.forEach(p => {
                                 p.dailyHistory = {};
+                                p.assets.forEach(a => {
+                                    if (a.price) {
+                                        a.cost = a.price; // Kapanış fiyatını yeni maliyet olarak belirle
+                                    }
+                                });
                             });
                             
                             appState.portfoliosData[actualMonth] = newPorts;
