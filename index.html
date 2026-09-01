@@ -1275,7 +1275,7 @@
                                             const day = dayMatch[0];
                                             const [year, month] = appState.currentViewMonth.split('-');
                                             const trMonths = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
-                                            return `${day} ${trMonths[parseInt(month) - 1]} ${year} Durumu`;
+                                            return `${day} ${trMonths[parseInt(month, 10) - 1]} ${year} Durumu`;
                                         }
                                     }
                                     return context[0].label + ' Durumu';
