@@ -1289,6 +1289,27 @@
             return "Bilinmiyor";
         }
 
+        function wasAssetHeldInPreviousMonth(portfolioId, assetName, currentMonthYyyyMm) {
+            if (!portfolioId) return false;
+            let [year, month] = currentMonthYyyyMm.split('-');
+            let prevMonth = parseInt(month) - 1;
+            let prevYear = parseInt(year);
+            if (prevMonth === 0) {
+                prevMonth = 12;
+                prevYear -= 1;
+            }
+            let prevYyyyMm = `${prevYear}-${String(prevMonth).padStart(2, '0')}`;
+            
+            const prevPorts = appState.portfoliosData[prevYyyyMm];
+            if (!prevPorts) return false;
+            
+            const baseId = portfolioId.split('_')[0];
+            const prevPort = prevPorts.find(p => p.id.split('_')[0] === baseId);
+            if (!prevPort) return false;
+            
+            return !!prevPort.assets.find(a => a.name === assetName);
+        }
+
         function getPreviousMonthLastClose(assetName, currentMonthYyyyMm) {
             let fetchName = (assetName === 'ALTIN' || assetName === 'NASDAQ' || assetName === 'SP500') ? assetName : (assetName.includes('.') ? assetName : assetName + '.IS');
             let [year, month] = currentMonthYyyyMm.split('-');
@@ -1317,8 +1338,10 @@
 
             portfolio.assets.forEach(a => {
                 let effectiveCost = a.cost;
-                let prevMonthClose = getPreviousMonthLastClose(a.name, yyyy_mm);
-                if (prevMonthClose !== null) effectiveCost = prevMonthClose;
+                if (wasAssetHeldInPreviousMonth(portfolio.id, a.name, yyyy_mm)) {
+                    let prevMonthClose = getPreviousMonthLastClose(a.name, yyyy_mm);
+                    if (prevMonthClose !== null) effectiveCost = prevMonthClose;
+                }
                 
                 totalCost += (a.amount * effectiveCost);
                 totalValue += (a.amount * (a.price || effectiveCost)); // Fiyat yoksa maliyet üzerinden
@@ -1326,8 +1349,10 @@
 
             let assetsWithStats = portfolio.assets.map(a => {
                 let effectiveCost = a.cost;
-                let prevMonthClose = getPreviousMonthLastClose(a.name, yyyy_mm);
-                if (prevMonthClose !== null) effectiveCost = prevMonthClose;
+                if (wasAssetHeldInPreviousMonth(portfolio.id, a.name, yyyy_mm)) {
+                    let prevMonthClose = getPreviousMonthLastClose(a.name, yyyy_mm);
+                    if (prevMonthClose !== null) effectiveCost = prevMonthClose;
+                }
 
                 let p = a.price || effectiveCost;
                 let val = a.amount * p;
@@ -1800,9 +1825,11 @@
                 }
                 
                 let effectiveCost = a.cost;
-                let prevMonthClose = getPreviousMonthLastClose(a.name, yyyy_mm);
-                if (prevMonthClose !== null) {
-                    effectiveCost = prevMonthClose;
+                if (wasAssetHeldInPreviousMonth(p.id, a.name, yyyy_mm)) {
+                    let prevMonthClose = getPreviousMonthLastClose(a.name, yyyy_mm);
+                    if (prevMonthClose !== null) {
+                        effectiveCost = prevMonthClose;
+                    }
                 }
                 
                 if (price === null) price = a.price || effectiveCost;
