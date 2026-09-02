@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ozi Portföy Takip</title>
+    <title>Ozi PortfÃ¶y Takip</title>
     <link rel="icon" type="image/png" href="logo.png">
     <!-- Tailwind CSS for Styling -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -158,30 +158,30 @@
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('monthly')">
                     <img src="logo.png" alt="Logo" class="w-10 h-10 rounded-lg shadow-lg shadow-brand-500/30 object-cover">
-                    <h1 class="text-xl font-bold text-slate-900 dark:text-white tracking-wide">Ozi<span class="font-light">Portföy</span></h1>
+                    <h1 class="text-xl font-bold text-slate-900 dark:text-white tracking-wide">Ozi<span class="font-light">PortfÃ¶y</span></h1>
                 </div>
                 <div class="flex items-center gap-2 sm:gap-4">
                     <div class="hidden md:flex items-center gap-2 mr-2">
-                        <!-- Canlı Fiyat Butonu Kaldırıldı (Arka planda otomatik çalışıyor) -->
+                        <!-- CanlÄ± Fiyat Butonu KaldÄ±rÄ±ldÄ± (Arka planda otomatik Ã§alÄ±ÅŸÄ±yor) -->
                         <button id="btnFetchHistory" onclick="fetchHistory()" class="glass-button px-3 py-1.5 text-xs font-medium rounded-lg flex items-center">
-                            <i class="fa-solid fa-clock-rotate-left mr-1"></i>Geçmiş Veri
+                            <i class="fa-solid fa-clock-rotate-left mr-1"></i>GeÃ§miÅŸ Veri
                         </button>
                         <button onclick="openCalcModal()" class="glass-button px-3 py-1.5 text-xs font-medium rounded-lg flex items-center bg-gradient-to-r from-orange-500 to-amber-500 shadow-orange-500/30">
                             <i class="fa-solid fa-calculator mr-1"></i>Hesap Makinesi
                         </button>
                         <button onclick="openRebalanceModal()" class="glass-button px-3 py-1.5 text-xs font-medium rounded-lg flex items-center bg-gradient-to-r from-emerald-500 to-teal-500 shadow-emerald-500/30 text-white">
-                            <i class="fa-solid fa-scale-balanced mr-1"></i>Portföy Geçiş Planı
+                            <i class="fa-solid fa-scale-balanced mr-1"></i>PortfÃ¶y GeÃ§iÅŸ PlanÄ±
                         </button>
                     </div>
                     <div class="flex glass-input p-1 rounded-xl shadow-sm">
                         <button id="tab-monthly" class="p-2 sm:px-4 sm:py-2 text-xl sm:text-sm font-medium rounded-lg transition-all glass-button-tab text-white shadow-md flex items-center justify-center" onclick="switchTab('monthly')">
-                            <i class="fa-solid fa-calendar-days sm:mr-2"></i><span class="hidden sm:inline">Aylık Detay</span>
+                            <i class="fa-solid fa-calendar-days sm:mr-2"></i><span class="hidden sm:inline">AylÄ±k Detay</span>
                         </button>
                         <button id="tab-compare" class="p-2 sm:px-4 sm:py-2 text-xl sm:text-sm font-medium rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all flex items-center justify-center" onclick="switchTab('compare')">
-                            <i class="fa-solid fa-scale-balanced sm:mr-2"></i><span class="hidden sm:inline">Kıyaslama</span>
+                            <i class="fa-solid fa-scale-balanced sm:mr-2"></i><span class="hidden sm:inline">KÄ±yaslama</span>
                         </button>
                         <button id="tab-manage" class="p-2 sm:px-4 sm:py-2 text-xl sm:text-sm font-medium rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all flex items-center justify-center" onclick="switchTab('manage')">
-                            <i class="fa-solid fa-briefcase sm:mr-2"></i><span class="hidden sm:inline">Yönetim</span>
+                            <i class="fa-solid fa-briefcase sm:mr-2"></i><span class="hidden sm:inline">YÃ¶netim</span>
                         </button>
                     </div>
                     <button id="themeToggleBtn" onclick="toggleTheme()" class="text-slate-500 dark:text-slate-400 hover:text-brand-500 transition-colors ml-2 p-2 rounded-full hover:bg-slate-700/50">
@@ -200,7 +200,7 @@
                 <div class="flex flex-wrap items-center gap-3">
                     <div class="relative group z-50">
                         <button id="portfolioDropdownBtn" onclick="toggleCustomDropdown('portfolioDropdownMenu')" class="glass-input px-4 py-2 rounded-xl text-sm font-bold text-slate-900 dark:text-white focus:outline-none flex justify-between items-center w-56 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all shadow-sm">
-                            <span id="portfolioDropdownText" class="truncate">Ana Portföy</span>
+                            <span id="portfolioDropdownText" class="truncate">Ana PortfÃ¶y</span>
                             <i class="fa-solid fa-chevron-down text-xs opacity-60 ml-2"></i>
                         </button>
                         <div id="portfolioDropdownMenu" class="absolute left-0 top-full mt-2 w-56 glass-panel rounded-xl shadow-2xl opacity-0 invisible transition-all duration-200 transform origin-top scale-95 flex flex-col py-2 max-h-60 overflow-y-auto border border-slate-200/50 dark:border-slate-700/50">
@@ -209,7 +209,7 @@
                     </div>
                     <div class="relative group z-50">
                         <button id="monthDropdownBtn" onclick="toggleCustomDropdown('monthDropdownMenu')" class="glass-input px-4 py-2 rounded-xl text-sm font-bold text-slate-900 dark:text-white focus:outline-none flex justify-between items-center w-40 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all shadow-sm">
-                            <span id="monthDropdownText">Ay Seç</span>
+                            <span id="monthDropdownText">Ay SeÃ§</span>
                             <i class="fa-solid fa-chevron-down text-xs opacity-60 ml-2"></i>
                         </button>
                         <div id="monthDropdownMenu" class="absolute left-0 top-full mt-2 w-40 glass-panel rounded-xl shadow-2xl opacity-0 invisible transition-all duration-200 transform origin-top scale-95 flex flex-col py-2 max-h-60 overflow-y-auto border border-slate-200/50 dark:border-slate-700/50">
@@ -220,18 +220,18 @@
                 
                 <div class="flex glass-panel p-1 rounded-lg shadow-sm">
                     <button id="btnLineChart" onclick="toggleChartType('line')" class="px-4 py-1.5 text-sm font-medium rounded-md bg-brand-500 text-white shadow transition-colors">
-                        <i class="fa-solid fa-chart-line mr-2"></i>Çizgi
+                        <i class="fa-solid fa-chart-line mr-2"></i>Ã‡izgi
                     </button>
                     <button id="btnBarChart" onclick="toggleChartType('bar')" class="px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-900 dark:hover:text-white transition-colors">
-                        <i class="fa-solid fa-chart-simple mr-2"></i>Sütun
+                        <i class="fa-solid fa-chart-simple mr-2"></i>SÃ¼tun
                     </button>
                 </div>
             </div>
 
             <div class="glass-panel rounded-2xl p-4 sm:p-6 shadow-xl mb-8 relative">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
-                    <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Portföy Gelişimi (₺)</h2>
-                    <!-- Zaman filtreleri aylık sekmede gizlendi, çünkü burası sadece seçili ayı gösteriyor -->
+                    <h2 class="text-lg font-semibold text-slate-900 dark:text-white">PortfÃ¶y GeliÅŸimi (â‚º)</h2>
+                    <!-- Zaman filtreleri aylÄ±k sekmede gizlendi, Ã§Ã¼nkÃ¼ burasÄ± sadece seÃ§ili ayÄ± gÃ¶steriyor -->
                 </div>
                 <div class="w-full h-72 sm:h-96 relative">
                     <canvas id="monthlyChart"></canvas>
@@ -240,18 +240,18 @@
 
             <div class="glass-panel rounded-2xl shadow-xl overflow-hidden">
                 <div class="p-4 sm:p-6 border-b border-white/20 dark:border-white/5">
-                    <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Varlık Dağılımı ve Performans</h2>
+                    <h2 class="text-lg font-semibold text-slate-900 dark:text-white">VarlÄ±k DaÄŸÄ±lÄ±mÄ± ve Performans</h2>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left text-slate-700 dark:text-slate-300">
                         <thead class="text-xs text-slate-500 dark:text-slate-400 uppercase border-b border-white/20 dark:border-white/5">
                             <tr>
-                                <th scope="col" class="px-6 py-4 font-medium whitespace-nowrap">Varlık / Hisse</th>
+                                <th scope="col" class="px-6 py-4 font-medium whitespace-nowrap">VarlÄ±k / Hisse</th>
                                 <th scope="col" class="px-6 py-4 font-medium text-right whitespace-nowrap">Adet</th>
-                                <th scope="col" class="px-6 py-4 font-medium text-right whitespace-nowrap">Maliyet (₺)</th>
-                                <th scope="col" class="px-6 py-4 font-medium text-right whitespace-nowrap">Güncel Fiyat (₺)</th>
-                                <th scope="col" class="px-6 py-4 font-medium text-center whitespace-nowrap">Ağırlık (%)</th>
-                                <th scope="col" class="px-6 py-4 font-medium text-right whitespace-nowrap">Net Kâr/Zarar (₺)</th>
+                                <th scope="col" class="px-6 py-4 font-medium text-right whitespace-nowrap">Maliyet (â‚º)</th>
+                                <th scope="col" class="px-6 py-4 font-medium text-right whitespace-nowrap">GÃ¼ncel Fiyat (â‚º)</th>
+                                <th scope="col" class="px-6 py-4 font-medium text-center whitespace-nowrap">AÄŸÄ±rlÄ±k (%)</th>
+                                <th scope="col" class="px-6 py-4 font-medium text-right whitespace-nowrap">Net KÃ¢r/Zarar (â‚º)</th>
                                 <th scope="col" class="px-6 py-4 font-medium text-right whitespace-nowrap">Getiri (%)</th>
                             </tr>
                         </thead>
@@ -260,12 +260,12 @@
                         </tbody>
                         <tfoot class="border-t border-white/20 dark:border-white/5 font-semibold text-slate-900 dark:text-white">
                             <tr>
-                                <td class="px-6 py-4 whitespace-nowrap">Toplam Portföy</td>
+                                <td class="px-6 py-4 whitespace-nowrap">Toplam PortfÃ¶y</td>
                                 <td class="px-6 py-4"></td>
-                                <td class="px-6 py-4 text-right whitespace-nowrap" id="totalCost">0 ₺</td>
-                                <td class="px-6 py-4 text-right whitespace-nowrap" id="totalValue">0 ₺</td>
+                                <td class="px-6 py-4 text-right whitespace-nowrap" id="totalCost">0 â‚º</td>
+                                <td class="px-6 py-4 text-right whitespace-nowrap" id="totalValue">0 â‚º</td>
                                 <td class="px-6 py-4 text-center whitespace-nowrap">100%</td>
-                                <td class="px-6 py-4 text-right font-medium whitespace-nowrap" id="totalProfitTL">0 ₺</td>
+                                <td class="px-6 py-4 text-right font-medium whitespace-nowrap" id="totalProfitTL">0 â‚º</td>
                                 <td class="px-6 py-4 text-right whitespace-nowrap" id="totalChange">0%</td>
                             </tr>
                         </tfoot>
@@ -277,12 +277,12 @@
         <!-- COMPARISON VIEW TAB -->
         <div id="view-compare" class="hidden animate-fade-in">
             <div class="mb-6">
-                <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">Aylık Kümülatif Getiri Kıyaslaması</h2>
-                <p class="text-slate-500 dark:text-slate-400 text-sm">Zaman içindeki portföy getirilerinizi ana endekslerle kıyaslayın.</p>
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">AylÄ±k KÃ¼mÃ¼latif Getiri KÄ±yaslamasÄ±</h2>
+                <p class="text-slate-500 dark:text-slate-400 text-sm">Zaman iÃ§indeki portfÃ¶y getirilerinizi ana endekslerle kÄ±yaslayÄ±n.</p>
             </div>
 
             <div class="glass-panel rounded-2xl p-5 shadow-xl mb-8">
-                <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4 uppercase tracking-wider">Kıyaslanacak Verileri Seçin</h3>
+                <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4 uppercase tracking-wider">KÄ±yaslanacak Verileri SeÃ§in</h3>
                 <div class="flex flex-wrap gap-3" id="benchmarkToggles">
                     <!-- JS -->
                 </div>
@@ -291,7 +291,7 @@
             <div class="glass-panel rounded-2xl p-4 sm:p-6 shadow-xl">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
                     <div class="flex flex-col gap-2">
-                        <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Kümülatif Getiri Grafiği (%)</h2>
+                        <h2 class="text-lg font-semibold text-slate-900 dark:text-white">KÃ¼mÃ¼latif Getiri GrafiÄŸi (%)</h2>
                         <div class="flex flex-wrap gap-1.5" id="compareTimeFilters">
                             <button class="compare-time-filter-btn px-2.5 py-1 text-xs font-medium rounded-md bg-brand-500 text-white shadow transition-colors" data-range="this_month" onclick="setCompareTimeRange('this_month')">Bu Ay</button>
                             <button class="compare-time-filter-btn px-2.5 py-1 text-xs font-medium rounded-md bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors" data-range="1w" onclick="setCompareTimeRange('1w')">1H</button>
@@ -305,10 +305,10 @@
                     </div>
                     <div class="flex glass-panel p-1 rounded-lg shadow-sm">
                         <button id="btnCompareLineChart" onclick="toggleCompareChartType('line')" class="px-4 py-1.5 text-sm font-medium rounded-md bg-brand-500 text-white shadow transition-colors">
-                            <i class="fa-solid fa-chart-line mr-2"></i>Çizgi
+                            <i class="fa-solid fa-chart-line mr-2"></i>Ã‡izgi
                         </button>
                         <button id="btnCompareBarChart" onclick="toggleCompareChartType('bar')" class="px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-900 dark:hover:text-white transition-colors">
-                            <i class="fa-solid fa-chart-simple mr-2"></i>Sütun
+                            <i class="fa-solid fa-chart-simple mr-2"></i>SÃ¼tun
                         </button>
                     </div>
                 </div>
@@ -326,13 +326,13 @@
         <div id="view-manage" class="hidden animate-fade-in">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                 <div>
-                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">Portföy Yönetimi</h2>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm">Seçili aydaki portföylerinizi yönetin.</p>
+                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">PortfÃ¶y YÃ¶netimi</h2>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm">SeÃ§ili aydaki portfÃ¶ylerinizi yÃ¶netin.</p>
                 </div>
                 <div class="flex flex-wrap items-center gap-3">
                     <div class="relative group z-50">
                         <button id="manageMonthDropdownBtn" onclick="toggleCustomDropdown('manageMonthDropdownMenu')" class="glass-input px-4 py-2 rounded-xl text-sm font-bold text-slate-900 dark:text-white focus:outline-none flex justify-between items-center w-40 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all shadow-sm">
-                            <span id="manageMonthDropdownText">Ay Seç</span>
+                            <span id="manageMonthDropdownText">Ay SeÃ§</span>
                             <i class="fa-solid fa-chevron-down text-xs opacity-60 ml-2"></i>
                         </button>
                         <div id="manageMonthDropdownMenu" class="absolute left-0 top-full mt-2 w-40 glass-panel rounded-xl shadow-2xl opacity-0 invisible transition-all duration-200 transform origin-top scale-95 flex flex-col py-2 max-h-60 overflow-y-auto border border-slate-200/50 dark:border-slate-700/50">
@@ -343,7 +343,7 @@
                         <i class="fa-solid fa-lock mr-2" id="lockIcon"></i><span id="lockText">Kilitli</span>
                     </button>
                     <button onclick="openPortfolioModal()" class="glass-button px-4 py-2.5 rounded-lg font-medium shadow-lg flex items-center gap-2 whitespace-nowrap">
-                        <i class="fa-solid fa-plus"></i> Yeni Portföy Ekle
+                        <i class="fa-solid fa-plus"></i> Yeni PortfÃ¶y Ekle
                     </button>
                 </div>
             </div>
@@ -366,60 +366,60 @@
                 <!-- Header -->
                 <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col md:flex-row justify-between items-center gap-4">
                   <div>
-                    <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Portföy Geçiş Planı</h1>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Eşit ağırlıklı portföyler için otomatik geçiş ve lot hesaplama aracı</p>
+                    <h1 class="text-2xl font-bold text-slate-900 dark:text-white">PortfÃ¶y GeÃ§iÅŸ PlanÄ±</h1>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">EÅŸit aÄŸÄ±rlÄ±klÄ± portfÃ¶yler iÃ§in otomatik geÃ§iÅŸ ve lot hesaplama aracÄ±</p>
                   </div>
                   <div class="flex items-center gap-2">
-                    <label class="text-sm font-semibold text-slate-600 dark:text-slate-300">Boşta Nakit (TL):</label>
+                    <label class="text-sm font-semibold text-slate-600 dark:text-slate-300">BoÅŸta Nakit (TL):</label>
                     <input type="number" id="rebCashBalance" class="w-32 px-3 py-2 border border-slate-200 dark:border-slate-700 dark:bg-slate-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="0.00" min="0">
                   </div>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <!-- Sol Kolon: Mevcut Portföy -->
+                  <!-- Sol Kolon: Mevcut PortfÃ¶y -->
                   <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden flex flex-col">
                     <div class="bg-slate-800 p-4 text-white flex justify-between items-center">
                       <div>
                           <h2 class="text-lg font-semibold flex items-center gap-2">
-                            <i class="fa-solid fa-box-archive"></i> 1. Mevcut Portföy (Şu anki)
+                            <i class="fa-solid fa-box-archive"></i> 1. Mevcut PortfÃ¶y (Åu anki)
                           </h2>
-                          <p class="text-slate-300 text-xs mt-1">Elindeki hisseleri ve anlık fiyatlarını gir.</p>
+                          <p class="text-slate-300 text-xs mt-1">Elindeki hisseleri ve anlÄ±k fiyatlarÄ±nÄ± gir.</p>
                       </div>
                       <select id="rebAutoPortSelect" onchange="rebLoadPortfolio()" class="text-sm bg-slate-700 text-white rounded p-1 outline-none">
-                          <option value="">-- Portföy Seç --</option>
+                          <option value="">-- PortfÃ¶y SeÃ§ --</option>
                       </select>
                     </div>
                     <div class="p-4 flex-grow">
                       <div class="grid grid-cols-12 gap-2 mb-2 px-1 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                         <div class="col-span-4">Hisse Kodu</div>
                         <div class="col-span-3">Adet (Lot)</div>
-                        <div class="col-span-4">Güncel Fiyat</div>
+                        <div class="col-span-4">GÃ¼ncel Fiyat</div>
                         <div class="col-span-1 text-center">Sil</div>
                       </div>
                       <div id="rebCurrentList" class="space-y-3"></div>
                       <button onclick="rebAddCurrentRow()" class="mt-4 flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 transition">
-                        <i class="fa-solid fa-plus"></i> Yeni Satır Ekle
+                        <i class="fa-solid fa-plus"></i> Yeni SatÄ±r Ekle
                       </button>
                     </div>
                   </div>
 
-                  <!-- Sağ Kolon: Hedef Portföy -->
+                  <!-- SaÄŸ Kolon: Hedef PortfÃ¶y -->
                   <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden flex flex-col">
                     <div class="bg-blue-600 p-4 text-white">
                       <h2 class="text-lg font-semibold flex items-center gap-2">
-                        <i class="fa-solid fa-bullseye"></i> 2. Yeni (Hedef) Portföy
+                        <i class="fa-solid fa-bullseye"></i> 2. Yeni (Hedef) PortfÃ¶y
                       </h2>
-                      <p class="text-blue-100 text-xs mt-1">Bu ay geçiş yapılacak yeni hisseleri ve alış fiyatlarını gir.</p>
+                      <p class="text-blue-100 text-xs mt-1">Bu ay geÃ§iÅŸ yapÄ±lacak yeni hisseleri ve alÄ±ÅŸ fiyatlarÄ±nÄ± gir.</p>
                     </div>
                     <div class="p-4 flex-grow">
                       <div class="grid grid-cols-12 gap-2 mb-2 px-1 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                         <div class="col-span-6">Hisse Kodu</div>
-                        <div class="col-span-5">Hedef Alış Fiyatı</div>
+                        <div class="col-span-5">Hedef AlÄ±ÅŸ FiyatÄ±</div>
                         <div class="col-span-1 text-center">Sil</div>
                       </div>
                       <div id="rebTargetList" class="space-y-3"></div>
                       <button onclick="rebAddTargetRow()" class="mt-4 flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 transition">
-                        <i class="fa-solid fa-plus"></i> Yeni Satır Ekle
+                        <i class="fa-solid fa-plus"></i> Yeni SatÄ±r Ekle
                       </button>
                     </div>
                   </div>
@@ -428,43 +428,43 @@
                 <!-- Hesapla Butonu -->
                 <div class="flex justify-center py-4">
                   <button onclick="rebCalculate()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-xl font-bold text-lg shadow-lg shadow-emerald-200 transition transform hover:-translate-y-1 flex items-center gap-2">
-                    <i class="fa-solid fa-bolt"></i> Geçiş Planını Hesapla
+                    <i class="fa-solid fa-bolt"></i> GeÃ§iÅŸ PlanÄ±nÄ± Hesapla
                   </button>
                 </div>
 
-                <!-- Sonuçlar -->
+                <!-- SonuÃ§lar -->
                 <div id="rebResults" class="hidden bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden mt-4 animate-fade-in">
                   <div class="bg-slate-900 p-6 text-white text-center">
-                    <h2 class="text-2xl font-bold">Portföy Geçiş Planı</h2>
-                    <p class="text-slate-400 mt-1">Eşit ağırlıklı yeni portföye ulaşmak için yapmanız gereken işlemler.</p>
+                    <h2 class="text-2xl font-bold">PortfÃ¶y GeÃ§iÅŸ PlanÄ±</h2>
+                    <p class="text-slate-400 mt-1">EÅŸit aÄŸÄ±rlÄ±klÄ± yeni portfÃ¶ye ulaÅŸmak iÃ§in yapmanÄ±z gereken iÅŸlemler.</p>
                   </div>
                   <div class="p-6">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                       <div class="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
-                        <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Toplam Portföy Büyüklüğü</p>
-                        <p id="rebResTotalValue" class="text-2xl font-bold text-slate-900 dark:text-white">0 ₺</p>
+                        <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Toplam PortfÃ¶y BÃ¼yÃ¼klÃ¼ÄŸÃ¼</p>
+                        <p id="rebResTotalValue" class="text-2xl font-bold text-slate-900 dark:text-white">0 â‚º</p>
                       </div>
                       <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800/50">
-                        <p class="text-blue-600 dark:text-blue-400 text-sm font-medium">Hisse Başı Hedef Bütçe (Eşit)</p>
-                        <p id="rebResBudget" class="text-2xl font-bold text-blue-900 dark:text-blue-100">0 ₺</p>
+                        <p class="text-blue-600 dark:text-blue-400 text-sm font-medium">Hisse BaÅŸÄ± Hedef BÃ¼tÃ§e (EÅŸit)</p>
+                        <p id="rebResBudget" class="text-2xl font-bold text-blue-900 dark:text-blue-100">0 â‚º</p>
                       </div>
                       <div class="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-xl border border-emerald-100 dark:border-emerald-800/50">
-                        <p class="text-emerald-600 dark:text-emerald-400 text-sm font-medium">İşlemler Sonrası Artan Nakit</p>
-                        <p id="rebResRemaining" class="text-2xl font-bold text-emerald-900 dark:text-emerald-100">0 ₺</p>
-                        <p class="text-xs text-emerald-700 dark:text-emerald-500 mt-1">(Küsuratlı lot alınamadığı için artan miktar)</p>
+                        <p class="text-emerald-600 dark:text-emerald-400 text-sm font-medium">Ä°ÅŸlemler SonrasÄ± Artan Nakit</p>
+                        <p id="rebResRemaining" class="text-2xl font-bold text-emerald-900 dark:text-emerald-100">0 â‚º</p>
+                        <p class="text-xs text-emerald-700 dark:text-emerald-500 mt-1">(KÃ¼suratlÄ± lot alÄ±namadÄ±ÄŸÄ± iÃ§in artan miktar)</p>
                       </div>
                     </div>
 
-                    <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-4 border-b dark:border-slate-700 pb-2">Gerçekleştirilecek İşlemler (Borsa Emirleri)</h3>
+                    <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-4 border-b dark:border-slate-700 pb-2">GerÃ§ekleÅŸtirilecek Ä°ÅŸlemler (Borsa Emirleri)</h3>
                     <div id="rebNoAction" class="hidden text-center p-8 bg-slate-50 dark:bg-slate-800 rounded-xl text-slate-500 dark:text-slate-400">
-                      <p>Mevcut portföyünüz ile hedef portföyünüz tamamen aynı.</p>
-                      <p>Herhangi bir alım/satım işlemi yapmanıza gerek yok!</p>
+                      <p>Mevcut portfÃ¶yÃ¼nÃ¼z ile hedef portfÃ¶yÃ¼nÃ¼z tamamen aynÄ±.</p>
+                      <p>Herhangi bir alÄ±m/satÄ±m iÅŸlemi yapmanÄ±za gerek yok!</p>
                     </div>
                     <div id="rebActionTableContainer" class="overflow-x-auto">
                       <table class="w-full text-left border-collapse">
                         <thead>
                           <tr class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-sm">
-                            <th class="p-3 rounded-tl-lg font-semibold">İşlem</th>
+                            <th class="p-3 rounded-tl-lg font-semibold">Ä°ÅŸlem</th>
                             <th class="p-3 font-semibold">Hisse</th>
                             <th class="p-3 font-semibold text-right">Adet (Lot)</th>
                             <th class="p-3 font-semibold text-right">Fiyat</th>
@@ -475,12 +475,12 @@
                       </table>
                       <div class="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/30 rounded-lg text-sm text-yellow-800 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-700/50 flex gap-3 items-start">
                         <i class="fa-solid fa-triangle-exclamation mt-0.5 text-lg"></i>
-                        <p><strong>Önemli Not:</strong> Yukarıdaki plana uyarken önce <strong>'SATIŞ YAP'</strong> emirlerini borsada gerçekleştirerek nakde dönmeniz önerilir. Böylece <strong>'ALIM YAP'</strong> emirleri için gerekli nakdi yaratmış olursunuz.</p>
+                        <p><strong>Ã–nemli Not:</strong> YukarÄ±daki plana uyarken Ã¶nce <strong>'SATIÅ YAP'</strong> emirlerini borsada gerÃ§ekleÅŸtirerek nakde dÃ¶nmeniz Ã¶nerilir. BÃ¶ylece <strong>'ALIM YAP'</strong> emirleri iÃ§in gerekli nakdi yaratmÄ±ÅŸ olursunuz.</p>
                       </div>
                       
                       <div id="rebNewPortfolioPreviewContainer" class="mt-8 pt-6 hidden"></div><div class="mt-6 flex justify-center pb-4 border-t pt-4">
                         <button onclick="rebApplyAndSave()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold text-lg shadow-lg shadow-blue-500/30 transition transform hover:-translate-y-1 flex items-center gap-2">
-                          <i class="fa-solid fa-floppy-disk"></i> Portföye Uygula ve Kaydet
+                          <i class="fa-solid fa-floppy-disk"></i> PortfÃ¶ye Uygula ve Kaydet
                         </button>
                       </div>
                     </div>
@@ -492,26 +492,26 @@
 
     <div id="portfolioModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 opacity-0 transition-opacity">
         <div class="glass-panel p-6 rounded-2xl w-full max-w-md shadow-2xl transform scale-95 transition-transform" id="portfolioModalContent">
-            <h3 class="text-slate-900 dark:text-white text-xl font-bold mb-4">Yeni Portföy Oluştur</h3>
+            <h3 class="text-slate-900 dark:text-white text-xl font-bold mb-4">Yeni PortfÃ¶y OluÅŸtur</h3>
             <div class="mb-4">
-                <label class="block text-slate-500 dark:text-slate-400 text-sm mb-2">Portföy Adı</label>
-                <input type="text" id="newPortName" class="w-full glass-input rounded-lg p-3 text-slate-900 dark:text-white focus:border-brand-500 outline-none" placeholder="Örn: Uzun Vade Temettü" onkeypress="if(event.key === 'Enter') savePortfolio()">
+                <label class="block text-slate-500 dark:text-slate-400 text-sm mb-2">PortfÃ¶y AdÄ±</label>
+                <input type="text" id="newPortName" class="w-full glass-input rounded-lg p-3 text-slate-900 dark:text-white focus:border-brand-500 outline-none" placeholder="Ã–rn: Uzun Vade TemettÃ¼" onkeypress="if(event.key === 'Enter') savePortfolio()">
             </div>
             <div class="flex justify-end gap-3 mt-6">
-                <button onclick="closeModals()" class="px-5 py-2.5 glass-input text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">İptal</button>
-                <button onclick="savePortfolio()" class="px-5 py-2.5 glass-button rounded-lg transition-colors shadow-lg">Oluştur</button>
+                <button onclick="closeModals()" class="px-5 py-2.5 glass-input text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">Ä°ptal</button>
+                <button onclick="savePortfolio()" class="px-5 py-2.5 glass-button rounded-lg transition-colors shadow-lg">OluÅŸtur</button>
             </div>
         </div>
     </div>
 
     <div id="assetModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 opacity-0 transition-opacity">
         <div class="glass-panel p-6 rounded-2xl w-full max-w-md shadow-2xl transform scale-95 transition-transform" id="assetModalContent">
-            <h3 class="text-slate-900 dark:text-white text-xl font-bold mb-4">Varlık / Hisse Ekle</h3>
+            <h3 class="text-slate-900 dark:text-white text-xl font-bold mb-4">VarlÄ±k / Hisse Ekle</h3>
             <input type="hidden" id="targetPortfolioId">
             <div class="space-y-4">
                 <div>
-                    <label class="block text-slate-500 dark:text-slate-400 text-sm mb-1">Hisse Kodu (BIST için .IS eklemeyin)</label>
-                    <input type="text" id="assetName" class="w-full glass-input rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none uppercase" placeholder="Örn: THYAO" onkeypress="if(event.key === 'Enter') saveAsset()">
+                    <label class="block text-slate-500 dark:text-slate-400 text-sm mb-1">Hisse Kodu (BIST iÃ§in .IS eklemeyin)</label>
+                    <input type="text" id="assetName" class="w-full glass-input rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none uppercase" placeholder="Ã–rn: THYAO" onkeypress="if(event.key === 'Enter') saveAsset()">
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -519,17 +519,17 @@
                         <input type="number" id="assetAmount" class="w-full glass-input rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none" placeholder="100" onkeypress="if(event.key === 'Enter') saveAsset()">
                     </div>
                     <div>
-                        <label class="block text-slate-500 dark:text-slate-400 text-sm mb-1">Birim Maliyet (₺)</label>
+                        <label class="block text-slate-500 dark:text-slate-400 text-sm mb-1">Birim Maliyet (â‚º)</label>
                         <input type="number" id="assetCost" step="0.01" class="w-full glass-input rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none" placeholder="150.50" onkeypress="if(event.key === 'Enter') saveAsset()">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-slate-500 dark:text-slate-400 text-sm mb-1">Manuel Fiyat (Zorunlu Değil)</label>
-                    <input type="number" id="assetPrice" step="0.01" class="w-full glass-input rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none" placeholder="Güncel Fiyat" onkeypress="if(event.key === 'Enter') saveAsset()">
+                    <label class="block text-slate-500 dark:text-slate-400 text-sm mb-1">Manuel Fiyat (Zorunlu DeÄŸil)</label>
+                    <input type="number" id="assetPrice" step="0.01" class="w-full glass-input rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none" placeholder="GÃ¼ncel Fiyat" onkeypress="if(event.key === 'Enter') saveAsset()">
                 </div>
             </div>
             <div class="flex justify-end gap-3 mt-6">
-                <button onclick="closeModals()" class="px-5 py-2.5 glass-input text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">İptal</button>
+                <button onclick="closeModals()" class="px-5 py-2.5 glass-input text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">Ä°ptal</button>
                 <button onclick="saveAsset()" class="px-5 py-2.5 glass-button rounded-lg transition-colors shadow-lg">Ekle</button>
             </div>
         </div>
@@ -537,7 +537,7 @@
 
     <div id="editAssetModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 opacity-0 transition-opacity">
         <div class="glass-panel p-6 rounded-2xl w-full max-w-md shadow-2xl transform scale-95 transition-transform" id="editAssetModalContent">
-            <h3 class="text-slate-900 dark:text-white text-xl font-bold mb-4">Hisse Düzenle</h3>
+            <h3 class="text-slate-900 dark:text-white text-xl font-bold mb-4">Hisse DÃ¼zenle</h3>
             <input type="hidden" id="editTargetPortfolioId">
             <input type="hidden" id="editTargetAssetId">
             <div class="space-y-4">
@@ -547,17 +547,17 @@
                         <input type="number" id="editAssetAmount" class="w-full glass-input rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none" onkeypress="if(event.key === 'Enter') saveEditedAsset()">
                     </div>
                     <div>
-                        <label class="block text-slate-500 dark:text-slate-400 text-sm mb-1">Birim Maliyet (₺)</label>
+                        <label class="block text-slate-500 dark:text-slate-400 text-sm mb-1">Birim Maliyet (â‚º)</label>
                         <input type="number" id="editAssetCost" step="0.01" class="w-full glass-input rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none" onkeypress="if(event.key === 'Enter') saveEditedAsset()">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-slate-500 dark:text-slate-400 text-sm mb-1">Güncel Fiyat</label>
+                    <label class="block text-slate-500 dark:text-slate-400 text-sm mb-1">GÃ¼ncel Fiyat</label>
                     <input type="number" id="editAssetPrice" step="0.01" class="w-full glass-input rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none" onkeypress="if(event.key === 'Enter') saveEditedAsset()">
                 </div>
             </div>
             <div class="flex justify-end gap-3 mt-6">
-                <button onclick="closeModals()" class="px-5 py-2.5 glass-input text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">İptal</button>
+                <button onclick="closeModals()" class="px-5 py-2.5 glass-input text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">Ä°ptal</button>
                 <button onclick="saveEditedAsset()" class="px-5 py-2.5 glass-button rounded-lg transition-colors shadow-lg">Kaydet</button>
             </div>
         </div>
@@ -569,7 +569,7 @@
             <div class="w-12 h-12 bg-amber-500/20 text-amber-500 rounded-full flex items-center justify-center mb-4 text-2xl">
                 <i class="fa-solid fa-bell"></i>
             </div>
-            <h3 class="text-slate-900 dark:text-white text-lg font-bold mb-2">Sistem Mesajı</h3>
+            <h3 class="text-slate-900 dark:text-white text-lg font-bold mb-2">Sistem MesajÄ±</h3>
             <p id="alertMessage" class="text-slate-500 dark:text-slate-400 text-sm mb-6"></p>
             <button onclick="closeAlertModal()" class="w-full px-4 py-2 bg-gradient-to-r from-brand-500 to-blue-600 hover:from-brand-400 hover:to-blue-500 text-white rounded-lg transition-all shadow-lg shadow-brand-500/30">Tamam</button>
          </div>
@@ -578,9 +578,9 @@
     <div id="confirmModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[110] flex items-center justify-center p-4 opacity-0 transition-opacity">
          <div class="glass-panel p-6 rounded-2xl w-full max-w-sm shadow-2xl" id="confirmModalContent">
             <h3 class="text-slate-900 dark:text-white text-lg font-bold mb-2">Emin misiniz?</h3>
-            <p id="confirmMessage" class="text-slate-500 dark:text-slate-400 text-sm mb-6">Bu işlemi geri alamazsınız.</p>
+            <p id="confirmMessage" class="text-slate-500 dark:text-slate-400 text-sm mb-6">Bu iÅŸlemi geri alamazsÄ±nÄ±z.</p>
             <div class="flex justify-end gap-3">
-                <button onclick="closeConfirmModal()" class="px-4 py-2 glass-input text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">İptal</button>
+                <button onclick="closeConfirmModal()" class="px-4 py-2 glass-input text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">Ä°ptal</button>
                 <button id="confirmBtn" class="px-4 py-2 bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-400 hover:to-red-500 text-white rounded-lg transition-all shadow-[0_0_15px_rgba(225,29,72,0.5)]">Sil</button>
             </div>
          </div>
@@ -589,15 +589,15 @@
     <div id="calcModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 opacity-0 transition-opacity">
         <div class="glass-panel p-6 rounded-2xl w-full max-w-md shadow-2xl transform scale-95 transition-transform flex flex-col" id="calcModalContent" style="max-height: 90vh;">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-slate-900 dark:text-white text-xl font-bold">Hesap Araçları</h3>
+                <h3 class="text-slate-900 dark:text-white text-xl font-bold">Hesap AraÃ§larÄ±</h3>
                 <button onclick="closeModals()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
                     <i class="fa-solid fa-xmark text-xl"></i>
                 </button>
             </div>
             
             <div class="flex border-b border-slate-200 dark:border-slate-700 mb-4">
-                <button id="calcTab-avg" onclick="switchCalcTab('avg')" class="flex-1 py-2 text-sm font-medium border-b-2 border-brand-500 text-brand-600 dark:text-brand-400 transition-colors">Ortalama Düşürme</button>
-                <button id="calcTab-split" onclick="switchCalcTab('split')" class="flex-1 py-2 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors">Bedelsiz Bölünme</button>
+                <button id="calcTab-avg" onclick="switchCalcTab('avg')" class="flex-1 py-2 text-sm font-medium border-b-2 border-brand-500 text-brand-600 dark:text-brand-400 transition-colors">Ortalama DÃ¼ÅŸÃ¼rme</button>
+                <button id="calcTab-split" onclick="switchCalcTab('split')" class="flex-1 py-2 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors">Bedelsiz BÃ¶lÃ¼nme</button>
             </div>
 
             <div class="overflow-y-auto flex-grow px-1" style="max-height: 60vh;">
@@ -615,19 +615,19 @@
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-slate-500 dark:text-slate-400 text-xs mb-1">Alınacak Lot</label>
+                            <label class="block text-slate-500 dark:text-slate-400 text-xs mb-1">AlÄ±nacak Lot</label>
                             <input type="number" id="calcAvgAddLot" class="w-full glass-input rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none" oninput="runAvgCalc()">
                         </div>
                         <div>
-                            <label class="block text-slate-500 dark:text-slate-400 text-xs mb-1">Alış Fiyatı</label>
+                            <label class="block text-slate-500 dark:text-slate-400 text-xs mb-1">AlÄ±ÅŸ FiyatÄ±</label>
                             <input type="number" id="calcAvgAddPrice" step="0.01" class="w-full glass-input rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none" oninput="runAvgCalc()">
                         </div>
                     </div>
                     
                     <div class="mt-4 p-4 rounded-xl bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
                         <div class="flex justify-between mb-2"><span class="text-sm text-slate-500">Yeni Toplam Lot:</span><span id="calcAvgResLot" class="font-bold text-slate-900 dark:text-white">0</span></div>
-                        <div class="flex justify-between mb-2"><span class="text-sm text-slate-500">Gereken Tutar:</span><span id="calcAvgResCost" class="font-bold text-slate-900 dark:text-white">0 ₺</span></div>
-                        <div class="flex justify-between border-t border-slate-300 dark:border-slate-600 pt-2 mt-2"><span class="text-sm text-brand-600 dark:text-brand-400 font-semibold">Yeni Ort. Maliyet:</span><span id="calcAvgResAvg" class="font-bold text-brand-600 dark:text-brand-400">0 ₺</span></div>
+                        <div class="flex justify-between mb-2"><span class="text-sm text-slate-500">Gereken Tutar:</span><span id="calcAvgResCost" class="font-bold text-slate-900 dark:text-white">0 â‚º</span></div>
+                        <div class="flex justify-between border-t border-slate-300 dark:border-slate-600 pt-2 mt-2"><span class="text-sm text-brand-600 dark:text-brand-400 font-semibold">Yeni Ort. Maliyet:</span><span id="calcAvgResAvg" class="font-bold text-brand-600 dark:text-brand-400">0 â‚º</span></div>
                     </div>
                 </div>
 
@@ -644,24 +644,24 @@
                         </div>
                     </div>
                     <div>
-                        <label class="block text-slate-500 dark:text-slate-400 text-xs mb-1">Bedelsiz Oranı (%)</label>
-                        <input type="number" id="calcSplitRatio" class="w-full glass-input rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none" oninput="runSplitCalc()" placeholder="Örn: 150">
+                        <label class="block text-slate-500 dark:text-slate-400 text-xs mb-1">Bedelsiz OranÄ± (%)</label>
+                        <input type="number" id="calcSplitRatio" class="w-full glass-input rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none" oninput="runSplitCalc()" placeholder="Ã–rn: 150">
                     </div>
                     
                     <div class="mt-4 p-4 rounded-xl bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
                         <div class="flex justify-between mb-2"><span class="text-sm text-slate-500">Eklenecek Lot:</span><span id="calcSplitResAdd" class="font-bold text-slate-900 dark:text-white">0</span></div>
                         <div class="flex justify-between mb-2"><span class="text-sm text-slate-500">Yeni Toplam Lot:</span><span id="calcSplitResLot" class="font-bold text-slate-900 dark:text-white">0</span></div>
-                        <div class="flex justify-between border-t border-slate-300 dark:border-slate-600 pt-2 mt-2"><span class="text-sm text-brand-600 dark:text-brand-400 font-semibold">Yeni Ort. Maliyet:</span><span id="calcSplitResAvg" class="font-bold text-brand-600 dark:text-brand-400">0 ₺</span></div>
+                        <div class="flex justify-between border-t border-slate-300 dark:border-slate-600 pt-2 mt-2"><span class="text-sm text-brand-600 dark:text-brand-400 font-semibold">Yeni Ort. Maliyet:</span><span id="calcSplitResAvg" class="font-bold text-brand-600 dark:text-brand-400">0 â‚º</span></div>
                     </div>
                 </div>
             </div>
 
             <!-- Apply Section -->
             <div class="mt-6 border-t border-slate-200 dark:border-slate-700 pt-4">
-                <label class="block text-slate-500 dark:text-slate-400 text-xs mb-2">Çıkan sonucu bir hisseye uygula:</label>
+                <label class="block text-slate-500 dark:text-slate-400 text-xs mb-2">Ã‡Ä±kan sonucu bir hisseye uygula:</label>
                 <div class="flex gap-2">
                     <select id="calcApplySelect" class="flex-grow glass-input rounded-lg px-2 py-2 text-sm text-slate-900 dark:text-white focus:border-brand-500 outline-none bg-transparent">
-                        <option value="">-- Hisse Seç --</option>
+                        <option value="">-- Hisse SeÃ§ --</option>
                     </select>
                     <button onclick="applyCalculatorToPortfolio()" class="px-4 py-2 glass-button rounded-lg text-sm font-medium shadow-lg whitespace-nowrap">Uygula</button>
                 </div>
@@ -671,14 +671,14 @@
 
     <div id="editPortfolioModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 opacity-0 transition-opacity">
         <div class="glass-panel p-6 rounded-2xl w-full max-w-md shadow-2xl transform scale-95 transition-transform" id="editPortfolioModalContent">
-            <h3 class="text-slate-900 dark:text-white text-xl font-bold mb-4">Portföy İsmini Düzenle</h3>
+            <h3 class="text-slate-900 dark:text-white text-xl font-bold mb-4">PortfÃ¶y Ä°smini DÃ¼zenle</h3>
             <input type="hidden" id="editPortfolioId">
             <div class="mb-4">
-                <label class="block text-slate-500 dark:text-slate-400 text-sm mb-2">Yeni Portföy Adı</label>
-                <input type="text" id="editPortName" class="w-full glass-input rounded-lg p-3 text-slate-900 dark:text-white focus:border-brand-500 outline-none" placeholder="Örn: Uzun Vade Temettü" onkeypress="if(event.key === 'Enter') saveEditedPortfolioName()">
+                <label class="block text-slate-500 dark:text-slate-400 text-sm mb-2">Yeni PortfÃ¶y AdÄ±</label>
+                <input type="text" id="editPortName" class="w-full glass-input rounded-lg p-3 text-slate-900 dark:text-white focus:border-brand-500 outline-none" placeholder="Ã–rn: Uzun Vade TemettÃ¼" onkeypress="if(event.key === 'Enter') saveEditedPortfolioName()">
             </div>
             <div class="flex justify-end gap-3 mt-6">
-                <button onclick="closeModals()" class="px-5 py-2.5 glass-input text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">İptal</button>
+                <button onclick="closeModals()" class="px-5 py-2.5 glass-input text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">Ä°ptal</button>
                 <button onclick="saveEditedPortfolioName()" class="px-5 py-2.5 glass-button rounded-lg transition-colors shadow-lg">Kaydet</button>
             </div>
         </div>
@@ -761,17 +761,17 @@
                             
                             const newPorts = JSON.parse(JSON.stringify(appState.portfoliosData[lastMonth]));
                             newPorts.forEach(p => {
-                                // ID çakışmasını önlemek için ay damgası ekliyoruz
+                                // ID Ã§akÄ±ÅŸmasÄ±nÄ± Ã¶nlemek iÃ§in ay damgasÄ± ekliyoruz
                                 const baseId = p.id.split('_')[0];
                                 p.id = baseId + '_' + actualMonth.replace('-', '');
-                                p.month = actualMonth; // Güvenlik için
+                                p.month = actualMonth; // GÃ¼venlik iÃ§in
                                 p.dailyHistory = {};
                                 p.assets.forEach(a => {
                                     const baseAId = a.id.split('_')[0];
                                     a.id = baseAId + '_' + actualMonth.replace('-', '');
                                     a.portfolio_id = p.id;
                                     if (a.price) {
-                                        a.cost = a.price; // Kapanış fiyatını yeni maliyet olarak belirle
+                                        a.cost = a.price; // KapanÄ±ÅŸ fiyatÄ±nÄ± yeni maliyet olarak belirle
                                     }
                                 });
                             });
@@ -790,25 +790,25 @@
                 
                 appState.currentViewMonth = actualMonth;
                 
-                // Başlangıç grafik statelerini ve UI görünümünü senkronize et
+                // BaÅŸlangÄ±Ã§ grafik statelerini ve UI gÃ¶rÃ¼nÃ¼mÃ¼nÃ¼ senkronize et
                 if (!appState.compareTimeRange) appState.compareTimeRange = 'this_month';
                 if (!appState.compareChartType) appState.compareChartType = (appState.compareTimeRange === 'this_month') ? 'bar' : 'line';
                 if (!appState.monthlyChartType) appState.monthlyChartType = 'line';
                 
-                // Arka planda sessiz otomatik fiyat güncelleme (Her 60 saniyede bir)
+                // Arka planda sessiz otomatik fiyat gÃ¼ncelleme (Her 60 saniyede bir)
                 refreshPrices();
                 setInterval(refreshPrices, 60000);
 
-                // Buton görünümlerini mevcut state'e göre ayarla
+                // Buton gÃ¶rÃ¼nÃ¼mlerini mevcut state'e gÃ¶re ayarla
                 setTimeout(() => {
                     updateFilterButtons('compareTimeFilters', appState.compareTimeRange);
                     toggleCompareChartType(appState.compareChartType);
                     toggleChartType(appState.monthlyChartType);
                 }, 50);
                 
-                // Varsayılan olarak sadece portföyleri seç
-                const allUniquePorts = getAllUniquePortfolios();
-                appState.activeBenchmarks = allUniquePorts.map(p => p.id.split('_')[0]);
+                // VarsayÄ±lan olarak sadece portfÃ¶yleri seÃ§
+                const currentPorts = appState.portfoliosData[actualMonth] || [];
+                appState.activeBenchmarks = currentPorts.map(p => p.id);
 
                 if(appState.portfoliosData[appState.currentViewMonth].length > 0) {
                     const ports = appState.portfoliosData[appState.currentViewMonth];
@@ -823,7 +823,7 @@
                         appState.currentPortfolioId = ports[0].id;
                     }
                 }
-                // Senkronizasyon (Grafik tipi ve filtre butonları başlangıç state'i)
+                // Senkronizasyon (Grafik tipi ve filtre butonlarÄ± baÅŸlangÄ±Ã§ state'i)
                 if (!appState.compareTimeRange) appState.compareTimeRange = 'this_month';
                 updateFilterButtons('compareTimeFilters', appState.compareTimeRange);
                 if (!appState.compareChartType) appState.compareChartType = (appState.compareTimeRange === 'this_month') ? 'bar' : 'line';
@@ -850,25 +850,25 @@
                 initDropdowns();
                 updateAllViews();
                 
-                // Kaydedilmiş sekmeye dön
+                // KaydedilmiÅŸ sekmeye dÃ¶n
                 const savedTab = localStorage.getItem('ozi_currentTab') || 'monthly';
                 switchTab(savedTab);
                 
             } catch (e) {
                 console.error(e);
-                showAlert("Backend'e ulaşılamadı. Lütfen 'python server.py' komutunun çalıştığından emin olun.");
+                showAlert("Backend'e ulaÅŸÄ±lamadÄ±. LÃ¼tfen 'python server.py' komutunun Ã§alÄ±ÅŸtÄ±ÄŸÄ±ndan emin olun.");
             }
         }
 
         async function saveState() {
-            // UI statelerini ayırıp kaydetmek daha temiz olabilir ama şimdilik bütünü atıyoruz
+            // UI statelerini ayÄ±rÄ±p kaydetmek daha temiz olabilir ama ÅŸimdilik bÃ¼tÃ¼nÃ¼ atÄ±yoruz
             try {
                 await fetch(`${API_URL}/save`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(appState)
                 });
-            } catch(e) { console.error("Kayıt hatası", e); }
+            } catch(e) { console.error("KayÄ±t hatasÄ±", e); }
         }
 
         async function refreshPrices() {
@@ -876,7 +876,7 @@
                 const d = new Date();
                 const actualMonth = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}`;
                 
-                // Eğer bulunduğumuz ay kilitliyse veya aktif ay ile eşleşmiyorsa geçmiş fiyatları güncelleme!
+                // EÄŸer bulunduÄŸumuz ay kilitliyse veya aktif ay ile eÅŸleÅŸmiyorsa geÃ§miÅŸ fiyatlarÄ± gÃ¼ncelleme!
                 if (appState.frozenMonths[actualMonth]) return;
 
                 let symbols = new Set(['ALTIN', 'XU100.IS', 'NASDAQ', 'SP500']);
@@ -938,12 +938,12 @@
                         updateAllViews();
                     }
                 }
-            } catch(e) { console.error("Fiyat güncelleme hatası:", e); }
+            } catch(e) { console.error("Fiyat gÃ¼ncelleme hatasÄ±:", e); }
         }
 
         async function fetchHistory(range = 'this_month') {
             const btn = document.getElementById('btnFetchHistory');
-            if(btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Çekiliyor...';
+            if(btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Ã‡ekiliyor...';
             
             // Harita: UI Range -> yfinance period
             const periodMap = {
@@ -954,7 +954,7 @@
 
             try {
                 let symbols = new Set(['ALTIN', 'XU100.IS', 'NASDAQ', 'SP500']);
-                // Bütün geçmiş aylardaki portföylerin hisselerini de ekleyelim ki geriye dönük hesaplama yapılabilsin
+                // BÃ¼tÃ¼n geÃ§miÅŸ aylardaki portfÃ¶ylerin hisselerini de ekleyelim ki geriye dÃ¶nÃ¼k hesaplama yapÄ±labilsin
                 Object.values(appState.portfoliosData).forEach(ports => {
                     ports.forEach(p => p.assets.forEach(a => {
                         let fetchName = a.name.includes('.') ? a.name : a.name + '.IS';
@@ -970,7 +970,7 @@
                 
                 const data = await res.json();
                 if (data.status === "success" && data.history) {
-                    // (Bu kısımda değişiklik yok, sadece catch bloğunu değiştirmek için bir üst scope'u da tutuyoruz, ancak hata yapmamak için else ekleyelim)
+                    // (Bu kÄ±sÄ±mda deÄŸiÅŸiklik yok, sadece catch bloÄŸunu deÄŸiÅŸtirmek iÃ§in bir Ã¼st scope'u da tutuyoruz, ancak hata yapmamak iÃ§in else ekleyelim)
                     const history = data.history;
                     
                     if (!appState.benchmarksHistory) appState.benchmarksHistory = {};
@@ -1030,15 +1030,15 @@
                     saveState();
                     updateAllViews();
                 } else {
-                    console.error("API Başarısız veya history eksik:", data);
-                    showAlert("API Hatası: " + (data.message || "Bilinmeyen hata"));
+                    console.error("API BaÅŸarÄ±sÄ±z veya history eksik:", data);
+                    showAlert("API HatasÄ±: " + (data.message || "Bilinmeyen hata"));
                 }
             } catch (e) {
                 console.error(e);
-                showAlert("Geçmiş veri çekilirken hata oluştu: " + e.message);
+                showAlert("GeÃ§miÅŸ veri Ã§ekilirken hata oluÅŸtu: " + e.message);
             }
             
-            if(btn) btn.innerHTML = '<i class="fa-solid fa-clock-rotate-left mr-2"></i>Geçmiş Verileri Çek';
+            if(btn) btn.innerHTML = '<i class="fa-solid fa-clock-rotate-left mr-2"></i>GeÃ§miÅŸ Verileri Ã‡ek';
         }
 
         function toggleLock() {
@@ -1061,7 +1061,7 @@
             } else {
                 btn.className = "px-4 py-2 text-sm font-medium rounded-lg border transition-colors shadow-sm flex items-center bg-white dark:bg-slate-800 border-emerald-500/50 text-emerald-400 hover:bg-slate-700";
                 icon.className = "fa-solid fa-lock-open mr-2";
-                txt.textContent = "Açık (Düzenlenebilir)";
+                txt.textContent = "AÃ§Ä±k (DÃ¼zenlenebilir)";
             }
         }
 
@@ -1149,7 +1149,7 @@
             if (mMenu) mMenu.innerHTML = '';
             if (mmMenu) mmMenu.innerHTML = '';
             
-            const trMonths = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+            const trMonths = ["Ocak", "Åubat", "Mart", "Nisan", "MayÄ±s", "Haziran", "Temmuz", "AÄŸustos", "EylÃ¼l", "Ekim", "KasÄ±m", "AralÄ±k"];
             const months = Object.keys(appState.portfoliosData).sort().reverse();
             
             months.forEach(m => {
@@ -1213,16 +1213,15 @@
         function updatePortfolioDropdown() {
             const pMenu = document.getElementById('portfolioDropdownMenu');
             pMenu.innerHTML = '';
-            const allPorts = getAllUniquePortfolios();
+            const currentPorts = appState.portfoliosData[appState.currentViewMonth] || [];
             
-            allPorts.forEach(p => {
-                const isSelected = p.id.split('_')[0] === appState.currentPortfolioId?.split('_')[0];
-                if(isSelected) {
+            currentPorts.forEach(p => {
+                if(p.id === appState.currentPortfolioId) {
                     document.getElementById('portfolioDropdownText').textContent = p.name;
                 }
                 
                 const btn = document.createElement('button');
-                btn.className = `w-full text-left px-4 py-2 text-sm transition-colors flex items-center gap-2 ${isSelected ? 'bg-brand-500/20 text-brand-600 dark:text-brand-400 font-bold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'}`;
+                btn.className = `w-full text-left px-4 py-2 text-sm transition-colors flex items-center gap-2 ${p.id === appState.currentPortfolioId ? 'bg-brand-500/20 text-brand-600 dark:text-brand-400 font-bold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'}`;
                 btn.innerHTML = `<span class="w-2.5 h-2.5 rounded-full" style="background-color: ${p.color}"></span> <span class="truncate">${p.name}</span>`;
                 btn.onclick = () => {
                     appState.currentPortfolioId = p.id;
@@ -1248,100 +1247,20 @@
             if (!skipRender) renderMonthlyChart();
         }
 
-        function getAllUniquePortfolios() {
-            const unique = {};
-            const allMonths = Object.keys(appState.portfoliosData).sort((a,b) => b.localeCompare(a));
-            for (const m of allMonths) {
-                const ports = appState.portfoliosData[m] || [];
-                ports.forEach(p => {
-                    const baseId = p.id.split('_')[0];
-                    if (!unique[baseId]) {
-                        unique[baseId] = { ...p, id: baseId };
-                    }
-                });
-            }
-            return Object.values(unique);
-        }
-
         function getPortfolioStartDateStr(portId) {
-            const baseId = portId.split('_')[0];
-            const allUnique = getAllUniquePortfolios();
-            const p = allUnique.find(x => x.id === baseId);
-            if (p) {
-                const pNameLower = p.name.toLowerCase();
-                if (pNameLower.includes('yat') && pNameLower.includes('101')) return '3 Ağustos 2026';
-                if (pNameLower.includes('uzun')) return '17 Ağustos 2026';
-                if (pNameLower.includes('algo')) return '1 Eylül 2026';
-                
-                if (baseId.startsWith('p')) {
-                    const ts = parseInt(baseId.substring(1));
-                    if (!isNaN(ts)) {
-                        const threshold = new Date(2026, 8, 2).getTime();
-                        if (ts >= threshold) {
-                            const d = new Date(ts);
-                            const monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
-                            return d.getDate() + " " + monthNames[d.getMonth()] + " " + d.getFullYear();
-                        }
-                    }
-                }
-            }
-            
             const allMonths = Object.keys(appState.portfoliosData).sort();
             for (const m of allMonths) {
                 const ports = appState.portfoliosData[m];
-                const found = ports.find(x => x.id.split('_')[0] === baseId);
-                if (found && found.assets && found.assets.length > 0) {
+                const p = ports.find(x => x.id === portId);
+                if (p && p.assets && p.assets.length > 0) {
                     const parts = m.split('-');
                     const year = parts[0];
                     const month = parts[1];
-                    const monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+                    const monthNames = ["Ocak", "Åubat", "Mart", "Nisan", "MayÄ±s", "Haziran", "Temmuz", "AÄŸustos", "EylÃ¼l", "Ekim", "KasÄ±m", "AralÄ±k"];
                     return monthNames[parseInt(month, 10) - 1] + " " + year;
                 }
             }
             return "Bilinmiyor";
-        }
-
-        function wasAssetHeldInPreviousMonth(portfolioId, assetName, currentMonthYyyyMm) {
-            if (!portfolioId) return false;
-            let [year, month] = currentMonthYyyyMm.split('-');
-            let prevMonth = parseInt(month) - 1;
-            let prevYear = parseInt(year);
-            if (prevMonth === 0) {
-                prevMonth = 12;
-                prevYear -= 1;
-            }
-            let prevYyyyMm = `${prevYear}-${String(prevMonth).padStart(2, '0')}`;
-            
-            const prevPorts = appState.portfoliosData[prevYyyyMm];
-            if (!prevPorts) return false;
-            
-            const baseId = portfolioId.split('_')[0];
-            const prevPort = prevPorts.find(p => p.id.split('_')[0] === baseId);
-            if (!prevPort) return false;
-            
-            return !!prevPort.assets.find(a => a.name === assetName);
-        }
-
-        function getPreviousMonthLastClose(assetName, currentMonthYyyyMm) {
-            let fetchName = (assetName === 'ALTIN' || assetName === 'NASDAQ' || assetName === 'SP500') ? assetName : (assetName.includes('.') ? assetName : assetName + '.IS');
-            let [year, month] = currentMonthYyyyMm.split('-');
-            let prevMonth = parseInt(month) - 1;
-            let prevYear = parseInt(year);
-            if (prevMonth === 0) {
-                prevMonth = 12;
-                prevYear -= 1;
-            }
-            let prevYyyyMm = `${prevYear}-${String(prevMonth).padStart(2, '0')}`;
-            
-            if (appState.benchmarksHistory && appState.benchmarksHistory[fetchName]) {
-                let history = appState.benchmarksHistory[fetchName];
-                let prevMonthDates = Object.keys(history).filter(d => d.startsWith(prevYyyyMm)).sort();
-                if (prevMonthDates.length > 0) {
-                    let lastDate = prevMonthDates[prevMonthDates.length - 1];
-                    return history[lastDate];
-                }
-            }
-            return null;
         }
 
         function getPortfolioStats(portfolio) {
@@ -1350,7 +1269,7 @@
 
             portfolio.assets.forEach(a => {
                 totalCost += (a.amount * a.cost);
-                totalValue += (a.amount * (a.price || a.cost)); // Fiyat yoksa maliyet üzerinden
+                totalValue += (a.amount * (a.price || a.cost)); // Fiyat yoksa maliyet Ã¼zerinden
             });
 
             let assetsWithStats = portfolio.assets.map(a => {
@@ -1378,7 +1297,7 @@
             renderMonthlyTable();
         }
 
-        const monthNames = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
+        const monthNames = ["Oca", "Åub", "Mar", "Nis", "May", "Haz", "Tem", "AÄŸu", "Eyl", "Eki", "Kas", "Ara"];
 
         function getTradingDays(yearMonth) {
             const [year, month] = yearMonth.split('-').map(Number);
@@ -1474,30 +1393,10 @@
             return { data, profitData };
         }
 
-        const crosshairPlugin = {
-            id: 'crosshair',
-            afterDraw: chart => {
-                if (chart.tooltip?._active?.length) {
-                    let x = chart.tooltip._active[0].element.x;
-                    let yAxis = chart.scales.y;
-                    let ctx = chart.ctx;
-                    ctx.save();
-                    ctx.beginPath();
-                    ctx.moveTo(x, yAxis.top);
-                    ctx.lineTo(x, yAxis.bottom);
-                    ctx.lineWidth = 1;
-                    ctx.strokeStyle = document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)';
-                    ctx.setLineDash([5, 5]);
-                    ctx.stroke();
-                    ctx.restore();
-                }
-            }
-        };
-
         function renderMonthlyChart() {
             const ctx = document.getElementById('monthlyChart').getContext('2d');
             const ports = appState.portfoliosData[appState.currentViewMonth] || [];
-            const portfolio = ports.find(p => p.id.split('_')[0] === appState.currentPortfolioId?.split('_')[0]);
+            const portfolio = ports.find(p => p.id === appState.currentPortfolioId);
             const stats = getPortfolioStats(portfolio);
             
             if (mChart) mChart.destroy();
@@ -1518,8 +1417,8 @@
                 profitData = pathObj.profitData;
                 
                 let lineColor = '#3b82f6'; // Mavi
-                if (stats.totalChange > 0.05) lineColor = '#10b981'; // Yeşil
-                else if (stats.totalChange < -0.05) lineColor = '#ef4444'; // Kırmızı
+                if (stats.totalChange > 0.05) lineColor = '#10b981'; // YeÅŸil
+                else if (stats.totalChange < -0.05) lineColor = '#ef4444'; // KÄ±rmÄ±zÄ±
 
                 borderColors = lineColor;
                 const gradient = ctx.createLinearGradient(0, 0, 0, 400);
@@ -1544,18 +1443,15 @@
                 data: {
                     labels: chartLabels,
                     datasets: [{
-                        label: isLine ? portfolio.name + ' Kümülatif Getiri (%)' : 'Hisse Getirisi (%)',
+                        label: isLine ? portfolio.name + ' KÃ¼mÃ¼latif Getiri (%)' : 'Hisse Getirisi (%)',
                         data: chartData,
                         customProfits: profitData,
                         borderColor: borderColors,
                         backgroundColor: bgColors,
-                        borderWidth: isLine ? 3 : 0,
-                          tension: isLine ? 0.4 : 0,
+                        borderWidth: isLine ? 2 : 0,
                         pointRadius: 0,
-                          pointHoverRadius: 6,
-                          pointHoverBorderWidth: 3,
-                          pointHoverBackgroundColor: '#fff',
-                          pointBackgroundColor: borderColors,
+                        pointHoverRadius: 5,
+                        pointBackgroundColor: borderColors,
                         fill: isLine ? {
                             target: 'origin',
                             above: 'rgba(16, 185, 129, 0.25)',
@@ -1568,18 +1464,15 @@
                         maxBarThickness: 40,
                     }]
                 },
-                plugins: [crosshairPlugin],
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     interaction: { mode: 'index', intersect: false },
                     plugins: { 
                         legend: { display: false }, 
                         tooltip: { 
-                              enabled: true,
-                              backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                              backdropFilter: 'blur(10px)',
-                              usePointStyle: true,
-                              boxPadding: 6,
+                            enabled: true,
+                            backgroundColor: 'rgba(15, 23, 42, 0.7)',
+                            backdropFilter: 'blur(10px)',
                             titleColor: '#fff',
                             bodyColor: '#cbd5e1',
                             borderColor: 'rgba(255,255,255,0.1)',
@@ -1592,7 +1485,7 @@
                                         if (dayMatch) {
                                             const day = dayMatch[0];
                                             const [year, month] = appState.currentViewMonth.split('-');
-                                            const trMonths = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+                                            const trMonths = ["Ocak", "Åubat", "Mart", "Nisan", "MayÄ±s", "Haziran", "Temmuz", "AÄŸustos", "EylÃ¼l", "Ekim", "KasÄ±m", "AralÄ±k"];
                                             return `${day} ${trMonths[parseInt(month, 10) - 1]} ${year} Durumu`;
                                         }
                                     }
@@ -1611,13 +1504,13 @@
                                 label: function(context) {
                                     const val = context.parsed.y;
                                     const sign = val > 0 ? '+' : '';
-                                    const lines = [`Kümülatif Getiri: ${sign}%${val.toFixed(2)}`];
+                                    const lines = [`KÃ¼mÃ¼latif Getiri: ${sign}%${val.toFixed(2)}`];
                                     
                                     if (appState.monthlyChartType === 'line' && context.dataIndex > 0) {
                                         const prevVal = context.dataset.data[context.dataIndex - 1];
                                         const diff = val - prevVal;
                                         const diffSign = diff > 0 ? '+' : '';
-                                        lines.push(`Günlük Getiri: ${diffSign}%${diff.toFixed(2)}`);
+                                        lines.push(`GÃ¼nlÃ¼k Getiri: ${diffSign}%${diff.toFixed(2)}`);
                                     }
                                     
                                     return lines;
@@ -1628,7 +1521,7 @@
                     scales: {
                         x: { 
                             border: { dash: [5, 5], color: gridColor },
-                              grid: { display: false }, 
+                            grid: { color: gridColor, drawTicks: false, tickBorderDash: [5, 5], borderDash: [5, 5] }, 
                             ticks: { 
                                 color: '#94a3b8', 
                                 autoSkip: false,
@@ -1656,13 +1549,13 @@
         function renderMonthlyTable() {
             const tbody = document.getElementById('assetsTableBody');
             const ports = appState.portfoliosData[appState.currentViewMonth] || [];
-            const portfolio = ports.find(p => p.id.split('_')[0] === appState.currentPortfolioId?.split('_')[0]);
+            const portfolio = ports.find(p => p.id === appState.currentPortfolioId);
             const stats = getPortfolioStats(portfolio);
             
             tbody.innerHTML = '';
             
             if(stats.assetsWithStats.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-500">Bu portföyde henüz hisse yok.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-500">Bu portfÃ¶yde henÃ¼z hisse yok.</td></tr>`;
             }
 
             stats.assetsWithStats.forEach(asset => {
@@ -1824,19 +1717,11 @@
                     }
                 }
                 
-                let effectiveCost = a.cost;
-                if (wasAssetHeldInPreviousMonth(p.id, a.name, yyyy_mm)) {
-                    let prevMonthClose = getPreviousMonthLastClose(a.name, yyyy_mm);
-                    if (prevMonthClose !== null) {
-                        effectiveCost = prevMonthClose;
-                    }
-                }
-                
-                if (price === null) price = a.price || effectiveCost;
+                if (price === null) price = a.price || a.cost;
                 
                 if (price) {
                     totalValue += a.amount * price;
-                    totalCost += a.amount * effectiveCost;
+                    totalCost += a.amount * a.cost;
                     hasAnyData = true;
                 }
             });
@@ -1852,17 +1737,17 @@
             container.innerHTML = '';
             
             const benchmarkColors = { "ALTIN": "#eab308", "XU100.IS": "#ef4444", "NASDAQ": "#3b82f6", "SP500": "#a855f7" };
-            const benchmarkNames = { "ALTIN": "Altın (Gram)", "XU100.IS": "BIST 100", "NASDAQ": "NASDAQ", "SP500": "S&P 500" };
+            const benchmarkNames = { "ALTIN": "AltÄ±n (Gram)", "XU100.IS": "BIST 100", "NASDAQ": "NASDAQ", "SP500": "S&P 500" };
             
-            const allUniquePorts = getAllUniquePortfolios();
+            const currentPorts = appState.portfoliosData[appState.currentViewMonth] || [];
             const allOptions = {};
-            allUniquePorts.forEach(p => { allOptions[p.id.split('_')[0]] = { name: p.name, color: p.color, type: 'port', pData: p }; });
+            currentPorts.forEach(p => { allOptions[p.id] = { name: p.name, color: p.color, type: 'port', pData: p }; });
             ['ALTIN', 'XU100.IS', 'NASDAQ', 'SP500'].forEach(b => { allOptions[b] = { name: benchmarkNames[b], color: benchmarkColors[b], type: 'bench' }; });
 
             for (const [key, item] of Object.entries(allOptions)) {
                 const isChecked = appState.activeBenchmarks.includes(key);
                 const label = document.createElement('label');
-                label.className = `cursor-pointer flex items-center px-4 py-1.5 rounded-full border transition-all select-none shadow-sm ${isChecked ? 'bg-slate-800 dark:bg-slate-800 border-slate-700 text-white shadow-md' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-600'}`;
+                label.className = `cursor-pointer flex items-center px-4 py-2 rounded-full border transition-all select-none ${isChecked ? 'bg-slate-700 border-slate-500 text-white' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-500'}`;
                 label.innerHTML = `
                     <input type="checkbox" value="${key}" class="hidden" ${isChecked ? 'checked' : ''} onchange="toggleBenchmark(this)">
                     <span class="w-3 h-3 rounded-full mr-2 inline-block" style="background-color: ${item.color}"></span>
@@ -1877,7 +1762,7 @@
             const dates = getTradingDaysForRange(appState.compareTimeRange);
             const isLine = appState.compareChartType === 'line';
             
-            const trMonths = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
+            const trMonths = ["Oca", "Åub", "Mar", "Nis", "May", "Haz", "Tem", "AÄŸu", "Eyl", "Eki", "Kas", "Ara"];
             let chartLabels = [];
             const shouldSlice = (appState.compareTimeRange === 'this_month' || appState.compareTimeRange === 'ytd');
             
@@ -2001,8 +1886,8 @@
                             <span class="text-sm text-slate-700 dark:text-slate-300 font-medium truncate">${item.name}</span>
                         </div>
                         <div class="text-2xl font-bold ${statClass}">${finalReturn > 0 ? '+' : ''}${finalReturn.toFixed(2)}%</div>
-                        <div class="text-xs text-slate-500 mt-1">Dönem Getirisi</div>
-                        ${item.type === "port" ? `<div class="text-sm font-bold text-slate-700 dark:text-slate-300 mt-2">Başlangıç: ${getPortfolioStartDateStr(key)}</div>` : ""}
+                        <div class="text-xs text-slate-500 mt-1">DÃ¶nem Getirisi</div>
+                        ${item.type === "port" ? `<div class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">BaÅŸlangÄ±Ã§: ${getPortfolioStartDateStr(key)}</div>` : ""}
                     </div>
                 `;
             });
@@ -2016,17 +1901,14 @@
             cChart = new Chart(ctx, {
                 type: isLine ? 'line' : 'bar',
                 data: { labels: chartLabels, datasets: datasets },
-                plugins: [crosshairPlugin],
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     interaction: { mode: 'index', intersect: false },
                     plugins: {
                         legend: { display: isLine },
                         tooltip: {
-                              usePointStyle: true,
-                              boxPadding: 6,
-                              backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                              backdropFilter: 'blur(10px)',
+                            backgroundColor: 'rgba(15, 23, 42, 0.7)',
+                            backdropFilter: 'blur(10px)',
                             titleColor: '#fff', bodyColor: '#cbd5e1', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
                             callbacks: {
                                 title: function(context) {
@@ -2044,7 +1926,7 @@
                     scales: {
                         x: { 
                             border: { dash: [5, 5], color: gridColor },
-                              grid: { display: false }, 
+                            grid: { color: gridColor, drawTicks: false, tickBorderDash: [5, 5], borderDash: [5, 5] }, 
                             ticks: { color: '#94a3b8', maxTicksLimit: 15 } 
                         },
                         y: { 
@@ -2078,7 +1960,7 @@
             ports.forEach(p => {
                 let trs = '';
                 if(p.assets.length === 0) {
-                    trs = `<tr><td colspan="4" class="py-4 text-center text-slate-500 text-sm">Varlık bulunamadı.</td></tr>`;
+                    trs = `<tr><td colspan="4" class="py-4 text-center text-slate-500 text-sm">VarlÄ±k bulunamadÄ±.</td></tr>`;
                 } else {
                     p.assets.forEach(a => {
                         let fetchName = a.name.includes('.') ? a.name : a.name + '.IS';
@@ -2095,10 +1977,10 @@
                                     ${a.name}
                                 </td>
                                 <td class="py-2 text-right">${a.amount}</td>
-                                <td class="py-2 text-right">${a.cost.toFixed(2)} ₺</td>
-                                <td class="py-2 text-right">${(a.price || a.cost).toFixed(2)} ₺</td>
+                                <td class="py-2 text-right">${a.cost.toFixed(2)} â‚º</td>
+                                <td class="py-2 text-right">${(a.price || a.cost).toFixed(2)} â‚º</td>
                                 <td class="py-2 text-right">
-                                    <button onclick="openEditAssetModal('${p.id}', '${a.id}')" class="${isFrozen ? 'hidden' : ''} text-brand-400 hover:text-brand-300 p-1 mr-1" title="Düzenle"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button onclick="openEditAssetModal('${p.id}', '${a.id}')" class="${isFrozen ? 'hidden' : ''} text-brand-400 hover:text-brand-300 p-1 mr-1" title="DÃ¼zenle"><i class="fa-solid fa-pen-to-square"></i></button>
                                     <button onclick="confirmDeleteAsset('${p.id}', '${a.id}')" class="${isFrozen ? 'hidden' : ''} text-rose-400 hover:text-rose-300 p-1" title="Sil"><i class="fa-solid fa-xmark"></i></button>
                                 </td>
                             </tr>
@@ -2113,14 +1995,14 @@
                                 <span class="w-3 h-3 rounded-full" style="background-color: ${p.color}"></span>
                                 <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                     ${p.name} <span class="text-xs text-slate-500 dark:text-slate-400 font-normal ml-2">(${getPortfolioStartDateStr(p.id)})</span>
-                                    <button onclick="editPortfolioName('${p.id}')" class="${isFrozen ? 'hidden' : ''} text-slate-400 hover:text-brand-500 transition-colors text-sm" title="İsmi Düzenle">
+                                    <button onclick="editPortfolioName('${p.id}')" class="${isFrozen ? 'hidden' : ''} text-slate-400 hover:text-brand-500 transition-colors text-sm" title="Ä°smi DÃ¼zenle">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </button>
                                 </h3>
                             </div>
                             <div class="flex gap-2 ${isFrozen ? 'hidden' : ''}">
                                 <button onclick="openAssetModal('${p.id}')" class="text-sm bg-brand-500/20 text-brand-400 hover:bg-brand-500 hover:text-white px-3 py-1.5 rounded transition-colors" title="Hisse Ekle"><i class="fa-solid fa-plus"></i></button>
-                                <button onclick="confirmDeletePortfolio('${p.id}')" class="text-sm bg-rose-500/20 text-rose-400 hover:bg-rose-500 hover:text-white px-3 py-1.5 rounded transition-colors" title="Portföyü Sil"><i class="fa-solid fa-trash"></i></button>
+                                <button onclick="confirmDeletePortfolio('${p.id}')" class="text-sm bg-rose-500/20 text-rose-400 hover:bg-rose-500 hover:text-white px-3 py-1.5 rounded transition-colors" title="PortfÃ¶yÃ¼ Sil"><i class="fa-solid fa-trash"></i></button>
                             </div>
                         </div>
                         <div class="p-4 flex-grow overflow-x-auto">
@@ -2130,8 +2012,8 @@
                                         <th class="pb-2">Hisse</th>
                                         <th class="pb-2 text-right">Adet</th>
                                         <th class="pb-2 text-right">Maliyet</th>
-                                        <th class="pb-2 text-right">Güncel Fiyat</th>
-                                        <th class="pb-2 text-right">İşlem</th>
+                                        <th class="pb-2 text-right">GÃ¼ncel Fiyat</th>
+                                        <th class="pb-2 text-right">Ä°ÅŸlem</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-700/50">
@@ -2146,7 +2028,7 @@
 
         function openModal(id) {
             if (appState.frozenMonths[appState.currentViewMonth] && id !== 'calcModal' && id !== 'rebalanceModal' && id !== 'settingsModal') {
-                showAlert("Bu ay kilitli! Değişiklik yapmak için önce kilidi açın.");
+                showAlert("Bu ay kilitli! DeÄŸiÅŸiklik yapmak iÃ§in Ã¶nce kilidi aÃ§Ä±n.");
                 return;
             }
             const m = document.getElementById(id);
@@ -2219,7 +2101,7 @@
 
         function confirmDeletePortfolio(id) {
             appState.deleteQueue = { type: 'portfolio', pId: id, aId: null };
-            document.getElementById('confirmMessage').textContent = "Bu portföyü ve içindeki tüm hisseleri silmek istediğinize emin misiniz?";
+            document.getElementById('confirmMessage').textContent = "Bu portfÃ¶yÃ¼ ve iÃ§indeki tÃ¼m hisseleri silmek istediÄŸinize emin misiniz?";
             document.getElementById('confirmBtn').onclick = executeDelete;
             openModal('confirmModal');
         }
@@ -2264,7 +2146,7 @@
             if(!name || isNaN(amount) || isNaN(cost)) return;
             
             price = parseFloat(price);
-            if (isNaN(price)) price = cost; // Fiyat girilmediyse maliyet olsun, refresh yapınca güncellenir
+            if (isNaN(price)) price = cost; // Fiyat girilmediyse maliyet olsun, refresh yapÄ±nca gÃ¼ncellenir
 
             const ports = appState.portfoliosData[appState.currentViewMonth];
             const portfolio = ports.find(p => p.id === pId);
@@ -2277,14 +2159,14 @@
             closeModals();
             updateAllViews();
             
-            // Yeni hisse eklenince fiyatları arka planda güncelle (kilitli değil zaten)
+            // Yeni hisse eklenince fiyatlarÄ± arka planda gÃ¼ncelle (kilitli deÄŸil zaten)
             fetchHistory(appState.monthlyTimeRange || 'this_month');
             refreshPrices();
         }
 
         function openEditAssetModal(pId, aId) {
             if (appState.frozenMonths[appState.currentViewMonth]) {
-                showAlert("Bu ay kilitli! Değişiklik yapmak için önce kilidi açın.");
+                showAlert("Bu ay kilitli! DeÄŸiÅŸiklik yapmak iÃ§in Ã¶nce kilidi aÃ§Ä±n.");
                 return;
             }
             const ports = appState.portfoliosData[appState.currentViewMonth];
@@ -2329,7 +2211,7 @@
 
         function confirmDeleteAsset(pId, aId) {
             appState.deleteQueue = { type: 'asset', pId, aId };
-            document.getElementById('confirmMessage').textContent = "Bu hisseyi portföyden çıkarmak istediğinize emin misiniz?";
+            document.getElementById('confirmMessage').textContent = "Bu hisseyi portfÃ¶yden Ã§Ä±karmak istediÄŸinize emin misiniz?";
             document.getElementById('confirmBtn').onclick = executeDelete;
             openModal('confirmModal');
         }
@@ -2368,7 +2250,7 @@
 
         function openCalcModal() {
             if (appState.frozenMonths[appState.currentViewMonth]) {
-                showAlert("Uyarı: Bu ay kilitli olduğu için 'Uygula' butonuyla portföye kaydetme yapamazsınız, sadece hesaplama yapabilirsiniz.");
+                showAlert("UyarÄ±: Bu ay kilitli olduÄŸu iÃ§in 'Uygula' butonuyla portfÃ¶ye kaydetme yapamazsÄ±nÄ±z, sadece hesaplama yapabilirsiniz.");
             }
             populateCalcSelect();
             openModal('calcModal');
@@ -2397,7 +2279,7 @@
 
         function populateCalcSelect() {
             const select = document.getElementById('calcApplySelect');
-            select.innerHTML = '<option value="">-- Hisse Seç --</option>';
+            select.innerHTML = '<option value="">-- Hisse SeÃ§ --</option>';
             const ports = appState.portfoliosData[appState.currentViewMonth] || [];
             
             ports.forEach(p => {
@@ -2466,14 +2348,14 @@
 
         function applyCalculatorToPortfolio() {
             if (appState.frozenMonths[appState.currentViewMonth]) {
-                showAlert("Bu ay kilitli! Uygulama yapmak için kilidi açmanız gerekir.");
+                showAlert("Bu ay kilitli! Uygulama yapmak iÃ§in kilidi aÃ§manÄ±z gerekir.");
                 return;
             }
 
             const select = document.getElementById('calcApplySelect');
             const val = select.value;
             if (!val) {
-                showAlert("Lütfen uygulamak istediğiniz hisseyi seçin.");
+                showAlert("LÃ¼tfen uygulamak istediÄŸiniz hisseyi seÃ§in.");
                 return;
             }
 
@@ -2506,12 +2388,12 @@
                     a.cost = parseFloat(newCost.toFixed(2));
                     saveState();
                     updateAllViews();
-                    showAlert("Hesaplama hisseye uygulandı!");
+                    showAlert("Hesaplama hisseye uygulandÄ±!");
                     closeModals();
                 }
             }
         }
-        /* Portföy Geçiş Planı JS */
+        /* PortfÃ¶y GeÃ§iÅŸ PlanÄ± JS */
         let rebCurrentStocks = Array.from({ length: 5 }, () => ({ id: Math.random().toString(), symbol: '', quantity: '', price: '' }));
         let rebTargetStocks = Array.from({ length: 5 }, () => ({ id: Math.random().toString(), symbol: '', price: '' }));
         window.rebLastTargetHoldings = {};
@@ -2519,16 +2401,16 @@
         function rebApplyAndSave() {
             const pId = document.getElementById('rebAutoPortSelect').value;
             if (!pId) {
-                showAlert("Lütfen işlemin uygulanacağı portföyü '1. Mevcut Portföy' bölümünden seçin.");
+                showAlert("LÃ¼tfen iÅŸlemin uygulanacaÄŸÄ± portfÃ¶yÃ¼ '1. Mevcut PortfÃ¶y' bÃ¶lÃ¼mÃ¼nden seÃ§in.");
                 return;
             }
             if (appState.frozenMonths[appState.currentViewMonth]) {
-                showAlert("Bu ay kilitli! Uygulama yapmak için kilidi açmanız gerekir.");
+                showAlert("Bu ay kilitli! Uygulama yapmak iÃ§in kilidi aÃ§manÄ±z gerekir.");
                 return;
             }
             
             if (!window.rebLastTargetHoldings || Object.keys(window.rebLastTargetHoldings).length === 0) {
-                showAlert("Uygulanacak hedef portföy bulunamadı.");
+                showAlert("Uygulanacak hedef portfÃ¶y bulunamadÄ±.");
                 return;
             }
 
@@ -2566,14 +2448,14 @@
                 saveState();
                 updateAllViews();
                 
-                showAlert("Portföy geçiş planı başarıyla uygulandı ve kaydedildi!");
+                showAlert("PortfÃ¶y geÃ§iÅŸ planÄ± baÅŸarÄ±yla uygulandÄ± ve kaydedildi!");
                 closeModals();
             }
         }
 
         function openRebalanceModal() {
             const select = document.getElementById('rebAutoPortSelect');
-            select.innerHTML = '<option value="">-- Portföy Seç --</option>';
+            select.innerHTML = '<option value="">-- PortfÃ¶y SeÃ§ --</option>';
             const ports = appState.portfoliosData[appState.currentViewMonth] || [];
             ports.forEach(p => {
                 const opt = document.createElement('option');
@@ -2683,17 +2565,17 @@
                 row.className = "grid grid-cols-12 gap-2 items-center";
                 row.innerHTML = `
                     <div class="col-span-4">
-                        <input type="text" placeholder="Örn: THYAO" class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 dark:bg-slate-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none uppercase font-medium" value="${stock.symbol}" onchange="handleRebCurrentInput('${stock.id}', 'symbol', this.value)">
+                        <input type="text" placeholder="Ã–rn: THYAO" class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 dark:bg-slate-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none uppercase font-medium" value="${stock.symbol}" onchange="handleRebCurrentInput('${stock.id}', 'symbol', this.value)">
                     </div>
                     <div class="col-span-3">
                         <input type="number" placeholder="0" class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 dark:bg-slate-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value="${stock.quantity}" oninput="handleRebCurrentInput('${stock.id}', 'quantity', this.value)" min="0">
                     </div>
                     <div class="col-span-4 relative">
                         <input type="number" placeholder="0.00" class="w-full pl-3 pr-8 py-2 border border-slate-200 dark:border-slate-700 dark:bg-slate-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value="${stock.price}" oninput="handleRebCurrentInput('${stock.id}', 'price', this.value)" min="0" step="0.01">
-                        <span class="absolute right-3 top-2.5 text-slate-400 text-sm">₺</span>
+                        <span class="absolute right-3 top-2.5 text-slate-400 text-sm">â‚º</span>
                     </div>
                     <div class="col-span-1 flex justify-center">
-                        <button onclick="rebRemoveCurrentRow('${stock.id}')" class="text-slate-400 hover:text-red-500 transition" title="Satırı Sil">
+                        <button onclick="rebRemoveCurrentRow('${stock.id}')" class="text-slate-400 hover:text-red-500 transition" title="SatÄ±rÄ± Sil">
                             <i class="fa-solid fa-trash"></i>
                         </button>
                     </div>
@@ -2710,14 +2592,14 @@
                 row.className = "grid grid-cols-12 gap-2 items-center";
                 row.innerHTML = `
                     <div class="col-span-6">
-                        <input type="text" placeholder="Örn: TUPRS" class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 dark:bg-slate-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none uppercase font-medium" value="${stock.symbol}" onchange="handleRebTargetInput('${stock.id}', 'symbol', this.value)">
+                        <input type="text" placeholder="Ã–rn: TUPRS" class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 dark:bg-slate-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none uppercase font-medium" value="${stock.symbol}" onchange="handleRebTargetInput('${stock.id}', 'symbol', this.value)">
                     </div>
                     <div class="col-span-5 relative">
                         <input type="number" placeholder="0.00" class="w-full pl-3 pr-8 py-2 border border-slate-200 dark:border-slate-700 dark:bg-slate-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value="${stock.price}" oninput="handleRebTargetInput('${stock.id}', 'price', this.value)" min="0" step="0.01">
-                        <span class="absolute right-3 top-2.5 text-slate-400 text-sm">₺</span>
+                        <span class="absolute right-3 top-2.5 text-slate-400 text-sm">â‚º</span>
                     </div>
                     <div class="col-span-1 flex justify-center">
-                        <button onclick="rebRemoveTargetRow('${stock.id}')" class="text-slate-400 hover:text-red-500 transition" title="Satırı Sil">
+                        <button onclick="rebRemoveTargetRow('${stock.id}')" class="text-slate-400 hover:text-red-500 transition" title="SatÄ±rÄ± Sil">
                             <i class="fa-solid fa-trash"></i>
                         </button>
                     </div>
@@ -2743,7 +2625,7 @@
             const validTarget = rebTargetStocks.filter(s => s.symbol.trim() !== '' && parseFloat(s.price) > 0);
 
             if (validTarget.length === 0) {
-                showAlert("Lütfen en az bir geçerli hedef hisse girin.");
+                showAlert("LÃ¼tfen en az bir geÃ§erli hedef hisse girin.");
                 return;
             }
 
@@ -2852,9 +2734,9 @@
                 document.getElementById('rebResults').scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 50);
             
-            document.getElementById('rebResTotalValue').textContent = totalPortfolioValue.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' ₺';
-            document.getElementById('rebResBudget').textContent = budgetPerStock.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' ₺';
-            document.getElementById('rebResRemaining').textContent = remainingCash.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' ₺';
+            document.getElementById('rebResTotalValue').textContent = totalPortfolioValue.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' â‚º';
+            document.getElementById('rebResBudget').textContent = budgetPerStock.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' â‚º';
+            document.getElementById('rebResRemaining').textContent = remainingCash.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + ' â‚º';
 
             const tbody = document.getElementById('rebActionTbody');
             tbody.innerHTML = '';
@@ -2869,7 +2751,7 @@
                 transactions.forEach(tx => {
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/50 transition";
-                    const actionBadge = tx.action === 'AL' ? '<span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">🟢 ALIM YAP</span>' : '<span class="px-3 py-1 rounded-full text-xs font-bold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800">🔴 SATIŞ YAP</span>';
+                    const actionBadge = tx.action === 'AL' ? '<span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">ğŸŸ¢ ALIM YAP</span>' : '<span class="px-3 py-1 rounded-full text-xs font-bold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800">ğŸ”´ SATIÅ YAP</span>';
                     const colorClass = tx.action === 'AL' ? 'text-emerald-600' : 'text-red-600';
                     const sign = tx.action === 'AL' ? '-' : '+';
                     
@@ -2877,24 +2759,24 @@
                         <td class="p-3">${actionBadge}</td>
                         <td class="p-3 font-bold text-slate-800 dark:text-slate-200">${tx.symbol}</td>
                         <td class="p-3 text-right font-medium text-slate-700 dark:text-slate-300">${tx.quantity}</td>
-                        <td class="p-3 text-right text-slate-600 dark:text-slate-400">${tx.price.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</td>
-                        <td class="p-3 text-right font-bold ${colorClass}">${sign}${tx.total.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</td>
+                        <td class="p-3 text-right text-slate-600 dark:text-slate-400">${tx.price.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} â‚º</td>
+                        <td class="p-3 text-right font-bold ${colorClass}">${sign}${tx.total.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} â‚º</td>
                     `;
                     tbody.appendChild(tr);
                 });
             }
 
-            // Yeni Portföy Önizlemesi Oluştur
+            // Yeni PortfÃ¶y Ã–nizlemesi OluÅŸtur
             const previewContainer = document.getElementById('rebNewPortfolioPreviewContainer');
             if (previewContainer) {
                 let previewHTML = `
-                <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-4 border-b dark:border-slate-700 pb-2 mt-4">Yeni Portföy Önizlemesi</h3>
+                <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-4 border-b dark:border-slate-700 pb-2 mt-4">Yeni PortfÃ¶y Ã–nizlemesi</h3>
                 <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50">
                     <table class="w-full text-left border-collapse text-sm whitespace-nowrap">
                         <thead class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium">
                             <tr>
                                 <th class="p-3 rounded-tl-lg">Hisse</th>
-                                <th class="p-3 text-right">Lot Sayısı</th>
+                                <th class="p-3 text-right">Lot SayÄ±sÄ±</th>
                                 <th class="p-3 text-right">Birim Maliyet</th>
                                 <th class="p-3 rounded-tr-lg text-right">Toplam Tutar</th>
                             </tr>
@@ -2912,8 +2794,8 @@
                             <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                                 <td class="p-3 font-bold text-slate-800 dark:text-slate-200">${item.symbol}</td>
                                 <td class="p-3 text-right font-medium text-slate-700 dark:text-slate-300">${item.targetQuantity}</td>
-                                <td class="p-3 text-right text-slate-600 dark:text-slate-400">${item.price.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</td>
-                                <td class="p-3 text-right font-bold text-slate-800 dark:text-slate-200">${itemTotal.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</td>
+                                <td class="p-3 text-right text-slate-600 dark:text-slate-400">${item.price.toLocaleString('tr-TR', {minimumFractionDigits: 2})} â‚º</td>
+                                <td class="p-3 text-right font-bold text-slate-800 dark:text-slate-200">${itemTotal.toLocaleString('tr-TR', {minimumFractionDigits: 2})} â‚º</td>
                             </tr>
                         `;
                     }
@@ -2925,10 +2807,10 @@
                 </div>
                 <div class="mt-4 flex flex-col md:flex-row justify-between items-center bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
                     <div class="text-sm text-slate-600 dark:text-slate-400 mb-2 md:mb-0">
-                        Dağıtılamayan Kalan Nakit: <span class="font-bold text-slate-800 ml-1">${remainingCash.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</span>
+                        DaÄŸÄ±tÄ±lamayan Kalan Nakit: <span class="font-bold text-slate-800 ml-1">${remainingCash.toLocaleString('tr-TR', {minimumFractionDigits: 2})} â‚º</span>
                     </div>
                     <div class="text-lg font-bold text-slate-800 dark:text-white">
-                        Hisselerin Genel Toplamı: <span class="text-emerald-600 ml-2">${newTotal.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</span>
+                        Hisselerin Genel ToplamÄ±: <span class="text-emerald-600 ml-2">${newTotal.toLocaleString('tr-TR', {minimumFractionDigits: 2})} â‚º</span>
                     </div>
                 </div>
                 `;

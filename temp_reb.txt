@@ -1,0 +1,161 @@
+﻿
+>         function rebCalculate() {
+              rebCurrentStocks.forEach((s, idx) => {
+                  const inputs = document.getElementById('rebCurrentList').children[idx].querySelectorAll('input');
+                  s.symbol = inputs[0].value.toUpperCase();
+                  s.quantity = inputs[1].value;
+                  s.price = inputs[2].value;
+              });
+              rebTargetStocks.forEach((s, idx) => {
+                  const inputs = document.getElementById('rebTargetList').children[idx].querySelectorAll('input');
+                  s.symbol = inputs[0].value.toUpperCase();
+                  s.price = inputs[1].value;
+              });
+  
+              const validCurrent = rebCurrentStocks.filter(s => s.symbol.trim() !== '' && parseFloat(s.quantity) > 0 &&
+ parseFloat(s.price) > 0);
+              const validTarget = rebTargetStocks.filter(s => s.symbol.trim() !== '' && parseFloat(s.price) > 0);
+  
+              if (validTarget.length === 0) {
+                  showAlert("LÃ¼tfen en az bir geÃ§erli hedef hisse girin.");
+                  return;
+              }
+  
+              const currentStocksValue = validCurrent.reduce((total, stock) => total + (parseFloat(stock.quantity) * pa
+rseFloat(stock.price)), 0);
+              const totalCash = parseFloat(document.getElementById('rebCashBalance').value || 0);
+              const totalPortfolioValue = currentStocksValue + totalCash;
+  
+              const budgetPerStock = totalPortfolioValue / validTarget.length;
+  
+              const targetHoldings = {};
+              let totalTargetCost = 0;
+  
+              validTarget.forEach(stock => {
+                  const symbol = stock.symbol.toUpperCase().trim();
+                  const price = parseFloat(stock.price);
+                  const targetQuantity = Math.floor(budgetPerStock / price);
+                  
+                  targetHoldings[symbol] = {
+                      symbol: symbol,
+                      targetQuantity: targetQuantity,
+                      price: price
+                  };
+                  totalTargetCost += (targetQuantity * price);
+              });
+  
+              const currentHoldingsMap = {};
+              validCurrent.forEach(stock => {
+                  const symbol = stock.symbol.toUpperCase().trim();
+                  if (currentHoldingsMap[symbol]) {
+                      currentHoldingsMap[symbol].quantity += parseFloat(stock.quantity);
+                      currentHoldingsMap[symbol].price = parseFloat(stock.price);
+                  } else {
+                      currentHoldingsMap[symbol] = { 
+                          quantity: parseFloat(stock.quantity), 
+                          price: parseFloat(stock.price) 
+                      };
+                  }
+              });
+  
+              const allSymbols = new Set([...Object.keys(currentHoldingsMap), ...Object.keys(targetHoldings)]);
+              window.rebLastTargetHoldings = targetHoldings;
+              const transactions = [];
+  
+              allSymbols.forEach(symbol => {
+                  const currentQty = currentHoldingsMap[symbol]?.quantity || 0;
+                  const currentPrice = currentHoldingsMap[symbol]?.price || 0;
+                  const targetQty = targetHoldings[symbol]?.targetQuantity || 0;
+                  const targetPrice = targetHoldings[symbol]?.price || currentPrice;
+  
+                  const diffQty = targetQty - currentQty;
+  
+                  if (diffQty !== 0) {
+                      transactions.push({
+                          symbol: symbol,
+                          action: diffQty > 0 ? 'AL' : 'SAT',
+                          quantity: Math.abs(diffQty),
+                          price: targetPrice,
+                          total: Math.abs(diffQty) * targetPrice
+                      });
+                  }
+              });
+  
+              let remainingCash = totalPortfolioValue - totalTargetCost;
+              let affordableStocks = validTarget.map(s => s.symbol.toUpperCase().trim())
+                                                .sort((a, b) => targetHoldings[a].price - targetHoldings[b].price);
+              
+              let canBuyMore = true;
+              while (canBuyMore && remainingCash > 0) {
+                  canBuyMore = false;
+                  for (let sym of affordableStocks) {
+                      let price = targetHoldings[sym].price;
+                      if (remainingCash >= price) {
+                          targetHoldings[sym].targetQuantity += 1;
+                          remainingCash -= price;
+                          totalTargetCost += price;
+                          
+                          let existingAl = transactions.find(t => t.symbol === sym && t.action === 'AL');
+                          if (existingAl) {
+                              existingAl.quantity += 1;
+                              existingAl.total += price;
+                          } else {
+                              let existingSat = transactions.find(t => t.symbol === sym && t.action === 'SAT');
+                              if (existingSat) {
+                                  existingSat.quantity -= 1;
+                                  existingSat.total -= price;
+                                  if (existingSat.quantity === 0) {
+                                      transactions.splice(transactions.indexOf(existingSat), 1);
+                                  }
+                              } else {
+                                  transactions.push({
+                                      symbol: sym,
+                                      action: 'AL',
+                                      quantity: 1,
+                                      price: price,
+                                      total: price
+                                  });
+                              }
+                          }
+                          canBuyMore = true;
+                      }
+                  }
+              }
+  
+              document.getElementById('rebResults').classList.remove('hidden');
+              setTimeout(() => {
+                  document.getElementById('rebResults').scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }, 50);
+              
+              document.getElementById('rebResTotalValue').textContent = totalPortfolioValue.toLocaleString('tr-TR', { m
+inimumFractionDigits: 2 }) + ' â‚º';
+              document.getElementById('rebResBudget').textContent = budgetPerStock.toLocaleString('tr-TR', { minimumFra
+ctionDigits: 2 }) + ' â‚º';
+              document.getElementById('rebResRemaining').textContent = remainingCash.toLocaleString('tr-TR', { minimumF
+ractionDigits: 2 }) + ' â‚º';
+  
+              const tbody = document.getElementById('rebActionTbody');
+              tbody.innerHTML = '';
+  
+              if (transactions.length === 0) {
+                  document.getElementById('rebNoAction').classList.remove('hidden');
+                  document.getElementById('rebActionTableContainer').classList.add('hidden');
+              } else {
+                  document.getElementById('rebNoAction').classList.add('hidden');
+                  document.getElementById('rebActionTableContainer').classList.remove('hidden');
+  
+                  transactions.forEach(tx => {
+                      const tr = document.createElement('tr');
+                      tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/50 transition";
+                      const actionBadge = tx.action === 'AL' ? '<span class="px-3 py-1 rounded-full text-xs font-bold b
+g-emerald-100 text-emerald-700 border border-emerald-200">ğŸŸ¢ ALIM YAP</span>' : '<span class="px-3 py-1 rounded-full 
+text-xs font-bold bg-red-100 text-red-700 border border-red-200">ğŸ”´ SATIÅ YAP</span>';
+                      const colorClass = tx.action === 'AL' ? 'text-emerald-600' : 'text-red-600';
+                      const sign = tx.action === 'AL' ? '-' : '+';
+                      
+                      tr.innerHTML = `
+                          <td class="p-3">${actionBadge}</td>
+                          <td class="p-3 font-bold text-slate-800 dark:text-slate-200">${tx.symbol}</td>
+                          <td class="p-3 text-right font-medium text-slate-700 dark:text-slate-300">${tx.quantity}</td>
+
+
