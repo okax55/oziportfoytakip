@@ -807,8 +807,8 @@
                 }, 50);
                 
                 // Varsayılan olarak sadece portföyleri seç
-                const currentPorts = appState.portfoliosData[actualMonth] || [];
-                appState.activeBenchmarks = currentPorts.map(p => p.id);
+                const allUniquePorts = getAllUniquePortfolios();
+                appState.activeBenchmarks = allUniquePorts.map(p => p.id.split('_')[0]);
 
                 if(appState.portfoliosData[appState.currentViewMonth].length > 0) {
                     const ports = appState.portfoliosData[appState.currentViewMonth];
@@ -1213,15 +1213,16 @@
         function updatePortfolioDropdown() {
             const pMenu = document.getElementById('portfolioDropdownMenu');
             pMenu.innerHTML = '';
-            const currentPorts = appState.portfoliosData[appState.currentViewMonth] || [];
+            const allPorts = getAllUniquePortfolios();
             
-            currentPorts.forEach(p => {
-                if(p.id === appState.currentPortfolioId) {
+            allPorts.forEach(p => {
+                const isSelected = p.id.split('_')[0] === appState.currentPortfolioId?.split('_')[0];
+                if(isSelected) {
                     document.getElementById('portfolioDropdownText').textContent = p.name;
                 }
                 
                 const btn = document.createElement('button');
-                btn.className = `w-full text-left px-4 py-2 text-sm transition-colors flex items-center gap-2 ${p.id === appState.currentPortfolioId ? 'bg-brand-500/20 text-brand-600 dark:text-brand-400 font-bold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'}`;
+                btn.className = `w-full text-left px-4 py-2 text-sm transition-colors flex items-center gap-2 ${isSelected ? 'bg-brand-500/20 text-brand-600 dark:text-brand-400 font-bold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'}`;
                 btn.innerHTML = `<span class="w-2.5 h-2.5 rounded-full" style="background-color: ${p.color}"></span> <span class="truncate">${p.name}</span>`;
                 btn.onclick = () => {
                     appState.currentPortfolioId = p.id;
@@ -1247,12 +1248,36 @@
             if (!skipRender) renderMonthlyChart();
         }
 
+        function getAllUniquePortfolios() {
+            const unique = {};
+            const allMonths = Object.keys(appState.portfoliosData).sort((a,b) => b.localeCompare(a));
+            for (const m of allMonths) {
+                const ports = appState.portfoliosData[m] || [];
+                ports.forEach(p => {
+                    const baseId = p.id.split('_')[0];
+                    if (!unique[baseId]) {
+                        unique[baseId] = { ...p, id: baseId };
+                    }
+                });
+            }
+            return Object.values(unique);
+        }
+
         function getPortfolioStartDateStr(portId) {
+            const baseId = portId.split('_')[0];
+            const allUnique = getAllUniquePortfolios();
+            const p = allUnique.find(x => x.id === baseId);
+            if (p) {
+                if (p.name.includes('Yatırım 101')) return '3 Ağustos 2026';
+                if (p.name.includes('Uzun Vade')) return '17 Ağustos 2026';
+                if (p.name.includes('Algo Bot')) return '1 Eylül 2026';
+            }
+            
             const allMonths = Object.keys(appState.portfoliosData).sort();
             for (const m of allMonths) {
                 const ports = appState.portfoliosData[m];
-                const p = ports.find(x => x.id === portId);
-                if (p && p.assets && p.assets.length > 0) {
+                const found = ports.find(x => x.id.split('_')[0] === baseId);
+                if (found && found.assets && found.assets.length > 0) {
                     const parts = m.split('-');
                     const year = parts[0];
                     const month = parts[1];
@@ -1263,22 +1288,52 @@
             return "Bilinmiyor";
         }
 
-        function getPortfolioStats(portfolio) {
+        function getPreviousMonthLastClose(assetName, currentMonthYyyyMm) {
+            let fetchName = (assetName === 'ALTIN' || assetName === 'NASDAQ' || assetName === 'SP500') ? assetName : (assetName.includes('.') ? assetName : assetName + '.IS');
+            let [year, month] = currentMonthYyyyMm.split('-');
+            let prevMonth = parseInt(month) - 1;
+            let prevYear = parseInt(year);
+            if (prevMonth === 0) {
+                prevMonth = 12;
+                prevYear -= 1;
+            }
+            let prevYyyyMm = `${prevYear}-${String(prevMonth).padStart(2, '0')}`;
+            
+            if (appState.benchmarksHistory && appState.benchmarksHistory[fetchName]) {
+                let history = appState.benchmarksHistory[fetchName];
+                let prevMonthDates = Object.keys(history).filter(d => d.startsWith(prevYyyyMm)).sort();
+                if (prevMonthDates.length > 0) {
+                    let lastDate = prevMonthDates[prevMonthDates.length - 1];
+                    return history[lastDate];
+                }
+            }
+            return null;
+        }
+
+        function getPortfolioStats(portfolio, yyyy_mm = appState.currentViewMonth) {
             let totalCost = 0; let totalValue = 0;
             if(!portfolio || !portfolio.assets) return { totalCost:0, totalValue:0, totalChange:0, assetsWithStats:[] };
 
             portfolio.assets.forEach(a => {
-                totalCost += (a.amount * a.cost);
-                totalValue += (a.amount * (a.price || a.cost)); // Fiyat yoksa maliyet üzerinden
+                let effectiveCost = a.cost;
+                let prevMonthClose = getPreviousMonthLastClose(a.name, yyyy_mm);
+                if (prevMonthClose !== null) effectiveCost = prevMonthClose;
+                
+                totalCost += (a.amount * effectiveCost);
+                totalValue += (a.amount * (a.price || effectiveCost)); // Fiyat yoksa maliyet üzerinden
             });
 
             let assetsWithStats = portfolio.assets.map(a => {
-                let p = a.price || a.cost;
+                let effectiveCost = a.cost;
+                let prevMonthClose = getPreviousMonthLastClose(a.name, yyyy_mm);
+                if (prevMonthClose !== null) effectiveCost = prevMonthClose;
+
+                let p = a.price || effectiveCost;
                 let val = a.amount * p;
-                let cst = a.amount * a.cost;
+                let cst = a.amount * effectiveCost;
                 let change = cst > 0 ? ((val - cst) / cst) * 100 : 0;
                 let weight = totalValue > 0 ? (val / totalValue) * 100 : 0;
-                return { ...a, price: p, currentValue: val, totalCost: cst, change, weight };
+                return { ...a, cost: effectiveCost, originalCost: a.cost, price: p, currentValue: val, totalCost: cst, change, weight };
             });
 
             assetsWithStats.sort((a,b) => b.weight - a.weight);
@@ -1416,7 +1471,7 @@
         function renderMonthlyChart() {
             const ctx = document.getElementById('monthlyChart').getContext('2d');
             const ports = appState.portfoliosData[appState.currentViewMonth] || [];
-            const portfolio = ports.find(p => p.id === appState.currentPortfolioId);
+            const portfolio = ports.find(p => p.id.split('_')[0] === appState.currentPortfolioId?.split('_')[0]);
             const stats = getPortfolioStats(portfolio);
             
             if (mChart) mChart.destroy();
@@ -1575,7 +1630,7 @@
         function renderMonthlyTable() {
             const tbody = document.getElementById('assetsTableBody');
             const ports = appState.portfoliosData[appState.currentViewMonth] || [];
-            const portfolio = ports.find(p => p.id === appState.currentPortfolioId);
+            const portfolio = ports.find(p => p.id.split('_')[0] === appState.currentPortfolioId?.split('_')[0]);
             const stats = getPortfolioStats(portfolio);
             
             tbody.innerHTML = '';
@@ -1743,11 +1798,17 @@
                     }
                 }
                 
-                if (price === null) price = a.price || a.cost;
+                let effectiveCost = a.cost;
+                let prevMonthClose = getPreviousMonthLastClose(a.name, yyyy_mm);
+                if (prevMonthClose !== null) {
+                    effectiveCost = prevMonthClose;
+                }
+                
+                if (price === null) price = a.price || effectiveCost;
                 
                 if (price) {
                     totalValue += a.amount * price;
-                    totalCost += a.amount * a.cost;
+                    totalCost += a.amount * effectiveCost;
                     hasAnyData = true;
                 }
             });
@@ -1765,9 +1826,9 @@
             const benchmarkColors = { "ALTIN": "#eab308", "XU100.IS": "#ef4444", "NASDAQ": "#3b82f6", "SP500": "#a855f7" };
             const benchmarkNames = { "ALTIN": "Altın (Gram)", "XU100.IS": "BIST 100", "NASDAQ": "NASDAQ", "SP500": "S&P 500" };
             
-            const currentPorts = appState.portfoliosData[appState.currentViewMonth] || [];
+            const allUniquePorts = getAllUniquePortfolios();
             const allOptions = {};
-            currentPorts.forEach(p => { allOptions[p.id] = { name: p.name, color: p.color, type: 'port', pData: p }; });
+            allUniquePorts.forEach(p => { allOptions[p.id.split('_')[0]] = { name: p.name, color: p.color, type: 'port', pData: p }; });
             ['ALTIN', 'XU100.IS', 'NASDAQ', 'SP500'].forEach(b => { allOptions[b] = { name: benchmarkNames[b], color: benchmarkColors[b], type: 'bench' }; });
 
             for (const [key, item] of Object.entries(allOptions)) {
@@ -1913,7 +1974,7 @@
                         </div>
                         <div class="text-2xl font-bold ${statClass}">${finalReturn > 0 ? '+' : ''}${finalReturn.toFixed(2)}%</div>
                         <div class="text-xs text-slate-500 mt-1">Dönem Getirisi</div>
-                        ${item.type === "port" ? `<div class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Başlangıç: ${getPortfolioStartDateStr(key)}</div>` : ""}
+                        ${item.type === "port" ? `<div class="text-sm font-bold text-slate-700 dark:text-slate-300 mt-2">Başlangıç: ${getPortfolioStartDateStr(key)}</div>` : ""}
                     </div>
                 `;
             });
