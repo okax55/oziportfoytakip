@@ -1332,34 +1332,22 @@
             return null;
         }
 
-        function getPortfolioStats(portfolio, yyyy_mm = appState.currentViewMonth) {
+        function getPortfolioStats(portfolio) {
             let totalCost = 0; let totalValue = 0;
             if(!portfolio || !portfolio.assets) return { totalCost:0, totalValue:0, totalChange:0, assetsWithStats:[] };
 
             portfolio.assets.forEach(a => {
-                let effectiveCost = a.cost;
-                if (wasAssetHeldInPreviousMonth(portfolio.id, a.name, yyyy_mm)) {
-                    let prevMonthClose = getPreviousMonthLastClose(a.name, yyyy_mm);
-                    if (prevMonthClose !== null) effectiveCost = prevMonthClose;
-                }
-                
-                totalCost += (a.amount * effectiveCost);
-                totalValue += (a.amount * (a.price || effectiveCost)); // Fiyat yoksa maliyet üzerinden
+                totalCost += (a.amount * a.cost);
+                totalValue += (a.amount * (a.price || a.cost)); // Fiyat yoksa maliyet üzerinden
             });
 
             let assetsWithStats = portfolio.assets.map(a => {
-                let effectiveCost = a.cost;
-                if (wasAssetHeldInPreviousMonth(portfolio.id, a.name, yyyy_mm)) {
-                    let prevMonthClose = getPreviousMonthLastClose(a.name, yyyy_mm);
-                    if (prevMonthClose !== null) effectiveCost = prevMonthClose;
-                }
-
-                let p = a.price || effectiveCost;
+                let p = a.price || a.cost;
                 let val = a.amount * p;
-                let cst = a.amount * effectiveCost;
+                let cst = a.amount * a.cost;
                 let change = cst > 0 ? ((val - cst) / cst) * 100 : 0;
                 let weight = totalValue > 0 ? (val / totalValue) * 100 : 0;
-                return { ...a, cost: effectiveCost, originalCost: a.cost, price: p, currentValue: val, totalCost: cst, change, weight };
+                return { ...a, price: p, currentValue: val, totalCost: cst, change, weight };
             });
 
             assetsWithStats.sort((a,b) => b.weight - a.weight);
