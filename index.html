@@ -1268,9 +1268,10 @@
             const allUnique = getAllUniquePortfolios();
             const p = allUnique.find(x => x.id === baseId);
             if (p) {
-                if (p.name.includes('Yatırım 101')) return '3 Ağustos 2026';
-                if (p.name.includes('Uzun Vade')) return '17 Ağustos 2026';
-                if (p.name.includes('Algo Bot')) return '1 Eylül 2026';
+                const pNameLower = p.name.toLowerCase();
+                if (pNameLower.includes('yat') && pNameLower.includes('101')) return '3 Ağustos 2026';
+                if (pNameLower.includes('uzun')) return '17 Ağustos 2026';
+                if (pNameLower.includes('algo')) return '1 Eylül 2026';
             }
             
             const allMonths = Object.keys(appState.portfoliosData).sort();
