@@ -71,6 +71,7 @@ def load_data():
                             "name": a["name"],
                             "amount": a["amount"],
                             "cost": a["cost"],
+                            "initial_cost": a.get("initial_cost", a["cost"]),
                             "price": a["price"]
                         })
                         
@@ -134,6 +135,7 @@ def save_data(data):
                         "name": a["name"],
                         "amount": a["amount"],
                         "cost": a["cost"],
+                        "initial_cost": a.get("initial_cost", a["cost"]),
                         "price": a.get("price", a["cost"])
                     })
                 for date_str, change in p.get("dailyHistory", {}).items():
