@@ -246,13 +246,14 @@
                     <table class="w-full text-sm text-left text-slate-700 dark:text-slate-300">
                         <thead class="text-xs text-slate-500 dark:text-slate-400 uppercase border-b border-white/20 dark:border-white/5">
                             <tr>
-                                <th scope="col" class="px-6 py-4 font-medium whitespace-nowrap">Varlık / Hisse</th>
-                                <th scope="col" class="px-6 py-4 font-medium text-right whitespace-nowrap">Adet</th>
-                                <th scope="col" class="px-6 py-4 font-medium text-right whitespace-nowrap">Maliyet (₺)</th>
-                                <th scope="col" class="px-6 py-4 font-medium text-right whitespace-nowrap">Güncel Fiyat (₺)</th>
-                                <th scope="col" class="px-6 py-4 font-medium text-center whitespace-nowrap">Ağırlık (%)</th>
-                                <th scope="col" class="px-6 py-4 font-medium text-right whitespace-nowrap">Net Kâr/Zarar (₺)</th>
-                                <th scope="col" class="px-6 py-4 font-medium text-right whitespace-nowrap">Getiri (%)</th>
+                                <th scope="col" class="px-4 py-4 font-medium whitespace-nowrap">Varlık / Hisse</th>
+                                <th scope="col" class="px-4 py-4 font-medium text-right whitespace-nowrap">Adet</th>
+                                <th scope="col" class="px-4 py-4 font-medium text-right whitespace-nowrap">İlk Maliyet</th>
+                                <th scope="col" class="px-4 py-4 font-medium text-right whitespace-nowrap">Ay Başı Mal.</th>
+                                <th scope="col" class="px-4 py-4 font-medium text-right whitespace-nowrap">Güncel Fiyat</th>
+                                <th scope="col" class="px-4 py-4 font-medium text-center whitespace-nowrap">Ağırlık (%)</th>
+                                <th scope="col" class="px-4 py-4 font-medium text-right whitespace-nowrap">Toplam Kâr (TL/%)</th>
+                                <th scope="col" class="px-4 py-4 font-medium text-right whitespace-nowrap">Bu Ayki Kâr (TL/%)</th>
                             </tr>
                         </thead>
                         <tbody id="assetsTableBody" class="divide-y divide-slate-700/50">
@@ -260,13 +261,14 @@
                         </tbody>
                         <tfoot class="border-t border-white/20 dark:border-white/5 font-semibold text-slate-900 dark:text-white">
                             <tr>
-                                <td class="px-6 py-4 whitespace-nowrap">Toplam Portföy</td>
-                                <td class="px-6 py-4"></td>
-                                <td class="px-6 py-4 text-right whitespace-nowrap" id="totalCost">0 ₺</td>
-                                <td class="px-6 py-4 text-right whitespace-nowrap" id="totalValue">0 ₺</td>
-                                <td class="px-6 py-4 text-center whitespace-nowrap">100%</td>
-                                <td class="px-6 py-4 text-right font-medium whitespace-nowrap" id="totalProfitTL">0 ₺</td>
-                                <td class="px-6 py-4 text-right whitespace-nowrap" id="totalChange">0%</td>
+                                <td class="px-4 py-4 whitespace-nowrap">Toplam Portföy</td>
+                                <td class="px-4 py-4"></td>
+                                <td class="px-4 py-4 text-right whitespace-nowrap" id="totalInitialCost">0 ₺</td>
+                                <td class="px-4 py-4 text-right whitespace-nowrap" id="totalCost">0 ₺</td>
+                                <td class="px-4 py-4 text-right whitespace-nowrap" id="totalValue">0 ₺</td>
+                                <td class="px-4 py-4 text-center whitespace-nowrap">100%</td>
+                                <td class="px-4 py-4 text-right font-medium whitespace-nowrap" id="totalOverallProfit">0 ₺</td>
+                                <td class="px-4 py-4 text-right font-medium whitespace-nowrap" id="totalMonthlyProfit">0 ₺</td>
                             </tr>
                         </tfoot>
                     </table>
@@ -547,13 +549,20 @@
                         <input type="number" id="editAssetAmount" class="w-full glass-input rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none" onkeypress="if(event.key === 'Enter') saveEditedAsset()">
                     </div>
                     <div>
-                        <label class="block text-slate-500 dark:text-slate-400 text-sm mb-1">Birim Maliyet (₺)</label>
-                        <input type="number" id="editAssetCost" step="0.01" class="w-full glass-input rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none" onkeypress="if(event.key === 'Enter') saveEditedAsset()">
+                        <label class="block text-slate-500 dark:text-slate-400 text-sm mb-1">İlk Maliyet (₺)</label>
+                        <input type="number" id="editAssetInitialCost" step="0.01" class="w-full glass-input rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none" onkeypress="if(event.key === 'Enter') saveEditedAsset()">
                     </div>
                 </div>
-                <div>
-                    <label class="block text-slate-500 dark:text-slate-400 text-sm mb-1">Güncel Fiyat</label>
-                    <input type="number" id="editAssetPrice" step="0.01" class="w-full glass-input rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none" onkeypress="if(event.key === 'Enter') saveEditedAsset()">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-slate-500 dark:text-slate-400 text-sm mb-1">Ay Başı Mal. (₺)</label>
+                        <input type="number" id="editAssetCost" step="0.01" class="w-full glass-input rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none" onkeypress="if(event.key === 'Enter') saveEditedAsset()">
+                    </div>
+                    <div>
+                        <label class="block text-slate-500 dark:text-slate-400 text-sm mb-1">Güncel Fiyat</label>
+                        <input type="number" id="editAssetPrice" step="0.01" class="w-full glass-input rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none" onkeypress="if(event.key === 'Enter') saveEditedAsset()">
+                    </div>
+                </div>
                 </div>
             </div>
             <div class="flex justify-end gap-3 mt-6">
@@ -770,6 +779,12 @@
                                     const baseAId = a.id.split('_')[0];
                                     a.id = baseAId + '_' + actualMonth.replace('-', '');
                                     a.portfolio_id = p.id;
+                                    
+                                    // Geriye dönük uyumluluk: Eğer initial_cost yoksa cost'u initial_cost yap
+                                    if (a.initial_cost === undefined) {
+                                        a.initial_cost = a.cost;
+                                    }
+                                    
                                     if (a.price) {
                                         a.cost = a.price; // Kapanış fiyatını yeni maliyet olarak belirle
                                     }
@@ -1346,11 +1361,14 @@
 
         function getPortfolioStats(portfolio) {
             let totalCost = 0; let totalValue = 0;
-            if(!portfolio || !portfolio.assets) return { totalCost:0, totalValue:0, totalChange:0, assetsWithStats:[] };
+            let totalInitialCost = 0;
+            if(!portfolio || !portfolio.assets) return { totalCost:0, totalValue:0, totalChange:0, totalInitialCost:0, totalOverallChange:0, assetsWithStats:[] };
 
             portfolio.assets.forEach(a => {
                 totalCost += (a.amount * a.cost);
                 totalValue += (a.amount * (a.price || a.cost)); // Fiyat yoksa maliyet üzerinden
+                const iCost = a.initial_cost !== undefined ? a.initial_cost : a.cost;
+                totalInitialCost += (a.amount * iCost);
             });
 
             let assetsWithStats = portfolio.assets.map(a => {
@@ -1359,13 +1377,19 @@
                 let cst = a.amount * a.cost;
                 let change = cst > 0 ? ((val - cst) / cst) * 100 : 0;
                 let weight = totalValue > 0 ? (val / totalValue) * 100 : 0;
-                return { ...a, price: p, currentValue: val, totalCost: cst, change, weight };
+                
+                let iCost = a.initial_cost !== undefined ? a.initial_cost : a.cost;
+                let totalICost = a.amount * iCost;
+                let overallChange = totalICost > 0 ? ((val - totalICost) / totalICost) * 100 : 0;
+                
+                return { ...a, price: p, currentValue: val, totalCost: cst, change, weight, totalInitialCost: totalICost, overallChange, initial_cost: iCost };
             });
 
             assetsWithStats.sort((a,b) => b.weight - a.weight);
             let totalChange = totalCost > 0 ? ((totalValue - totalCost) / totalCost) * 100 : 0;
+            let totalOverallChange = totalInitialCost > 0 ? ((totalValue - totalInitialCost) / totalInitialCost) * 100 : 0;
 
-            return { totalCost, totalValue, totalChange, assetsWithStats };
+            return { totalCost, totalValue, totalChange, totalInitialCost, totalOverallChange, assetsWithStats };
         }
 
         function formatMoney(amount) {
@@ -1662,21 +1686,30 @@
             tbody.innerHTML = '';
             
             if(stats.assetsWithStats.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-500">Bu portföyde henüz hisse yok.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-500">Bu portföyde henüz hisse yok.</td></tr>`;
             }
 
             stats.assetsWithStats.forEach(asset => {
                 let fetchName = asset.name.includes('.') ? asset.name : asset.name + '.IS';
                 const logoUrl = `https://financialmodelingprep.com/image-stock/${fetchName}.png`;
+                
+                // Monthly P&L
                 const changeClass = asset.change >= 0 ? 'text-emerald-400' : 'text-rose-400';
                 const changeIcon = asset.change >= 0 ? '<i class="fa-solid fa-arrow-trend-up mr-1"></i>' : '<i class="fa-solid fa-arrow-trend-down mr-1"></i>';
                 const changeSign = asset.change > 0 ? '+' : '';
                 const profitTL = asset.currentValue - asset.totalCost;
                 const profitSign = profitTL > 0 ? '+' : '';
 
+                // Total P&L
+                const overallChangeClass = asset.overallChange >= 0 ? 'text-emerald-400' : 'text-rose-400';
+                const overallChangeIcon = asset.overallChange >= 0 ? '<i class="fa-solid fa-arrow-trend-up mr-1"></i>' : '<i class="fa-solid fa-arrow-trend-down mr-1"></i>';
+                const overallChangeSign = asset.overallChange > 0 ? '+' : '';
+                const overallProfitTL = asset.currentValue - asset.totalInitialCost;
+                const overallProfitSign = overallProfitTL > 0 ? '+' : '';
+
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-400/10 transition-colors">
-                        <td class="px-6 py-4 font-bold text-base text-slate-900 dark:text-white flex items-center tracking-wide">
+                        <td class="px-4 py-4 font-bold text-base text-slate-900 dark:text-white flex items-center tracking-wide">
                             <div class="relative w-8 h-8 mr-3">
                                 <img src="${logoUrl}" alt="${asset.name}" class="w-8 h-8 rounded-full object-cover border border-slate-300 dark:border-slate-600 bg-white" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                 <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white absolute inset-0" style="display:none;">
@@ -1685,10 +1718,11 @@
                             </div>
                             ${asset.name}
                         </td>
-                        <td class="px-6 py-4 text-right">${asset.amount}</td>
-                        <td class="px-6 py-4 text-right">${formatMoney(asset.cost)}</td>
-                        <td class="px-6 py-4 text-right font-medium text-slate-900 dark:text-white">${formatMoney(asset.price)}</td>
-                        <td class="px-6 py-4 text-center">
+                        <td class="px-4 py-4 text-right">${asset.amount}</td>
+                        <td class="px-4 py-4 text-right">${formatMoney(asset.initial_cost)}</td>
+                        <td class="px-4 py-4 text-right">${formatMoney(asset.cost)}</td>
+                        <td class="px-4 py-4 text-right font-medium text-slate-900 dark:text-white">${formatMoney(asset.price)}</td>
+                        <td class="px-4 py-4 text-center">
                             <div class="flex items-center justify-center">
                                 <span class="mr-2 w-10 text-right">${asset.weight.toFixed(1)}%</span>
                                 <div class="w-16 bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
@@ -1696,27 +1730,49 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-4 text-right font-medium ${changeClass}">${profitSign}${formatMoney(profitTL)}</td>
-                        <td class="px-6 py-4 text-right font-bold ${changeClass}">
-                            ${changeIcon} ${changeSign}${asset.change.toFixed(2)}%
+                        <td class="px-4 py-4 text-right font-medium ${overallChangeClass}">
+                            <div class="flex flex-col items-end">
+                                <span>${overallProfitSign}${formatMoney(overallProfitTL)}</span>
+                                <span class="text-xs font-bold mt-0.5">${overallChangeIcon} ${overallChangeSign}${asset.overallChange.toFixed(2)}%</span>
+                            </div>
+                        </td>
+                        <td class="px-4 py-4 text-right font-medium ${changeClass}">
+                            <div class="flex flex-col items-end">
+                                <span>${profitSign}${formatMoney(profitTL)}</span>
+                                <span class="text-xs font-bold mt-0.5">${changeIcon} ${changeSign}${asset.change.toFixed(2)}%</span>
+                            </div>
                         </td>
                     </tr>
                 `;
             });
 
             document.getElementById('totalCost').textContent = formatMoney(stats.totalCost);
+            const totalInitialCostEl = document.getElementById('totalInitialCost');
+            if (totalInitialCostEl) totalInitialCostEl.textContent = formatMoney(stats.totalInitialCost);
+            
             document.getElementById('totalValue').textContent = formatMoney(stats.totalValue);
             
-            const tEl = document.getElementById('totalChange');
+            // Monthly Total
             const totalProfitTL = stats.totalValue - stats.totalCost;
             const tSign = stats.totalChange > 0 ? '+' : '';
             const tColor = stats.totalChange >= 0 ? 'text-emerald-400 font-extrabold text-base sm:text-lg' : 'text-rose-400 font-extrabold text-base sm:text-lg';
-            const pEl = document.getElementById('totalProfitTL');
-            if (pEl) pEl.innerHTML = `<span class="${tColor}">${tSign}${formatMoney(totalProfitTL)}</span>`;
+            const pEl = document.getElementById('totalMonthlyProfit');
+            if (pEl) pEl.innerHTML = `
+                <div class="flex flex-col items-end">
+                    <span class="${tColor}">${tSign}${formatMoney(totalProfitTL)}</span>
+                    <span class="${tColor} text-sm mt-0.5">${tSign}${stats.totalChange.toFixed(2)}%</span>
+                </div>`;
             
-            tEl.innerHTML = `<span class="${tColor}">
-                ${tSign}${stats.totalChange.toFixed(2)}%
-            </span>`;
+            // Overall Total
+            const overallProfitTL = stats.totalValue - stats.totalInitialCost;
+            const overallSign = stats.totalOverallChange > 0 ? '+' : '';
+            const overallColor = stats.totalOverallChange >= 0 ? 'text-emerald-400 font-extrabold text-base sm:text-lg' : 'text-rose-400 font-extrabold text-base sm:text-lg';
+            const oEl = document.getElementById('totalOverallProfit');
+            if (oEl) oEl.innerHTML = `
+                <div class="flex flex-col items-end">
+                    <span class="${overallColor}">${overallSign}${formatMoney(overallProfitTL)}</span>
+                    <span class="${overallColor} text-sm mt-0.5">${overallSign}${stats.totalOverallChange.toFixed(2)}%</span>
+                </div>`;
         }
 
         function toggleCompareChartType(type, skipRender = false) {
@@ -2095,6 +2151,7 @@
                                     ${a.name}
                                 </td>
                                 <td class="py-2 text-right">${a.amount}</td>
+                                <td class="py-2 text-right">${(a.initial_cost !== undefined ? a.initial_cost : a.cost).toFixed(2)} ₺</td>
                                 <td class="py-2 text-right">${a.cost.toFixed(2)} ₺</td>
                                 <td class="py-2 text-right">${(a.price || a.cost).toFixed(2)} ₺</td>
                                 <td class="py-2 text-right">
@@ -2129,7 +2186,8 @@
                                     <tr>
                                         <th class="pb-2">Hisse</th>
                                         <th class="pb-2 text-right">Adet</th>
-                                        <th class="pb-2 text-right">Maliyet</th>
+                                        <th class="pb-2 text-right">İlk Mal.</th>
+                                        <th class="pb-2 text-right">Ay Başı Mal.</th>
                                         <th class="pb-2 text-right">Güncel Fiyat</th>
                                         <th class="pb-2 text-right">İşlem</th>
                                     </tr>
@@ -2270,7 +2328,7 @@
             const portfolio = ports.find(p => p.id === pId);
             
             if(portfolio) {
-                portfolio.assets.push({ id: 'a' + Date.now(), name, amount, cost, price });
+                portfolio.assets.push({ id: 'a' + Date.now(), name, amount, cost, price, initial_cost: cost });
                 saveState();
             }
 
@@ -2297,6 +2355,7 @@
             document.getElementById('editTargetAssetId').value = aId;
             document.getElementById('editAssetAmount').value = a.amount;
             document.getElementById('editAssetCost').value = a.cost;
+            document.getElementById('editAssetInitialCost').value = a.initial_cost !== undefined ? a.initial_cost : a.cost;
             document.getElementById('editAssetPrice').value = a.price || a.cost;
 
             openModal('editAssetModal');
@@ -2307,9 +2366,10 @@
             const aId = document.getElementById('editTargetAssetId').value;
             const amount = parseFloat(document.getElementById('editAssetAmount').value);
             const cost = parseFloat(document.getElementById('editAssetCost').value);
+            const initialCost = parseFloat(document.getElementById('editAssetInitialCost').value);
             let price = parseFloat(document.getElementById('editAssetPrice').value);
 
-            if (isNaN(amount) || isNaN(cost)) return;
+            if (isNaN(amount) || isNaN(cost) || isNaN(initialCost)) return;
             if (isNaN(price)) price = cost;
 
             const ports = appState.portfoliosData[appState.currentViewMonth];
@@ -2319,6 +2379,7 @@
                 if (a) {
                     a.amount = amount;
                     a.cost = cost;
+                    a.initial_cost = initialCost;
                     a.price = price;
                     saveState();
                     updateAllViews();
@@ -2540,16 +2601,20 @@
                     const stock = window.rebLastTargetHoldings[symbol];
                     if (stock.targetQuantity > 0) {
                         let finalCost = stock.price;
+                        let finalInitialCost = stock.price;
                         const existingAsset = p.assets.find(a => (a.name || "").toUpperCase() === stock.symbol.toUpperCase());
                         if (existingAsset) {
                             const currentAmount = parseFloat(existingAsset.amount || 0);
                             const currentCost = parseFloat(existingAsset.cost || 0);
+                            const currentInitialCost = parseFloat(existingAsset.initial_cost !== undefined ? existingAsset.initial_cost : existingAsset.cost);
                             const targetAmount = parseFloat(stock.targetQuantity);
                             if (targetAmount > currentAmount) {
                                 const diffAmount = targetAmount - currentAmount;
                                 finalCost = ((currentAmount * currentCost) + (diffAmount * stock.price)) / targetAmount;
+                                finalInitialCost = ((currentAmount * currentInitialCost) + (diffAmount * stock.price)) / targetAmount;
                             } else {
                                 finalCost = currentCost;
+                                finalInitialCost = currentInitialCost;
                             }
                         }
                         newAssets.push({
@@ -2557,7 +2622,8 @@
                             name: stock.symbol,
                             amount: stock.targetQuantity,
                             price: stock.price,
-                            cost: parseFloat(finalCost.toFixed(2))
+                            cost: parseFloat(finalCost.toFixed(2)),
+                            initial_cost: parseFloat(finalInitialCost.toFixed(2))
                         });
                     }
                 }
