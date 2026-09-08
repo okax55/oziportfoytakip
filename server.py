@@ -242,12 +242,27 @@ def api_prices():
             tickers = yf.Tickers(" ".join(fetch_symbols))
             for sym in fetch_symbols:
                 try:
-                    # history(period="1d") genellikle en son kapanışı/anlık fiyatı verir
-                    hist = tickers.tickers[sym].history(period="1d")
-                    if not hist.empty:
-                        last_price = float(hist['Close'].iloc[-1])
-                        if not math.isnan(last_price):
-                            results[sym] = last_price
+                    ticker = tickers.tickers[sym]
+                    last_price = None
+                    
+                    try:
+                        last_price = ticker.fast_info.last_price
+                    except:
+                        pass
+                        
+                    if last_price is None or math.isnan(last_price):
+                        try:
+                            last_price = ticker.info.get('currentPrice')
+                        except:
+                            pass
+                            
+                    if last_price is None or math.isnan(last_price):
+                        hist = ticker.history(period="1d")
+                        if not hist.empty:
+                            last_price = float(hist['Close'].iloc[-1])
+                            
+                    if last_price is not None and not math.isnan(last_price):
+                        results[sym] = float(last_price)
                 except Exception as e:
                     print(f"Hata: {sym} fiyatı alınamadı. {e}")
         except Exception as e:
