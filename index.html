@@ -162,10 +162,6 @@
                 </div>
                 <div class="flex items-center gap-2 sm:gap-4">
                     <div class="hidden md:flex items-center gap-2 mr-2">
-                        <!-- Canlı Fiyat Butonu Kaldırıldı (Arka planda otomatik çalışıyor) -->
-                        <button id="btnFetchHistory" onclick="fetchHistory()" class="glass-button px-3 py-1.5 text-xs font-medium rounded-lg flex items-center">
-                            <i class="fa-solid fa-clock-rotate-left mr-1"></i>Geçmiş Veri
-                        </button>
                         <button onclick="openCalcModal()" class="glass-button px-3 py-1.5 text-xs font-medium rounded-lg flex items-center bg-gradient-to-r from-orange-500 to-amber-500 shadow-orange-500/30">
                             <i class="fa-solid fa-calculator mr-1"></i>Hesap Makinesi
                         </button>
@@ -810,7 +806,8 @@
                 if (!appState.compareChartType) appState.compareChartType = (appState.compareTimeRange === 'this_month') ? 'bar' : 'line';
                 if (!appState.monthlyChartType) appState.monthlyChartType = 'line';
                 
-                // Arka planda sessiz otomatik fiyat güncelleme (Her 60 saniyede bir)
+                // Arka planda sessiz otomatik fiyat güncelleme ve geçmiş verileri çekme
+                fetchHistory(appState.monthlyTimeRange || 'this_month');
                 refreshPrices();
                 setInterval(refreshPrices, 60000);
 
@@ -957,9 +954,6 @@
         }
 
         async function fetchHistory(range = 'this_month') {
-            const btn = document.getElementById('btnFetchHistory');
-            if(btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Çekiliyor...';
-            
             // Harita: UI Range -> yfinance period
             const periodMap = {
                 'this_month': '1mo', '1w': '1mo', '1m': '1mo',
@@ -1052,8 +1046,6 @@
                 console.error(e);
                 showAlert("Geçmiş veri çekilirken hata oluştu: " + e.message);
             }
-            
-            if(btn) btn.innerHTML = '<i class="fa-solid fa-clock-rotate-left mr-2"></i>Geçmiş Verileri Çek';
         }
 
         function toggleLock() {
@@ -2113,10 +2105,12 @@
             });
         }
 
-        window.toggleBenchmark = function(checkbox) {
+        window.toggleBenchmark = async function(checkbox) {
             const val = checkbox.value;
             if (checkbox.checked && !appState.activeBenchmarks.includes(val)) {
                 appState.activeBenchmarks.push(val);
+                // Yeni benchmark eklendiğinde o benchmarkın datasını alması için fetchHistory çalıştır.
+                await fetchHistory(appState.compareTimeRange || 'this_month');
             } else {
                 appState.activeBenchmarks = appState.activeBenchmarks.filter(b => b !== val);
             }
