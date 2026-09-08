@@ -186,7 +186,7 @@ def save_data(data):
         settings_keys = [
             "frozenMonths", "activeBenchmarks", "currentViewMonth", 
             "currentPortfolioId", "monthlyChartType", "deleteQueue",
-            "compareTimeRange", "compareChartType"
+            "compareTimeRange", "compareChartType", "realizedProfits"
         ]
         settings_insert = []
         for key in settings_keys:

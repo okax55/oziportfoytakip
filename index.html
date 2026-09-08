@@ -568,6 +568,42 @@
         </div>
     </div>
 
+    <div id="sellAssetModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 opacity-0 transition-opacity">
+        <div class="glass-panel p-6 rounded-2xl w-full max-w-md shadow-2xl transform scale-95 transition-transform" id="sellAssetModalContent">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-hand-holding-dollar"></i>
+                </div>
+                <h3 class="text-slate-900 dark:text-white text-xl font-bold">Kâr Al / Satış Yap</h3>
+            </div>
+            
+            <input type="hidden" id="sellTargetPortfolioId">
+            <input type="hidden" id="sellTargetAssetId">
+            
+            <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 mb-4 text-sm text-amber-800 dark:text-amber-200">
+                Mevcut Lot Adedi: <span id="sellAssetCurrentAmount" class="font-bold">0</span><br>
+                Satış sonrası elde edilen nakit, portföy değerinize "Satış Kârı" olarak kilitlenip eklenecektir.
+            </div>
+
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-slate-500 dark:text-slate-400 text-sm mb-1">Satılacak Adet</label>
+                        <input type="number" id="sellAssetAmount" class="w-full glass-input rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none" onkeypress="if(event.key === 'Enter') saveSoldAsset()">
+                    </div>
+                    <div>
+                        <label class="block text-slate-500 dark:text-slate-400 text-sm mb-1">Satış Fiyatı (₺)</label>
+                        <input type="number" id="sellAssetPrice" step="0.01" class="w-full glass-input rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none" onkeypress="if(event.key === 'Enter') saveSoldAsset()">
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 mt-6">
+                <button onclick="closeModals()" class="px-5 py-2.5 glass-input text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">İptal</button>
+                <button onclick="saveSoldAsset()" class="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg transition-colors shadow-lg">Satış Yap</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Custom Alert Modal -->
     <div id="alertModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[200] flex items-center justify-center p-4 opacity-0 transition-opacity">
          <div class="glass-panel p-6 rounded-2xl w-full max-w-sm shadow-2xl flex flex-col items-center text-center transform scale-95 transition-transform" id="alertModalContent">
@@ -732,7 +768,8 @@
             currentViewMonth: "",
             currentPortfolioId: "",
             monthlyChartType: 'line',
-            deleteQueue: { type: null, pId: null, aId: null }
+            deleteQueue: { type: null, pId: null, aId: null },
+            realizedProfits: {} // { portfolioId: [ { name, amountSold, avgSellPrice, totalProfit, initialCost, cost, totalSellValue, totalSellCost } ] }
         };
 
         let mChart = null;
@@ -1361,27 +1398,61 @@
         function getPortfolioStats(portfolio) {
             let totalCost = 0; let totalValue = 0;
             let totalInitialCost = 0;
-            if(!portfolio || !portfolio.assets) return { totalCost:0, totalValue:0, totalChange:0, totalInitialCost:0, totalOverallChange:0, assetsWithStats:[] };
+            if(!portfolio) return { totalCost:0, totalValue:0, totalChange:0, totalInitialCost:0, totalOverallChange:0, assetsWithStats:[] };
 
-            portfolio.assets.forEach(a => {
-                totalCost += (a.amount * a.cost);
-                totalValue += (a.amount * (a.price || a.cost)); // Fiyat yoksa maliyet üzerinden
-                const iCost = a.initial_cost !== undefined ? a.initial_cost : a.cost;
-                totalInitialCost += (a.amount * iCost);
-            });
+            let assetsWithStats = [];
+            
+            if (portfolio.assets) {
+                portfolio.assets.forEach(a => {
+                    totalCost += (a.amount * a.cost);
+                    totalValue += (a.amount * (a.price || a.cost));
+                    const iCost = a.initial_cost !== undefined ? a.initial_cost : a.cost;
+                    totalInitialCost += (a.amount * iCost);
+                });
 
-            let assetsWithStats = portfolio.assets.map(a => {
-                let p = a.price || a.cost;
-                let val = a.amount * p;
-                let cst = a.amount * a.cost;
-                let change = cst > 0 ? ((val - cst) / cst) * 100 : 0;
-                let weight = totalValue > 0 ? (val / totalValue) * 100 : 0;
-                
-                let iCost = a.initial_cost !== undefined ? a.initial_cost : a.cost;
-                let totalICost = a.amount * iCost;
-                let overallChange = totalICost > 0 ? ((val - totalICost) / totalICost) * 100 : 0;
-                
-                return { ...a, price: p, currentValue: val, totalCost: cst, change, weight, totalInitialCost: totalICost, overallChange, initial_cost: iCost };
+                assetsWithStats = portfolio.assets.map(a => {
+                    let p = a.price || a.cost;
+                    let val = a.amount * p;
+                    let cst = a.amount * a.cost;
+                    let change = cst > 0 ? ((val - cst) / cst) * 100 : 0;
+                    
+                    let iCost = a.initial_cost !== undefined ? a.initial_cost : a.cost;
+                    let totalICost = a.amount * iCost;
+                    let overallChange = totalICost > 0 ? ((val - totalICost) / totalICost) * 100 : 0;
+                    
+                    return { ...a, price: p, currentValue: val, totalCost: cst, change, weight: 0, totalInitialCost: totalICost, overallChange, initial_cost: iCost };
+                });
+            }
+
+            // Realized Profits (Satılan Hisseler) Ekleme
+            if (appState.realizedProfits && appState.realizedProfits[portfolio.id]) {
+                appState.realizedProfits[portfolio.id].forEach(r => {
+                    totalCost += r.totalSellCost;
+                    totalValue += r.totalSellValue;
+                    totalInitialCost += r.totalSellCost; // Kabul edilen mantık: Satılan kısmın nakit karşılığının maliyeti, kendi maliyetidir.
+
+                    assetsWithStats.push({
+                        id: 'r_' + Math.random().toString(36).substr(2, 9),
+                        name: r.name + " (Satıldı)",
+                        amount: r.amountSold,
+                        initial_cost: r.initialCost,
+                        cost: r.cost,
+                        price: r.avgSellPrice,
+                        currentValue: r.totalSellValue,
+                        totalCost: r.totalSellCost,
+                        change: r.totalSellCost > 0 ? (r.totalProfit / r.totalSellCost) * 100 : 0,
+                        weight: 0,
+                        totalInitialCost: r.totalSellCost, // Assuming initial and current cost basis is treated same for cash injection
+                        overallChange: r.totalSellCost > 0 ? (r.totalProfit / r.totalSellCost) * 100 : 0,
+                        isRealized: true,
+                        realizedProfit: r.totalProfit
+                    });
+                });
+            }
+
+            // Ağırlıkları hesapla
+            assetsWithStats.forEach(a => {
+                a.weight = totalValue > 0 ? (a.currentValue / totalValue) * 100 : 0;
             });
 
             assetsWithStats.sort((a,b) => b.weight - a.weight);
@@ -1707,15 +1778,18 @@
                 const overallProfitSign = overallProfitTL > 0 ? '+' : '';
 
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-400/10 transition-colors">
+                    <tr class="hover:bg-slate-400/10 transition-colors ${asset.isRealized ? 'bg-amber-50/50 dark:bg-amber-900/10' : ''}">
                         <td class="px-4 py-4 font-bold text-base text-slate-900 dark:text-white flex items-center tracking-wide">
                             <div class="relative w-8 h-8 mr-3">
-                                <img src="${logoUrl}" alt="${asset.name}" class="w-8 h-8 rounded-full object-cover border border-slate-300 dark:border-slate-600 bg-white" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white absolute inset-0" style="display:none;">
-                                    ${asset.name.substring(0,2)}
-                                </div>
+                                ${asset.isRealized 
+                                    ? `<div class="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-800 flex items-center justify-center text-amber-600 dark:text-amber-200"><i class="fa-solid fa-lock"></i></div>` 
+                                    : `<img src="${logoUrl}" alt="${asset.name}" class="w-8 h-8 rounded-full object-cover border border-slate-300 dark:border-slate-600 bg-white" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                       <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white absolute inset-0" style="display:none;">
+                                           ${asset.name.substring(0,2)}
+                                       </div>`
+                                }
                             </div>
-                            ${asset.name}
+                            <span class="${asset.isRealized ? 'text-amber-700 dark:text-amber-400' : ''}">${asset.name}</span>
                         </td>
                         <td class="px-4 py-4 text-right">${asset.amount}</td>
                         <td class="px-4 py-4 text-right">${formatMoney(asset.initial_cost)}</td>
@@ -2156,6 +2230,7 @@
                                 <td class="py-2 text-right">${a.cost.toFixed(2)} ₺</td>
                                 <td class="py-2 text-right">${(a.price || a.cost).toFixed(2)} ₺</td>
                                 <td class="py-2 text-right">
+                                    <button onclick="openSellAssetModal('${p.id}', '${a.id}')" class="${isFrozen ? 'hidden' : ''} text-amber-500 hover:text-amber-400 p-1 mr-1" title="Sat/Kâr Al"><i class="fa-solid fa-hand-holding-dollar"></i></button>
                                     <button onclick="openEditAssetModal('${p.id}', '${a.id}')" class="${isFrozen ? 'hidden' : ''} text-brand-400 hover:text-brand-300 p-1 mr-1" title="Düzenle"><i class="fa-solid fa-pen-to-square"></i></button>
                                     <button onclick="confirmDeleteAsset('${p.id}', '${a.id}')" class="${isFrozen ? 'hidden' : ''} text-rose-400 hover:text-rose-300 p-1" title="Sil"><i class="fa-solid fa-xmark"></i></button>
                                 </td>
@@ -2237,7 +2312,7 @@
         });
 
         function closeModals() {
-            ['portfolioModal', 'assetModal', 'confirmModal', 'editPortfolioModal', 'editAssetModal', 'calcModal', 'rebalanceModal', 'alertModal'].forEach(id => {
+            ['portfolioModal', 'assetModal', 'confirmModal', 'editPortfolioModal', 'editAssetModal', 'sellAssetModal', 'calcModal', 'rebalanceModal', 'alertModal'].forEach(id => {
                 const m = document.getElementById(id);
                 const c = document.getElementById(id + 'Content');
                 if(m) m.classList.add('opacity-0');
@@ -2252,6 +2327,8 @@
             document.getElementById('editAssetAmount').value = '';
             document.getElementById('editAssetCost').value = '';
             document.getElementById('editAssetPrice').value = '';
+            if (document.getElementById('sellAssetAmount')) document.getElementById('sellAssetAmount').value = '';
+            if (document.getElementById('sellAssetPrice')) document.getElementById('sellAssetPrice').value = '';
         }
 
         function openPortfolioModal() { openModal('portfolioModal'); }
@@ -2387,6 +2464,91 @@
                 }
             }
             closeModals();
+        }
+
+        function openSellAssetModal(pId, aId) {
+            if (appState.frozenMonths[appState.currentViewMonth]) {
+                showAlert("Bu ay kilitli! Değişiklik yapmak için önce kilidi açın.");
+                return;
+            }
+            const ports = appState.portfoliosData[appState.currentViewMonth];
+            const p = ports.find(x => x.id === pId);
+            if (!p) return;
+            const a = p.assets.find(x => x.id === aId);
+            if (!a) return;
+
+            document.getElementById('sellTargetPortfolioId').value = pId;
+            document.getElementById('sellTargetAssetId').value = aId;
+            document.getElementById('sellAssetCurrentAmount').textContent = a.amount;
+            document.getElementById('sellAssetAmount').value = a.amount; // default to full sell
+            document.getElementById('sellAssetPrice').value = a.price || a.cost;
+
+            openModal('sellAssetModal');
+        }
+
+        async function saveSoldAsset() {
+            const pId = document.getElementById('sellTargetPortfolioId').value;
+            const aId = document.getElementById('sellTargetAssetId').value;
+            const amountToSell = parseFloat(document.getElementById('sellAssetAmount').value);
+            const sellPrice = parseFloat(document.getElementById('sellAssetPrice').value);
+
+            if (isNaN(amountToSell) || isNaN(sellPrice) || amountToSell <= 0 || sellPrice < 0) return;
+
+            const ports = appState.portfoliosData[appState.currentViewMonth];
+            const p = ports.find(x => x.id === pId);
+            if (!p) return;
+            const a = p.assets.find(x => x.id === aId);
+            if (!a) return;
+
+            if (amountToSell > a.amount) {
+                showAlert("Sahip olduğunuzdan daha fazla lot satamazsınız!");
+                return;
+            }
+
+            // Hesaplamalar
+            const costBasis = a.cost;
+            const initialCostBasis = a.initial_cost !== undefined ? a.initial_cost : a.cost;
+            
+            const totalSellValue = amountToSell * sellPrice;
+            const totalSellCost = amountToSell * costBasis;
+            const totalSellInitialCost = amountToSell * initialCostBasis;
+            const profit = totalSellValue - totalSellCost;
+
+            if (!appState.realizedProfits) appState.realizedProfits = {};
+            if (!appState.realizedProfits[pId]) appState.realizedProfits[pId] = [];
+
+            // Var olan satış kaydı var mı kontrol et (aynı hisse için ortalama)
+            let existingSale = appState.realizedProfits[pId].find(r => r.name === a.name);
+            if (existingSale) {
+                existingSale.totalSellValue += totalSellValue;
+                existingSale.totalSellCost += totalSellCost;
+                existingSale.amountSold += amountToSell;
+                existingSale.avgSellPrice = existingSale.totalSellValue / existingSale.amountSold;
+                existingSale.totalProfit += profit;
+                // Cost and initialCost averages
+                existingSale.cost = existingSale.totalSellCost / existingSale.amountSold;
+            } else {
+                appState.realizedProfits[pId].push({
+                    name: a.name,
+                    amountSold: amountToSell,
+                    avgSellPrice: sellPrice,
+                    totalProfit: profit,
+                    initialCost: initialCostBasis,
+                    cost: costBasis,
+                    totalSellValue: totalSellValue,
+                    totalSellCost: totalSellCost
+                });
+            }
+
+            // Adeti azalt veya sıfırsa sil
+            a.amount -= amountToSell;
+            if (a.amount <= 0) {
+                p.assets = p.assets.filter(x => x.id !== aId);
+            }
+
+            saveState();
+            closeModals();
+            updateAllViews();
         }
 
         function confirmDeleteAsset(pId, aId) {

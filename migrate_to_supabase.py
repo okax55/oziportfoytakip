@@ -84,7 +84,7 @@ def migrate():
     settings_keys = [
         "frozenMonths", "activeBenchmarks", "currentViewMonth", 
         "currentPortfolioId", "monthlyChartType", "deleteQueue",
-        "compareTimeRange", "compareChartType"
+        "compareTimeRange", "compareChartType", "realizedProfits"
     ]
     for key in settings_keys:
         if key in data:
