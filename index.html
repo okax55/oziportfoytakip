@@ -1053,6 +1053,13 @@
             updateLockUI();
             renderManagementView();
             saveState(); // Arkada kaydet
+            
+            const d = new Date();
+            const actualMonth = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}`;
+            if (!appState.frozenMonths[appState.currentViewMonth] && appState.currentViewMonth === actualMonth) {
+                refreshPrices();
+                fetchHistory(appState.monthlyTimeRange || 'this_month');
+            }
         }
 
         function updateLockUI() {
