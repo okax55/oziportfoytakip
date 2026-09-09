@@ -2034,10 +2034,10 @@
                 
                 if (dateStr === appState.lastUpdatedDate) {
                     price = (typeof assetValues !== 'undefined' ? assetValues[fetchName] : null) || a.price;
-                } else if (appState.benchmarksHistory[fetchName] && appState.benchmarksHistory[fetchName][dateStr] !== undefined) {
+                } else if (appState.benchmarksHistory && appState.benchmarksHistory[fetchName] && appState.benchmarksHistory[fetchName][dateStr] !== undefined) {
                     price = appState.benchmarksHistory[fetchName][dateStr];
                 } else {
-                    if (appState.benchmarksHistory[fetchName]) {
+                    if (appState.benchmarksHistory && appState.benchmarksHistory[fetchName]) {
                         for (let offset = 1; offset <= 7; offset++) {
                             const prevStr = getPrevDateStr(dateStr, offset);
                             if (appState.benchmarksHistory[fetchName][prevStr] !== undefined) {
@@ -2290,8 +2290,8 @@
             });
             
             // Yeni tablo ve portföy detayları fonksiyonlarını çağır
-            renderPerformanceDetailsTable();
-            renderPortfolioDetailedViews();
+            try { renderPerformanceDetailsTable(); } catch(e) { console.error("PerfTable Error:", e); }
+            try { renderPortfolioDetailedViews(); } catch(e) { console.error("PortView Error:", e); }
         }
 
         
