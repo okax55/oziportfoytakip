@@ -1063,13 +1063,10 @@
                 
                 const data = await res.json();
                 if (data.status === "success" && data.history) {
-                    // (Bu kısımda değişiklik yok, sadece catch bloğunu değiştirmek için bir üst scope'u da tutuyoruz, ancak hata yapmamak için else ekleyelim)
-                    const history = data.history;
-                    
-                    if (!appState.benchmarksHistory) appState.benchmarksHistory = {};
-                    Object.keys(history).forEach(sym => {
-                        appState.benchmarksHistory[sym] = Object.assign(appState.benchmarksHistory[sym] || {}, history[sym]);
-                    });
+                    appState.benchmarksHistory = data.history;
+                    saveState();
+                    if (typeof renderCompareView === 'function') renderCompareView();
+                    if (typeof updateAllViews === 'function') updateAllViews();
                     
                     const ports = appState.portfoliosData[appState.currentViewMonth] || [];
                     ports.forEach(p => {
@@ -1090,7 +1087,7 @@
                             
                             p.assets.forEach(a => {
                                 let fetchName = a.name.includes('.') ? a.name : a.name + '.IS';
-                                let assetHist = history[fetchName] || {};
+                                let assetHist = data.history[fetchName] || {};
                                 
                                 let price = assetHist[dateStr];
                                 if (!price) {
@@ -1122,7 +1119,7 @@
                                     if (dateStr < saleDateStr) {
                                         // Satış tarihinden önceki günler: Hisse elde var kabul edilir.
                                         let fetchName = r.name.includes('.') ? r.name : r.name + '.IS';
-                                        let assetHist = history[fetchName] || {};
+                                        let assetHist = data.history[fetchName] || {};
                                         
                                         let pastPrice = assetHist[dateStr];
                                         if (!pastPrice) {
@@ -1407,9 +1404,9 @@
             const p = allUnique.find(x => x.id === baseId);
             if (p) {
                 const pNameLower = p.name.toLowerCase();
-                if (pNameLower.includes('yat') && pNameLower.includes('101')) return '3 Ağustos 2026';
-                if (pNameLower.includes('uzun')) return '17 Ağustos 2026';
-                if (pNameLower.includes('algo')) return '1 Eylül 2026';
+                if (pNameLower.includes('yat') && pNameLower.includes('101')) return '2026-08-03';
+                if (pNameLower.includes('uzun')) return '2026-08-17';
+                if (pNameLower.includes('algo')) return '2026-09-01';
                 
                 if (baseId.startsWith('p')) {
                     const ts = parseInt(baseId.substring(1));
@@ -1417,26 +1414,23 @@
                         const threshold = new Date(2026, 8, 2).getTime();
                         if (ts >= threshold) {
                             const d = new Date(ts);
-                            const monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
-                            return d.getDate() + " " + monthNames[d.getMonth()] + " " + d.getFullYear();
+                            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
                         }
                     }
                 }
             }
-            
-            const allMonths = Object.keys(appState.portfoliosData).sort();
-            for (const m of allMonths) {
-                const ports = appState.portfoliosData[m];
-                const found = ports.find(x => x.id.split('_')[0] === baseId);
-                if (found && found.assets && found.assets.length > 0) {
+            // Diğer portföyler için portfoliosData üzerinden en eski ayı bul
+            const months = Object.keys(appState.portfoliosData).sort((a,b) => a.localeCompare(b));
+            for (const m of months) {
+                const pts = appState.portfoliosData[m];
+                if (pts.find(x => x.id.split('_')[0] === baseId)) {
+                    // m is something like "2026-09"
                     const parts = m.split('-');
-                    const year = parts[0];
-                    const month = parts[1];
-                    const monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
-                    return monthNames[parseInt(month, 10) - 1] + " " + year;
+                    const date = new Date(parts[0], parseInt(parts[1])-1, 1);
+                    return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2, '0')}-01`;
                 }
             }
-            return "Bilinmiyor";
+            return "2020-01-01";
         }
 
         function wasAssetHeldInPreviousMonth(portfolioId, assetName, currentMonthYyyyMm) {
@@ -1550,6 +1544,13 @@
             return { totalCost, totalValue, totalChange, totalInitialCost, totalOverallChange, assetsWithStats };
         }
 
+        function formatDateTR(dateStr) {
+            if (!dateStr || dateStr === '2020-01-01' || dateStr === '-') return '-';
+            const d = new Date(dateStr);
+            if (isNaN(d)) return dateStr;
+            const monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+            return d.getDate() + " " + monthNames[d.getMonth()] + " " + d.getFullYear();
+        }
         function formatMoney(amount) {
             return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(amount);
         }
@@ -2375,15 +2376,13 @@
                     return `<span class="px-2 py-0.5 rounded-md border font-bold ${bgBorder}">${sign}${val.toFixed(2)}%</span>`;
                 };
 
-                // formatMoney is already defined in index.html globally!
-                
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-400/10 transition-colors">
-                        <td class="px-5 py-4 font-medium">${startDate}</td>
-                        <td class="px-5 py-4 font-bold text-brand-500 flex items-center gap-2">
-                            <span class="w-3 h-3 rounded-full" style="background-color: ${p.color}"></span>
+                        <td class="px-5 py-4 font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                            <span class="w-3 h-3 rounded-full shadow-sm" style="background-color: ${p.color}"></span>
                             ${p.name}
                         </td>
+                        <td class="px-5 py-4 font-bold text-slate-700 dark:text-slate-300">${formatDateTR(startDate)}</td>
                         <td class="px-5 py-4 font-bold text-right text-slate-900 dark:text-white">${formatMoney(totalAsset)}</td>
                         <td class="px-5 py-4 text-right font-medium">${formatPct(d1)}</td>
                         <td class="px-5 py-4 text-right font-medium">${formatPct(w1)}</td>
@@ -2575,7 +2574,7 @@
                             <div class="flex items-center gap-2">
                                 <span class="w-3 h-3 rounded-full" style="background-color: ${p.color}"></span>
                                 <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                    ${p.name} <span class="text-xs text-slate-500 dark:text-slate-400 font-normal ml-2">(${getPortfolioStartDateStr(p.id)})</span>
+                                    ${p.name} <span class="text-xs text-slate-500 dark:text-slate-400 font-normal ml-2">(${formatDateTR(getPortfolioStartDateStr(p.id))})</span>
                                     <button onclick="editPortfolioName('${p.id}')" class="${isFrozen ? 'hidden' : ''} text-slate-400 hover:text-brand-500 transition-colors text-sm" title="İsmi Düzenle">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </button>
