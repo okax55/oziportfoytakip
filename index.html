@@ -596,6 +596,10 @@
                         <input type="number" id="sellAssetPrice" step="0.01" class="w-full glass-input rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none" onkeypress="if(event.key === 'Enter') saveSoldAsset()">
                     </div>
                 </div>
+                <div class="mt-4">
+                    <label class="block text-slate-500 dark:text-slate-400 text-sm mb-1">Satış Tarihi</label>
+                    <input type="date" id="sellAssetDate" class="w-full glass-input rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-brand-500 outline-none">
+                </div>
             </div>
             <div class="flex justify-end gap-3 mt-6">
                 <button onclick="closeModals()" class="px-5 py-2.5 glass-input text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">İptal</button>
@@ -1066,6 +1070,46 @@
                                     totalCost += (a.amount * a.cost);
                                 }
                             });
+
+                            // Realized Profits (Satılan Hisseler) Tarihsel Hesaplaması
+                            if (appState.realizedProfits && appState.realizedProfits[p.id]) {
+                                appState.realizedProfits[p.id].forEach(r => {
+                                    let saleDateStr = r.saleDate || "2000-01-01";
+                                    
+                                    if (dateStr < saleDateStr) {
+                                        // Satış tarihinden önceki günler: Hisse elde var kabul edilir.
+                                        let fetchName = r.name.includes('.') ? r.name : r.name + '.IS';
+                                        let assetHist = history[fetchName] || {};
+                                        
+                                        let pastPrice = assetHist[dateStr];
+                                        if (!pastPrice) {
+                                            for (let offset = 1; offset <= 7; offset++) {
+                                                const prevD = new Date(year, parseInt(month)-1, d - offset);
+                                                const prevStr = `${prevD.getFullYear()}-${String(prevD.getMonth()+1).padStart(2, '0')}-${String(prevD.getDate()).padStart(2, '0')}`;
+                                                if (assetHist[prevStr]) {
+                                                    pastPrice = assetHist[prevStr];
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        
+                                        if (pastPrice) {
+                                            totalValue += (r.amountSold * pastPrice);
+                                            totalCost += (r.amountSold * r.cost);
+                                            hasAnyData = true;
+                                        } else {
+                                            // Geçmiş fiyat bulunamadıysa sabit satış fiyatı/maliyetiyle ekle (yanıltıcı olmasın diye)
+                                            totalValue += (r.amountSold * r.cost);
+                                            totalCost += (r.amountSold * r.cost);
+                                        }
+                                    } else {
+                                        // Satış tarihi veya sonrası: Nakit (Cash) olarak portföye eklenir.
+                                        totalValue += r.totalSellValue;
+                                        totalCost += r.totalSellCost;
+                                        hasAnyData = true;
+                                    }
+                                });
+                            }
                             
                             if (hasAnyData && totalCost > 0) {
                                 p.dailyHistory[dateStr] = ((totalValue - totalCost) / totalCost) * 100;
@@ -1431,9 +1475,10 @@
                     totalValue += r.totalSellValue;
                     totalInitialCost += r.totalSellCost; // Kabul edilen mantık: Satılan kısmın nakit karşılığının maliyeti, kendi maliyetidir.
 
+                    let dateStrDisplay = r.saleDate ? ` (${r.saleDate})` : ' (Satıldı)';
                     assetsWithStats.push({
                         id: 'r_' + Math.random().toString(36).substr(2, 9),
-                        name: r.name + " (Satıldı)",
+                        name: r.name + dateStrDisplay,
                         amount: r.amountSold,
                         initial_cost: r.initialCost,
                         cost: r.cost,
@@ -1721,26 +1766,32 @@
                     },
                     scales: {
                         x: { 
-                            border: { dash: [5, 5], color: gridColor },
-                              grid: { display: false }, 
+                            border: { dash: [2, 2], color: gridColor },
+                            grid: { display: false }, 
                             ticks: { 
-                                color: '#94a3b8', 
+                                color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#000000',
+                                font: { weight: '600' },
                                 autoSkip: false,
                                 maxRotation: 0,
                                 callback: function(val, index, ticks) {
+                                    if (index === 0) return '';
                                     const label = this.getLabelForValue(val);
-                                    if (index === 0 || index === ticks.length - 1) return label;
+                                    if (index === ticks.length - 1) return label;
                                     return index % 2 === 0 ? label : '';
                                 }
                             } 
                         },
                         y: { 
-                            border: { dash: [5, 5], color: gridColor },
+                            border: { dash: [2, 2], color: gridColor },
                             grid: { 
                                 color: (ctx) => ctx.tick.value === 0 ? (document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)') : gridColor,
-                                drawTicks: false, tickBorderDash: [5, 5], borderDash: [5, 5] 
+                                drawTicks: false, tickBorderDash: [2, 2], borderDash: [2, 2] 
                             }, 
-                            ticks: { callback: v => '%' + Number(v).toFixed(2), color: '#94a3b8' } 
+                            ticks: { 
+                                callback: v => '%' + Number(v).toFixed(2), 
+                                color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#000000',
+                                font: { weight: '600' }
+                            } 
                         }
                     }
                 }
@@ -1802,17 +1853,16 @@
                                     <div class="bg-brand-500 h-1.5 rounded-full" style="width: ${asset.weight}%"></div>
                                 </div>
                             </div>
-                        </td>
-                        <td class="px-4 py-4 text-right font-medium ${overallChangeClass}">
-                            <div class="flex flex-col items-end">
-                                <span>${overallProfitSign}${formatMoney(overallProfitTL)}</span>
-                                <span class="text-xs font-bold mt-0.5">${overallChangeIcon} ${overallChangeSign}${asset.overallChange.toFixed(2)}%</span>
+                        <td class="px-4 py-4 text-right font-medium">
+                            <div class="flex items-center justify-end gap-2">
+                                <span class="${overallChangeClass}">${overallProfitSign}${formatMoney(overallProfitTL)}</span>
+                                <span class="text-xs font-bold px-2 py-0.5 rounded-md border ${asset.overallChange >= 0 ? 'bg-emerald-100 dark:bg-emerald-900/30 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400' : 'bg-rose-100 dark:bg-rose-900/30 border-rose-300 dark:border-rose-700 text-rose-700 dark:text-rose-400'}">${overallChangeIcon} ${overallChangeSign}${asset.overallChange.toFixed(2)}%</span>
                             </div>
                         </td>
-                        <td class="px-4 py-4 text-right font-medium ${changeClass}">
-                            <div class="flex flex-col items-end">
-                                <span>${profitSign}${formatMoney(profitTL)}</span>
-                                <span class="text-xs font-bold mt-0.5">${changeIcon} ${changeSign}${asset.change.toFixed(2)}%</span>
+                        <td class="px-4 py-4 text-right font-medium">
+                            <div class="flex items-center justify-end gap-2">
+                                <span class="${changeClass}">${profitSign}${formatMoney(profitTL)}</span>
+                                <span class="text-xs font-bold px-2 py-0.5 rounded-md border ${asset.change >= 0 ? 'bg-emerald-100 dark:bg-emerald-900/30 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400' : 'bg-rose-100 dark:bg-rose-900/30 border-rose-300 dark:border-rose-700 text-rose-700 dark:text-rose-400'}">${changeIcon} ${changeSign}${asset.change.toFixed(2)}%</span>
                             </div>
                         </td>
                     </tr>
@@ -1829,22 +1879,24 @@
             const totalProfitTL = stats.totalValue - stats.totalCost;
             const tSign = stats.totalChange > 0 ? '+' : '';
             const tColor = stats.totalChange >= 0 ? 'text-emerald-400 font-extrabold text-base sm:text-lg' : 'text-rose-400 font-extrabold text-base sm:text-lg';
+            const tBgBorder = stats.totalChange >= 0 ? 'bg-emerald-100 dark:bg-emerald-900/30 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400' : 'bg-rose-100 dark:bg-rose-900/30 border-rose-300 dark:border-rose-700 text-rose-700 dark:text-rose-400';
             const pEl = document.getElementById('totalMonthlyProfit');
             if (pEl) pEl.innerHTML = `
-                <div class="flex flex-col items-end">
+                <div class="flex items-center justify-end gap-2">
                     <span class="${tColor}">${tSign}${formatMoney(totalProfitTL)}</span>
-                    <span class="${tColor} text-sm mt-0.5">${tSign}${stats.totalChange.toFixed(2)}%</span>
+                    <span class="text-sm font-bold px-2 py-0.5 rounded-md border ${tBgBorder}">${tSign}${stats.totalChange.toFixed(2)}%</span>
                 </div>`;
             
             // Overall Total
             const overallProfitTL = stats.totalValue - stats.totalInitialCost;
             const overallSign = stats.totalOverallChange > 0 ? '+' : '';
             const overallColor = stats.totalOverallChange >= 0 ? 'text-emerald-400 font-extrabold text-base sm:text-lg' : 'text-rose-400 font-extrabold text-base sm:text-lg';
+            const oBgBorder = stats.totalOverallChange >= 0 ? 'bg-emerald-100 dark:bg-emerald-900/30 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400' : 'bg-rose-100 dark:bg-rose-900/30 border-rose-300 dark:border-rose-700 text-rose-700 dark:text-rose-400';
             const oEl = document.getElementById('totalOverallProfit');
             if (oEl) oEl.innerHTML = `
-                <div class="flex flex-col items-end">
+                <div class="flex items-center justify-end gap-2">
                     <span class="${overallColor}">${overallSign}${formatMoney(overallProfitTL)}</span>
-                    <span class="${overallColor} text-sm mt-0.5">${overallSign}${stats.totalOverallChange.toFixed(2)}%</span>
+                    <span class="text-sm font-bold px-2 py-0.5 rounded-md border ${oBgBorder}">${overallSign}${stats.totalOverallChange.toFixed(2)}%</span>
                 </div>`;
         }
 
@@ -2111,7 +2163,7 @@
                     const datasetConfig = {
                         label: item.name, data: displayData,
                         borderColor: item.color, backgroundColor: item.color,
-                        borderWidth: 2, pointRadius: 2, tension: 0.3
+                        borderWidth: 2, pointRadius: 0, pointHoverRadius: 6, pointHoverBackgroundColor: '#fff', pointHoverBorderWidth: 3, pointBackgroundColor: item.color, tension: 0.3
                     };
                     if (item.type === 'bench') {
                         datasetConfig.borderDash = [5, 5];
@@ -2150,7 +2202,7 @@
                     responsive: true, maintainAspectRatio: false,
                     interaction: { mode: 'index', intersect: false },
                     plugins: {
-                        legend: { display: isLine },
+                        legend: { display: false },
                         tooltip: {
                               usePointStyle: true,
                               boxPadding: 6,
@@ -2172,14 +2224,26 @@
                     },
                     scales: {
                         x: { 
-                            border: { dash: [5, 5], color: gridColor },
-                              grid: { display: false }, 
-                            ticks: { color: '#94a3b8', maxTicksLimit: 15 } 
+                            border: { dash: [2, 2], color: gridColor },
+                            grid: { display: false }, 
+                            ticks: { 
+                                color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#000000',
+                                font: { weight: '600' },
+                                maxTicksLimit: 15,
+                                callback: function(val, index, ticks) {
+                                    if (index === 0) return '';
+                                    return this.getLabelForValue(val);
+                                }
+                            } 
                         },
                         y: { 
-                            border: { dash: [5, 5], color: gridColor },
-                            grid: { color: gridColor, drawTicks: false, tickBorderDash: [5, 5], borderDash: [5, 5] }, 
-                            ticks: { callback: v => '%' + Number(v).toFixed(2), color: '#94a3b8' } 
+                            border: { dash: [2, 2], color: gridColor },
+                            grid: { color: gridColor, drawTicks: false, tickBorderDash: [2, 2], borderDash: [2, 2] }, 
+                            ticks: { 
+                                callback: v => '%' + Number(v).toFixed(2), 
+                                color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#000000',
+                                font: { weight: '600' }
+                            } 
                         }
                     }
                 }
@@ -2482,6 +2546,9 @@
             document.getElementById('sellAssetCurrentAmount').textContent = a.amount;
             document.getElementById('sellAssetAmount').value = a.amount; // default to full sell
             document.getElementById('sellAssetPrice').value = a.price || a.cost;
+            const today = new Date();
+            const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+            document.getElementById('sellAssetDate').value = todayStr;
 
             openModal('sellAssetModal');
         }
@@ -2491,6 +2558,7 @@
             const aId = document.getElementById('sellTargetAssetId').value;
             const amountToSell = parseFloat(document.getElementById('sellAssetAmount').value);
             const sellPrice = parseFloat(document.getElementById('sellAssetPrice').value);
+            const sellDateStr = document.getElementById('sellAssetDate').value || new Date().toISOString().split('T')[0];
 
             if (isNaN(amountToSell) || isNaN(sellPrice) || amountToSell <= 0 || sellPrice < 0) return;
 
@@ -2517,28 +2585,19 @@
             if (!appState.realizedProfits) appState.realizedProfits = {};
             if (!appState.realizedProfits[pId]) appState.realizedProfits[pId] = [];
 
-            // Var olan satış kaydı var mı kontrol et (aynı hisse için ortalama)
-            let existingSale = appState.realizedProfits[pId].find(r => r.name === a.name);
-            if (existingSale) {
-                existingSale.totalSellValue += totalSellValue;
-                existingSale.totalSellCost += totalSellCost;
-                existingSale.amountSold += amountToSell;
-                existingSale.avgSellPrice = existingSale.totalSellValue / existingSale.amountSold;
-                existingSale.totalProfit += profit;
-                // Cost and initialCost averages
-                existingSale.cost = existingSale.totalSellCost / existingSale.amountSold;
-            } else {
-                appState.realizedProfits[pId].push({
-                    name: a.name,
-                    amountSold: amountToSell,
-                    avgSellPrice: sellPrice,
-                    totalProfit: profit,
-                    initialCost: initialCostBasis,
-                    cost: costBasis,
-                    totalSellValue: totalSellValue,
-                    totalSellCost: totalSellCost
-                });
-            }
+            // Satışları tek tek ayrı kayıtlar olarak ekliyoruz (tarih hesaplamaları için birleştirmemeliyiz)
+            appState.realizedProfits[pId].push({
+                id: 's_' + Math.random().toString(36).substr(2, 9),
+                name: a.name,
+                amountSold: amountToSell,
+                avgSellPrice: sellPrice,
+                totalProfit: profit,
+                initialCost: initialCostBasis,
+                cost: costBasis,
+                totalSellValue: totalSellValue,
+                totalSellCost: totalSellCost,
+                saleDate: sellDateStr
+            });
 
             // Adeti azalt veya sıfırsa sil
             a.amount -= amountToSell;
