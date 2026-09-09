@@ -891,7 +891,7 @@
                 if (!appState.monthlyChartType) appState.monthlyChartType = 'line';
                 
                 // Arka planda sessiz otomatik fiyat güncelleme ve geçmiş verileri çekme
-                fetchHistory(appState.monthlyTimeRange || 'this_month');
+                fetchHistory('1y');
                 refreshPrices();
                 setInterval(refreshPrices, 60000);
 
@@ -2316,6 +2316,9 @@
             if (!currentValObj) return null;
             
             const prevStr = getPrevDateStr(todayStr, daysOffset);
+            const startDateStr = getPortfolioStartDateStr(pId);
+            if (new Date(prevStr) < new Date(startDateStr)) return null;
+            
             const prevValObj = getPortfolioValueAndCost(pId, appState.currentViewMonth, prevStr) || getPortfolioValueAndCost(pId, appState.currentViewMonth, getPrevDateStr(todayStr, daysOffset+1)) || getPortfolioValueAndCost(pId, appState.currentViewMonth, getPrevDateStr(todayStr, daysOffset+2)) || getPortfolioValueAndCost(pId, appState.currentViewMonth, getPrevDateStr(todayStr, daysOffset+3));
             
             if (!prevValObj || prevValObj.cost === 0) return null;
