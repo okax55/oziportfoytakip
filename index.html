@@ -2293,15 +2293,32 @@
         }
 
         
+        function calculateAssetReturn(fetchName, currentPrice, daysOffset) {
+            const todayStr = appState.lastUpdatedDate;
+            const history = appState.benchmarksHistory && appState.benchmarksHistory[fetchName];
+            if (!history || !currentPrice) return null;
+            
+            let prevPrice = null;
+            for (let i = 0; i <= 3; i++) {
+                const prevStr = getPrevDateStr(todayStr, daysOffset + i);
+                if (history[prevStr] !== undefined) {
+                    prevPrice = history[prevStr];
+                    break;
+                }
+            }
+            if (!prevPrice) return null;
+            return ((currentPrice - prevPrice) / prevPrice) * 100;
+        }
+
         function calculateReturnForPeriod(pId, daysOffset) {
             const todayStr = appState.lastUpdatedDate;
             const currentValObj = getPortfolioValueAndCost(pId, appState.currentViewMonth, todayStr);
-            if (!currentValObj) return 0;
+            if (!currentValObj) return null;
             
             const prevStr = getPrevDateStr(todayStr, daysOffset);
             const prevValObj = getPortfolioValueAndCost(pId, appState.currentViewMonth, prevStr) || getPortfolioValueAndCost(pId, appState.currentViewMonth, getPrevDateStr(todayStr, daysOffset+1)) || getPortfolioValueAndCost(pId, appState.currentViewMonth, getPrevDateStr(todayStr, daysOffset+2)) || getPortfolioValueAndCost(pId, appState.currentViewMonth, getPrevDateStr(todayStr, daysOffset+3));
             
-            if (!prevValObj || prevValObj.cost === 0) return 0;
+            if (!prevValObj || prevValObj.cost === 0) return null;
             
             const currentReturn = (currentValObj.value - currentValObj.cost) / currentValObj.cost;
             const prevReturn = (prevValObj.value - prevValObj.cost) / prevValObj.cost;
@@ -2341,6 +2358,7 @@
                 const totalUsd = total / 1.5; // Placeholder
                 
                 const formatPct = (val) => {
+                    if (val === null || val === undefined) return `<span class="text-slate-500 font-bold">-</span>`;
                     if (val === 0) return `<span class="text-slate-500">0.00%</span>`;
                     const color = val > 0 ? 'text-emerald-400' : 'text-rose-400';
                     const sign = val > 0 ? '+' : '';
@@ -2401,8 +2419,15 @@
                     let fetchName = a.name.includes('.') ? a.name : a.name + '.IS';
                     const logoUrl = `https://financialmodelingprep.com/image-stock/${fetchName}.png`;
                     
+                    const d1 = calculateAssetReturn(fetchName, a.price || a.cost, 1);
+                    const w1 = calculateAssetReturn(fetchName, a.price || a.cost, 7);
+                    const m1 = calculateAssetReturn(fetchName, a.price || a.cost, 30);
+                    const m3 = calculateAssetReturn(fetchName, a.price || a.cost, 90);
+                    const y1 = calculateAssetReturn(fetchName, a.price || a.cost, 365);
+                    
                     const formatAssetPct = (val) => {
-                        if (!val) return `<span class="text-slate-500">0.00%</span>`;
+                        if (val === null || val === undefined) return `<span class="text-slate-500 font-bold">-</span>`;
+                        if (val === 0) return `<span class="text-slate-500">0.00%</span>`;
                         const color = val > 0 ? 'text-emerald-400' : 'text-rose-400';
                         const sg = val > 0 ? '+' : '';
                         return `<span class="${color}">${sg}${val.toFixed(2)}%</span>`;
@@ -2427,9 +2452,11 @@
                             <td class="py-3 px-4 text-right">${formatMoney(a.price || a.cost)}</td>
                             <td class="py-3 px-4 text-right">${formatMoney(a.initial_cost !== undefined ? a.initial_cost : a.cost)}</td>
                             <td class="py-3 px-4 text-right font-bold">${a.weight.toFixed(2)}%</td>
-                            <td class="py-3 px-4 text-right">${formatAssetPct(a.change / 30)}</td>
-                            <td class="py-3 px-4 text-right">${formatAssetPct(a.change / 4)}</td>
-                            <td class="py-3 px-4 text-right">${formatAssetPct(a.change)}</td>
+                            <td class="py-3 px-4 text-right">${formatAssetPct(d1)}</td>
+                            <td class="py-3 px-4 text-right">${formatAssetPct(w1)}</td>
+                            <td class="py-3 px-4 text-right">${formatAssetPct(m1)}</td>
+                            <td class="py-3 px-4 text-right">${formatAssetPct(m3)}</td>
+                            <td class="py-3 px-4 text-right">${formatAssetPct(y1)}</td>
                             <td class="py-3 px-4 text-right">${formatAssetPct(a.overallChange)}</td>
                             <td class="py-3 px-4 text-right">${formatBadgeAssetPct(a.change * (a.weight/100))}</td>
                         </tr>
@@ -2447,8 +2474,8 @@
                             </div>
                             <div class="flex items-center gap-6">
                                 <div class="flex items-center gap-2">
-                                    <span class="text-xs text-slate-500 uppercase font-semibold border border-slate-300 dark:border-slate-700 rounded px-2 py-1 flex items-center gap-2">
-                                        <i class="fa-solid fa-layer-group text-slate-600"></i> Toplam Varlık: ${stats.assetsWithStats.length}
+                                    <span class="text-xs text-brand-600 dark:text-brand-300 bg-brand-100 dark:bg-brand-900/30 uppercase font-bold border border-brand-300 dark:border-brand-700 rounded-lg px-3 py-1 flex items-center gap-2 shadow-sm">
+                                        <i class="fa-solid fa-layer-group"></i> Toplam Varlık: ${stats.assetsWithStats.length}
                                     </span>
                                 </div>
                                 <div class="flex items-center gap-2">
@@ -2469,6 +2496,8 @@
                                         <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap">Günlük</th>
                                         <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap">Haftalık</th>
                                         <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap">1 Aylık</th>
+                                        <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap">3 Aylık</th>
+                                        <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap">1 Yıllık</th>
                                         <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap">Toplam</th>
                                         <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap">Aylık Etki</th>
                                     </tr>
