@@ -306,17 +306,8 @@
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left text-slate-700 dark:text-slate-300">
-                        <thead class="text-xs text-slate-500 dark:text-slate-400 uppercase border-b border-white/20 dark:border-white/5">
-                            <tr>
-                                <th scope="col" class="px-4 py-4 font-medium whitespace-nowrap">Varlık / Hisse</th>
-                                <th scope="col" class="px-4 py-4 font-medium text-right whitespace-nowrap">Adet</th>
-                                <th scope="col" class="px-4 py-4 font-medium text-right whitespace-nowrap">İlk Maliyet</th>
-                                <th scope="col" class="px-4 py-4 font-medium text-right whitespace-nowrap">Ay Başı Mal.</th>
-                                <th scope="col" class="px-4 py-4 font-medium text-right whitespace-nowrap">Güncel Fiyat</th>
-                                <th scope="col" class="px-4 py-4 font-medium text-center whitespace-nowrap">Ağırlık (%)</th>
-                                <th scope="col" class="px-4 py-4 font-medium text-right whitespace-nowrap">Toplam Kâr (TL/%)</th>
-                                <th scope="col" class="px-4 py-4 font-medium text-right whitespace-nowrap">Bu Ayki Kâr (TL/%)</th>
-                            </tr>
+                        <thead id="monthlyTableHeader" class="text-xs text-slate-500 dark:text-slate-400 uppercase border-b border-white/20 dark:border-white/5">
+                            <!-- JS rendered -->
                         </thead>
                         <tbody id="assetsTableBody" class="divide-y divide-slate-700/50">
                             <!-- JS -->
@@ -2063,17 +2054,39 @@
 
         function renderMonthlyTable() {
             const tbody = document.getElementById('assetsTableBody');
+            const thead = document.getElementById('monthlyTableHeader');
             const ports = appState.portfoliosData[appState.currentViewMonth] || [];
             const portfolio = ports.find(p => p.id.split('_')[0] === appState.currentPortfolioId?.split('_')[0]);
             const stats = getPortfolioStats(portfolio);
             
             tbody.innerHTML = '';
+
+            thead.innerHTML = `
+                <tr>
+                    <th scope="col" class="px-4 py-4 font-medium whitespace-nowrap cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" onclick="setSort('name')">Varlık / Hisse ${getSortIcon('name')}</th>
+                    <th scope="col" class="px-4 py-4 font-medium text-right whitespace-nowrap cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" onclick="setSort('amount')">Adet ${getSortIcon('amount')}</th>
+                    <th scope="col" class="px-4 py-4 font-medium text-right whitespace-nowrap cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" onclick="setSort('initial_cost')">İlk Maliyet ${getSortIcon('initial_cost')}</th>
+                    <th scope="col" class="px-4 py-4 font-medium text-right whitespace-nowrap cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" onclick="setSort('cost')">Ay Başı Mal. ${getSortIcon('cost')}</th>
+                    <th scope="col" class="px-4 py-4 font-medium text-right whitespace-nowrap cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" onclick="setSort('price')">Güncel Fiyat ${getSortIcon('price')}</th>
+                    <th scope="col" class="px-4 py-4 font-medium text-center whitespace-nowrap cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" onclick="setSort('weight')">Ağırlık (%) ${getSortIcon('weight')}</th>
+                    <th scope="col" class="px-4 py-4 font-medium text-right whitespace-nowrap cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" onclick="setSort('overallChange')">Toplam Kâr (TL/%) ${getSortIcon('overallChange')}</th>
+                    <th scope="col" class="px-4 py-4 font-medium text-right whitespace-nowrap cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" onclick="setSort('change')">Bu Ayki Kâr (TL/%) ${getSortIcon('change')}</th>
+                </tr>
+            `;
+
             
             if(stats.assetsWithStats.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-500">Bu portföyde henüz hisse yok.</td></tr>`;
             }
 
-            stats.assetsWithStats.forEach(asset => {
+            
+            let activeAssets = stats.assetsWithStats.filter(a => !a.isRealized);
+            let realizedAssets = stats.assetsWithStats.filter(a => a.isRealized);
+            
+            const sortedAssets = [...applySort(activeAssets), ...applySort(realizedAssets)];
+
+            sortedAssets.forEach(asset => {
+
                 let fetchName = asset.name.includes('.') ? asset.name : asset.name + '.IS';
                 const logoUrl = `https://financialmodelingprep.com/image-stock/${fetchName}.png`;
                 
@@ -2574,6 +2587,20 @@
             const tbody = document.getElementById('performanceDetailsTableBody');
             if (!tbody) return;
             tbody.innerHTML = '';
+
+            thead.innerHTML = `
+                <tr>
+                    <th scope="col" class="px-4 py-4 font-medium whitespace-nowrap cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" onclick="setSort('name')">Varlık / Hisse ${getSortIcon('name')}</th>
+                    <th scope="col" class="px-4 py-4 font-medium text-right whitespace-nowrap cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" onclick="setSort('amount')">Adet ${getSortIcon('amount')}</th>
+                    <th scope="col" class="px-4 py-4 font-medium text-right whitespace-nowrap cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" onclick="setSort('initial_cost')">İlk Maliyet ${getSortIcon('initial_cost')}</th>
+                    <th scope="col" class="px-4 py-4 font-medium text-right whitespace-nowrap cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" onclick="setSort('cost')">Ay Başı Mal. ${getSortIcon('cost')}</th>
+                    <th scope="col" class="px-4 py-4 font-medium text-right whitespace-nowrap cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" onclick="setSort('price')">Güncel Fiyat ${getSortIcon('price')}</th>
+                    <th scope="col" class="px-4 py-4 font-medium text-center whitespace-nowrap cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" onclick="setSort('weight')">Ağırlık (%) ${getSortIcon('weight')}</th>
+                    <th scope="col" class="px-4 py-4 font-medium text-right whitespace-nowrap cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" onclick="setSort('overallChange')">Toplam Kâr (TL/%) ${getSortIcon('overallChange')}</th>
+                    <th scope="col" class="px-4 py-4 font-medium text-right whitespace-nowrap cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" onclick="setSort('change')">Bu Ayki Kâr (TL/%) ${getSortIcon('change')}</th>
+                </tr>
+            `;
+
             
             const allUniquePorts = getAllUniquePortfolios();
             
@@ -2659,15 +2686,33 @@
                 const sign = stats.totalChange > 0 ? '+' : '';
 
                 let assetRows = '';
+                let activeAssets = [];
+                let realizedAssets = [];
+
                 stats.assetsWithStats.forEach(a => {
                     let fetchName = a.name.includes('.') ? a.name : a.name + '.IS';
-                    const logoUrl = `https://financialmodelingprep.com/image-stock/${fetchName}.png`;
-                    
                     const d1 = calculateAssetReturn(fetchName, a.price || a.cost, 1);
                     const w1 = calculateAssetReturn(fetchName, a.price || a.cost, 7);
                     const m1 = calculateAssetReturn(fetchName, a.price || a.cost, 30);
                     const m3 = calculateAssetReturn(fetchName, a.price || a.cost, 90);
                     const y1 = calculateAssetReturn(fetchName, a.price || a.cost, 365);
+                    
+                    const enriched = { ...a, fetchName, d1, w1, m1, m3, y1 };
+                    if (a.isRealized) realizedAssets.push(enriched);
+                    else activeAssets.push(enriched);
+                });
+
+                const sortedAssets = [...applySort(activeAssets), ...applySort(realizedAssets)];
+
+                sortedAssets.forEach(a => {
+                    let fetchName = a.fetchName;
+                    const logoUrl = `https://financialmodelingprep.com/image-stock/${fetchName}.png`;
+                    
+                    const d1 = a.d1;
+                    const w1 = a.w1;
+                    const m1 = a.m1;
+                    const m3 = a.m3;
+                    const y1 = a.y1;
                     
                     const formatAssetPct = (val) => {
                         if (val === null || val === undefined) return `<span class="text-slate-500 font-bold">-</span>`;
@@ -2760,16 +2805,16 @@
                             <table class="w-full text-sm text-left text-slate-700 dark:text-slate-300">
                                 <thead class="text-xs text-slate-500 dark:text-slate-400 border-b border-white/20 dark:border-white/5 uppercase tracking-wide">
                                     <tr>
-                                        <th scope="col" class="py-3 px-4 font-semibold whitespace-nowrap">Hisse / Varlık</th>
-                                        <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap">Maliyet</th>
-                                        <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap">Fiyat</th>
-                                        <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap">Ağırlık</th>
-                                        <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap">Günlük</th>
-                                        <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap">Haftalık</th>
-                                        <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap">1 Aylık</th>
-                                        <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap">3 Aylık</th>
-                                        <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap">1 Yıllık</th>
-                                        <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap">Toplam</th>
+                                        <th scope="col" class="py-3 px-4 font-semibold whitespace-nowrap cursor-pointer hover:bg-white/5 transition-colors" onclick="setSort('name')">Hisse / Varlık ${getSortIcon('name')}</th>
+                                        <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap cursor-pointer hover:bg-white/5 transition-colors" onclick="setSort('cost')">Maliyet ${getSortIcon('cost')}</th>
+                                        <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap cursor-pointer hover:bg-white/5 transition-colors" onclick="setSort('price')">Fiyat ${getSortIcon('price')}</th>
+                                        <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap cursor-pointer hover:bg-white/5 transition-colors" onclick="setSort('weight')">Ağırlık ${getSortIcon('weight')}</th>
+                                        <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap cursor-pointer hover:bg-white/5 transition-colors" onclick="setSort('d1')">Günlük ${getSortIcon('d1')}</th>
+                                        <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap cursor-pointer hover:bg-white/5 transition-colors" onclick="setSort('w1')">Haftalık ${getSortIcon('w1')}</th>
+                                        <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap cursor-pointer hover:bg-white/5 transition-colors" onclick="setSort('m1')">1 Aylık ${getSortIcon('m1')}</th>
+                                        <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap cursor-pointer hover:bg-white/5 transition-colors" onclick="setSort('m3')">3 Aylık ${getSortIcon('m3')}</th>
+                                        <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap cursor-pointer hover:bg-white/5 transition-colors" onclick="setSort('y1')">1 Yıllık ${getSortIcon('y1')}</th>
+                                        <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap cursor-pointer hover:bg-white/5 transition-colors" onclick="setSort('overallChange')">Toplam ${getSortIcon('overallChange')}</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-700/30">
@@ -3693,6 +3738,7 @@
 
             const tbody = document.getElementById('rebActionTbody');
             tbody.innerHTML = '';
+
 
             if (transactions.length === 0) {
                 document.getElementById('rebNoAction').classList.remove('hidden');
