@@ -47,12 +47,15 @@
         .transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 300ms; }
         
         @keyframes blob {
-            0% { transform: translate(0px, 0px) scale(1); }
-            33% { transform: translate(30px, -50px) scale(1.1); }
-            66% { transform: translate(-20px, 20px) scale(0.9); }
-            100% { transform: translate(0px, 0px) scale(1); }
+            0% { transform: translate3d(0px, 0px, 0px) scale(1); }
+            33% { transform: translate3d(30px, -50px, 0px) scale(1.1); }
+            66% { transform: translate3d(-20px, 20px, 0px) scale(0.9); }
+            100% { transform: translate3d(0px, 0px, 0px) scale(1); }
         }
-        .animate-blob { animation: blob 10s infinite alternate; }
+        .animate-blob { 
+            animation: blob 10s infinite alternate; 
+            will-change: transform;
+        }
         .animation-delay-2000 { animation-delay: 2s; }
         .animation-delay-4000 { animation-delay: 4s; }
 
@@ -156,9 +159,22 @@
             scrollbar-width: none;
         }
 
-        /* === MOBILE RESPONSIVE === */
         @media (max-width: 640px) {
-            /* Base font scaling */
+            /* Disable heavy background effects on mobile to prevent lagging */
+            .animate-blob { display: none !important; animation: none !important; }
+            .bg-blob-container { display: none !important; }
+            /* Reduce blur intensity for mobile */
+            .glass-panel {
+                backdrop-filter: blur(8px) !important;
+                -webkit-backdrop-filter: blur(8px) !important;
+            }
+            .dark .glass-panel {
+                backdrop-filter: blur(8px) !important;
+                -webkit-backdrop-filter: blur(8px) !important;
+            }
+        }
+        
+        /* Base font scaling */
             body { font-size: 14px; }
             
             /* Main content padding */
@@ -223,7 +239,7 @@
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 font-sans h-screen flex relative overflow-hidden transition-colors duration-500">
     
     <!-- Animated Liquid Background Blobs -->
-    <div class="fixed inset-0 w-full h-full pointer-events-none z-[-1] overflow-hidden">
+    <div class="fixed inset-0 w-full h-full pointer-events-none z-[-1] overflow-hidden bg-blob-container">
         <div class="absolute top-0 -left-10 w-96 h-96 bg-purple-300 dark:bg-purple-900 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-50 dark:opacity-10 animate-blob"></div>
         <div class="absolute top-0 -right-10 w-96 h-96 bg-cyan-300 dark:bg-indigo-900 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-50 dark:opacity-10 animate-blob animation-delay-2000"></div>
         <div class="absolute -bottom-8 left-40 w-96 h-96 bg-pink-300 dark:bg-blue-900 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-50 dark:opacity-10 animate-blob animation-delay-4000"></div>
@@ -2889,7 +2905,7 @@
                             <td class="py-3 px-4 text-right">${formatAssetPct(m1)}</td>
                             <td class="py-3 px-4 text-right">${formatAssetPct(m3)}</td>
                             <td class="py-3 px-4 text-right">${formatAssetPct(y1)}</td>
-                            <td class="py-3 px-4 text-right">${formatAssetPct(a.overallChange)}</td>
+                            <td class="py-3 px-4 text-right">${formatBadgeAssetPct(a.overallChange)}</td>
                         </tr>
                     `;
                 });
