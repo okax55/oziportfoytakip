@@ -265,13 +265,9 @@
 
         <!-- Navigation Links -->
         <nav class="flex-1 overflow-y-auto py-6 px-3 flex flex-col gap-2 hide-scrollbar">
-            <button onclick="switchTab('monthly')" id="nav-monthly" class="flex items-center gap-4 px-3 py-3 rounded-xl transition-all font-medium bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-400 group/item">
-                <div class="w-6 flex justify-center shrink-0"><i class="fa-solid fa-calendar-days text-lg"></i></div>
-                <span class="text-sm opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Aylık Detay</span>
-            </button>
             <button onclick="switchTab('compare')" id="nav-compare" class="flex items-center gap-4 px-3 py-3 rounded-xl transition-all font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-700/50 group/item">
                 <div class="w-6 flex justify-center shrink-0"><i class="fa-solid fa-chart-pie text-lg"></i></div>
-                <span class="text-sm opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Performans</span>
+                <span class="text-sm opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Tüm Portföyler</span>
             </button>
             <button onclick="switchTab('manage')" id="nav-manage" class="flex items-center gap-4 px-3 py-3 rounded-xl transition-all font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-700/50 group/item">
                 <div class="w-6 flex justify-center shrink-0"><i class="fa-solid fa-briefcase text-lg"></i></div>
@@ -335,74 +331,123 @@
 
         <main class="flex-1 overflow-y-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-20">
         
-        <!-- MONTHLY VIEW TAB -->
-        <div id="view-monthly" class="block animate-fade-in">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-                <div class="flex flex-wrap items-center gap-3">
-                    <div class="relative group z-50">
-                        <button id="portfolioDropdownBtn" onclick="toggleCustomDropdown('portfolioDropdownMenu')" class="glass-input px-4 py-2 rounded-xl text-sm font-bold text-slate-900 dark:text-white focus:outline-none flex justify-between items-center w-48 sm:w-56 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all shadow-sm">
-                            <span id="portfolioDropdownText" class="truncate">Ana Portföy</span>
-                            <i class="fa-solid fa-chevron-down text-xs opacity-60 ml-2"></i>
+        <!-- PORTFOLIO DETAIL DASHBOARD VIEW -->
+        <div id="view-portfolio-detail" class="hidden animate-fade-in flex flex-col gap-6">
+            
+            <!-- Top Action Bar -->
+            <div class="flex items-center">
+                <button onclick="switchTab('compare')" class="flex items-center gap-2 text-slate-500 hover:text-brand-500 font-medium transition-colors">
+                    <i class="fa-solid fa-arrow-left"></i> Tüm Portföyler
+                </button>
+            </div>
+
+            <!-- Header Dashboard Card -->
+            <div class="glass-panel rounded-3xl p-6 shadow-xl flex flex-col xl:flex-row gap-8 justify-between relative overflow-hidden">
+                <!-- Left side: Icon, Name, Risk, Desc -->
+                <div class="flex items-start gap-6 z-10 flex-1">
+                    <div class="w-20 h-20 rounded-2xl bg-white border border-slate-200 dark:border-slate-700 shadow-lg flex items-center justify-center shrink-0 text-3xl text-brand-500" id="pd-icon">
+                        <i class="fa-solid fa-briefcase"></i>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs font-bold text-slate-500 tracking-widest uppercase">TR BİST</span>
+                            <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400 border border-rose-200 dark:border-rose-800">RİSK: YÜKSEK</span>
+                        </div>
+                        <h1 class="text-4xl font-extrabold text-slate-900 dark:text-white uppercase tracking-tight" id="pd-name">PORTFÖY</h1>
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-2 max-w-xl" id="pd-desc">
+                            Yüksek risk - yüksek potansiyel. Yıldız Pazar ve Ana Pazar'da yer alan, potansiyeli yüksek fakat volatilitesi yüksek şirketlerden oluşur. Sert dalgalanmalara hazırlıklı, getiri odaklı yatırımcılar için.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Right side: Stats -->
+                <div class="flex gap-8 z-10 shrink-0 xl:min-w-[400px]">
+                    <!-- Recent Months -->
+                    <div class="flex flex-col gap-3 pr-8 border-r border-slate-200 dark:border-slate-700">
+                        <h3 class="text-xs font-bold text-slate-500 tracking-wider">SON AYLAR</h3>
+                        <div class="flex flex-col gap-2" id="pd-recent-months">
+                            <!-- JS injected -->
+                        </div>
+                        <button class="mt-2 w-full py-1.5 text-xs font-bold rounded-lg bg-brand-50 text-brand-600 hover:bg-brand-100 dark:bg-brand-900/30 dark:text-brand-400 dark:hover:bg-brand-800/50 transition-colors">
+                            <i class="fa-regular fa-calendar-days mr-1"></i> Tüm Aylar
                         </button>
-                        <div id="portfolioDropdownMenu" class="absolute left-0 top-full mt-2 w-48 sm:w-56 glass-panel rounded-xl shadow-2xl opacity-0 invisible transition-all duration-200 transform origin-top scale-95 flex flex-col py-2 max-h-60 overflow-y-auto border border-slate-200/50 dark:border-slate-700/50">
-                            <!-- JS -->
+                    </div>
+                    <!-- Total Return -->
+                    <div class="flex flex-col gap-2 items-center justify-center flex-1">
+                        <h3 class="text-xs font-bold text-slate-500 tracking-wider">TOPLAM GETİRİ</h3>
+                        <div class="text-5xl font-black tracking-tighter" id="pd-total-return">
+                            %0.00
+                        </div>
+                        <button class="mt-2 w-full py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 transition-colors">
+                            <i class="fa-solid fa-clock-rotate-left mr-1"></i> Geçmiş
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Middle Section: Charts -->
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                <!-- Left Chart -->
+                <div class="xl:col-span-2 glass-panel rounded-2xl p-5 shadow-xl flex flex-col gap-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Performans Analizi (TRY)</h2>
+                            <p class="text-xs text-slate-500">TL bazlı kümülatif performans</p>
                         </div>
                     </div>
-                    <div class="relative group z-50">
-                        <button id="monthDropdownBtn" onclick="toggleCustomDropdown('monthDropdownMenu')" class="glass-input px-4 py-2 rounded-xl text-sm font-bold text-slate-900 dark:text-white focus:outline-none flex justify-between items-center w-36 sm:w-40 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all shadow-sm">
-                            <span id="monthDropdownText">Ay Seç</span>
-                            <i class="fa-solid fa-chevron-down text-xs opacity-60 ml-2"></i>
-                        </button>
-                        <div id="monthDropdownMenu" class="absolute left-0 top-full mt-2 w-36 sm:w-40 glass-panel rounded-xl shadow-2xl opacity-0 invisible transition-all duration-200 transform origin-top scale-95 flex flex-col py-2 max-h-60 overflow-y-auto border border-slate-200/50 dark:border-slate-700/50">
-                            <!-- JS -->
+                    <div class="w-full h-64 relative mt-2">
+                        <canvas id="pd-chart" class="cursor-default select-none"></canvas>
+                    </div>
+                </div>
+
+                <!-- Right Treemap -->
+                <div class="xl:col-span-1 glass-panel rounded-2xl p-5 shadow-xl flex flex-col gap-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Varlık Dağılımı</h2>
+                            <p class="text-xs text-slate-500">Ağırlık ve Performans</p>
                         </div>
+                    </div>
+                    <!-- Treemap Container -->
+                    <div id="pd-treemap" class="flex-1 w-full min-h-[250px] mt-2 flex flex-wrap content-start rounded-xl overflow-hidden gap-1 p-1 bg-slate-100 dark:bg-slate-800/50">
+                        <!-- JS injected grid items -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Section: Assets Table -->
+            <div class="glass-panel rounded-2xl shadow-xl overflow-hidden flex flex-col">
+                <!-- Tabs -->
+                <div class="flex items-center gap-6 px-6 pt-4 border-b border-slate-200 dark:border-slate-700/50">
+                    <button id="pd-tab-active" onclick="switchPdTab('active')" class="pb-3 text-sm font-bold border-b-2 border-brand-500 text-brand-600 dark:text-brand-400 transition-colors">Mevcut Varlıklar</button>
+                    <button id="pd-tab-history" onclick="switchPdTab('history')" class="pb-3 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors">İşlem Geçmişi</button>
+                    <div class="ml-auto pb-3 flex items-center gap-3">
+                        <div class="text-sm font-bold text-slate-700 dark:text-slate-300" id="pd-table-month-label">Ağustos 2026</div>
+                        <div class="text-sm font-bold text-brand-600 dark:text-brand-400" id="pd-table-avg-return">Ort. Getiri: %0.00</div>
                     </div>
                 </div>
                 
-                <div class="flex glass-panel p-1 rounded-lg shadow-sm">
-                    <button id="btnLineChart" onclick="toggleChartType('line')" class="px-4 py-1.5 text-sm font-medium rounded-md bg-brand-500 text-white shadow transition-colors">
-                        <i class="fa-solid fa-chart-line sm:mr-2"></i><span class="hidden sm:inline">Çizgi</span>
-                    </button>
-                    <button id="btnBarChart" onclick="toggleChartType('bar')" class="px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
-                        <i class="fa-solid fa-chart-simple sm:mr-2"></i><span class="hidden sm:inline">Sütun</span>
-                    </button>
-                </div>
-            </div>
-
-            <div class="glass-panel rounded-2xl p-4 sm:p-6 shadow-xl mb-8 relative">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
-                    <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Portföy Gelişimi (₺)</h2>
-                    <!-- Zaman filtreleri aylık sekmede gizlendi, çünkü burası sadece seçili ayı gösteriyor -->
-                </div>
-                <div class="w-full h-72 sm:h-96 relative">
-                    <canvas id="monthlyChart" class="cursor-default select-none"></canvas>
-                </div>
-            </div>
-
-            <div class="glass-panel rounded-2xl shadow-xl overflow-hidden">
-                <div class="p-4 sm:p-6 border-b border-white/20 dark:border-white/5">
-                    <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Varlık Dağılımı ve Performans</h2>
-                </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left text-slate-700 dark:text-slate-300">
-                        <thead id="monthlyTableHeader" class="text-xs text-slate-500 dark:text-slate-400 uppercase border-b border-white/20 dark:border-white/5">
-                            <!-- JS rendered -->
+                        <thead class="text-xs text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-800/30">
+                            <tr>
+                                <th scope="col" class="px-5 py-4 font-medium whitespace-nowrap cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors" onclick="setPdSort('date')">Eklenme Tarihi <span id="pd-sort-date"></span></th>
+                                <th scope="col" class="px-5 py-4 font-medium whitespace-nowrap cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors" onclick="setPdSort('name')">Hisse <span id="pd-sort-name"></span></th>
+                                <th scope="col" class="px-5 py-4 font-medium text-right whitespace-nowrap cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors" onclick="setPdSort('cost')">Maliyet <span id="pd-sort-cost"></span></th>
+                                <th scope="col" class="px-5 py-4 font-medium text-right whitespace-nowrap cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors" onclick="setPdSort('price')">Fiyat <span id="pd-sort-price"></span></th>
+                                <th scope="col" class="px-5 py-4 font-medium text-right whitespace-nowrap cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors" onclick="setPdSort('weight')">Ağırlık <span id="pd-sort-weight"></span></th>
+                                <th scope="col" class="px-5 py-4 font-medium text-right whitespace-nowrap cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors" onclick="setPdSort('d1')">Günlük <span id="pd-sort-d1"></span></th>
+                                <th scope="col" class="px-5 py-4 font-medium text-right whitespace-nowrap cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors" onclick="setPdSort('w1')">Haftalık <span id="pd-sort-w1"></span></th>
+                                <th scope="col" class="px-5 py-4 font-medium text-right whitespace-nowrap cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors" onclick="setPdSort('m1')">Aylık <span id="pd-sort-m1"></span></th>
+                                <th scope="col" class="px-5 py-4 font-medium text-right whitespace-nowrap cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors" onclick="setPdSort('m3')">3 Aylık <span id="pd-sort-m3"></span></th>
+                                <th scope="col" class="px-5 py-4 font-medium text-right whitespace-nowrap cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors" onclick="setPdSort('m6')">6 Aylık <span id="pd-sort-m6"></span></th>
+                                <th scope="col" class="px-5 py-4 font-medium text-right whitespace-nowrap cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors" onclick="setPdSort('y1')">Yıllık <span id="pd-sort-y1"></span></th>
+                                <th scope="col" class="px-5 py-4 font-medium text-right whitespace-nowrap cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors" onclick="setPdSort('overall')">Toplam <span id="pd-sort-overall"></span></th>
+                            </tr>
                         </thead>
-                        <tbody id="assetsTableBody" class="divide-y divide-slate-700/50">
+                        <tbody id="pd-assets-tbody" class="divide-y divide-slate-200 dark:divide-slate-700/50">
                             <!-- JS -->
                         </tbody>
-                        <tfoot class="border-t border-white/20 dark:border-white/5 font-semibold text-slate-900 dark:text-white">
-                            <tr>
-                                <td class="px-4 py-4 whitespace-nowrap">Toplam Portföy</td>
-                                <td class="px-4 py-4"></td>
-                                <td class="px-4 py-4 text-right whitespace-nowrap" id="totalInitialCost">0 ₺</td>
-                                <td class="px-4 py-4 text-right whitespace-nowrap" id="totalCost">0 ₺</td>
-                                <td class="px-4 py-4 text-right whitespace-nowrap" id="totalValue">0 ₺</td>
-                                <td class="px-4 py-4 text-center whitespace-nowrap">100%</td>
-                                <td class="px-4 py-4 text-right font-medium whitespace-nowrap" id="totalOverallProfit">0 ₺</td>
-                                <td class="px-4 py-4 text-right font-medium whitespace-nowrap" id="totalMonthlyProfit">0 ₺</td>
-                            </tr>
-                        </tfoot>
                     </table>
                 </div>
             </div>
@@ -481,10 +526,6 @@
                 </div>
             </div>
             
-            <!-- Portfolio Detailed Views -->
-            <div id="portfolioDetailsContainer" class="flex flex-col gap-6 mb-8">
-                <!-- JS -->
-            </div>
         </div>
 
         <!-- MANAGEMENT TAB -->
@@ -1501,17 +1542,17 @@
 
         function switchTab(tabId) {
             localStorage.setItem('ozi_currentTab', tabId);
-            const tabs = ['monthly', 'compare', 'manage'];
+            const tabs = ['compare', 'manage', 'portfolio-detail'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`nav-${t}`);
                 const view = document.getElementById(`view-${t}`);
-                if (!btn || !view) return;
+                if (!view) return;
                 
                 if (t === tabId) {
-                    btn.className = "flex items-center gap-4 px-3 py-3 rounded-xl transition-all font-medium bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-400 group/item";
+                    if(btn) btn.className = "flex items-center gap-4 px-3 py-3 rounded-xl transition-all font-medium bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-400 group/item";
                     view.classList.remove('hidden');
                 } else {
-                    btn.className = "flex items-center gap-4 px-3 py-3 rounded-xl transition-all font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-700/50 group/item";
+                    if(btn) btn.className = "flex items-center gap-4 px-3 py-3 rounded-xl transition-all font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-700/50 group/item";
                     view.classList.add('hidden');
                 }
             });
@@ -2784,7 +2825,7 @@
                 const total = calculateTotalReturn(pId);
                 const totalUsd = total / 1.5;
                 
-                rows.push({ name: p.name, color: p.color, startDate, totalCost, totalAsset, d1, w1, m1, m3, m6, y1, total, totalUsd });
+                rows.push({ id: p.id, name: p.name, color: p.color, startDate, totalCost, totalAsset, d1, w1, m1, m3, m6, y1, total, totalUsd });
             });
 
             rows = applyPerfSort(rows);
