@@ -883,6 +883,13 @@
                     }
                 }
                 
+                // Market hours logic: before 10 AM, use yesterday as lastUpdatedDate
+                const tDate = new Date();
+                if (tDate.getHours() < 10) {
+                    tDate.setDate(tDate.getDate() - 1);
+                }
+                appState.lastUpdatedDate = `${tDate.getFullYear()}-${String(tDate.getMonth()+1).padStart(2, '0')}-${String(tDate.getDate()).padStart(2, '0')}`;
+                
                 appState.currentViewMonth = actualMonth;
                 
                 // Başlangıç grafik statelerini ve UI görünümünü senkronize et
