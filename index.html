@@ -1685,28 +1685,50 @@
 
             // Realized Profits (Satılan Hisseler) Ekleme
             if (appState.realizedProfits && appState.realizedProfits[portfolio.id]) {
+                const groupedRealized = {};
+                
                 appState.realizedProfits[portfolio.id].forEach(r => {
                     totalCost += r.totalSellCost;
                     totalValue += r.totalSellValue;
                     totalInitialCost += r.totalSellCost; // Kabul edilen mantık: Satılan kısmın nakit karşılığının maliyeti, kendi maliyetidir.
 
-                    let dateStrDisplay = r.saleDate ? ` (${r.saleDate})` : ' (Satıldı)';
-                    assetsWithStats.push({
-                        id: 'r_' + Math.random().toString(36).substr(2, 9),
-                        name: r.name + dateStrDisplay,
-                        amount: r.amountSold,
-                        initial_cost: r.initialCost,
-                        cost: r.cost,
-                        price: r.avgSellPrice,
-                        currentValue: r.totalSellValue,
-                        totalCost: r.totalSellCost,
-                        change: r.totalSellCost > 0 ? (r.totalProfit / r.totalSellCost) * 100 : 0,
-                        weight: 0,
-                        totalInitialCost: r.totalSellCost, // Assuming initial and current cost basis is treated same for cash injection
-                        overallChange: r.totalSellCost > 0 ? (r.totalProfit / r.totalSellCost) * 100 : 0,
-                        isRealized: true,
-                        realizedProfit: r.totalProfit
-                    });
+                    if (!groupedRealized[r.name]) {
+                        groupedRealized[r.name] = {
+                            id: 'r_' + Math.random().toString(36).substr(2, 9),
+                            name: r.name,
+                            amount: 0,
+                            currentValue: 0,
+                            totalCost: 0,
+                            realizedProfit: 0,
+                            sales: [],
+                            isRealized: true,
+                            weight: 0
+                        };
+                    }
+                    
+                    const gr = groupedRealized[r.name];
+                    gr.amount += r.amountSold;
+                    gr.currentValue += r.totalSellValue;
+                    gr.totalCost += r.totalSellCost;
+                    gr.realizedProfit += r.totalProfit;
+                    
+                    const pDate = r.saleDate ? r.saleDate.split('-').reverse().join('.') : 'Bilinmiyor';
+                    const sPrice = r.avgSellPrice ? r.avgSellPrice.toFixed(2) : '-';
+                    const tProfit = r.totalProfit > 0 ? '+' + new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(r.totalProfit) : new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(r.totalProfit);
+                    
+                    gr.sales.push(`<span class="text-[10px] text-slate-500 dark:text-slate-400 block">${pDate}: <span class="font-medium">${sPrice} TL</span>'den <span class="${r.totalProfit >= 0 ? 'text-emerald-500' : 'text-rose-500'} font-medium">${tProfit}</span></span>`);
+                });
+
+                Object.values(groupedRealized).forEach(gr => {
+                    gr.change = gr.totalCost > 0 ? (gr.realizedProfit / gr.totalCost) * 100 : 0;
+                    gr.overallChange = gr.change;
+                    gr.totalInitialCost = gr.totalCost;
+                    gr.price = gr.amount > 0 ? gr.currentValue / gr.amount : 0;
+                    gr.initial_cost = gr.amount > 0 ? gr.totalCost / gr.amount : 0;
+                    gr.cost = gr.initial_cost;
+                    
+                    gr.salesDetailsHTML = gr.sales.join('');
+                    assetsWithStats.push(gr);
                 });
             }
 
@@ -1890,6 +1912,7 @@
                 bgColors = gradient;
             } else {
                 stats.assetsWithStats.forEach(a => {
+                    if (a.isRealized) return;
                     chartLabels.push(a.name);
                     chartData.push(a.change.toFixed(2));
                     profitData.push(a.currentValue - a.totalCost);
@@ -2080,7 +2103,10 @@
                                        </div>`
                                 }
                             </div>
-                            <span class="${asset.isRealized ? 'text-amber-700 dark:text-amber-400' : ''}">${asset.name}</span>
+                            <div class="flex flex-col">
+                                <span class="${asset.isRealized ? 'text-amber-700 dark:text-amber-400' : ''}">${asset.name} ${asset.isRealized ? '<span class="text-xs font-normal opacity-70 ml-1">(Satıldı)</span>' : ''}</span>
+                                ${asset.isRealized && asset.salesDetailsHTML ? `<div class="mt-1 flex flex-col gap-0.5">${asset.salesDetailsHTML}</div>` : ''}
+                            </div>
                         </td>
                         <td class="px-4 py-4 text-right">${asset.amount}</td>
                         <td class="px-4 py-4 text-right">${formatMoney(asset.initial_cost)}</td>
@@ -2660,13 +2686,19 @@
                     };
                     
                     assetRows += `
-                        <tr class="hover:bg-slate-400/10 transition-colors border-b border-white/5 last:border-0">
-                            <td class="py-3 px-4 flex items-center font-bold text-base text-slate-900 dark:text-white">
-                                <img src="${logoUrl}" class="w-8 h-8 rounded-full border border-slate-300 dark:border-slate-600 bg-white mr-3" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden'); this.nextElementSibling.classList.add('flex');">
-                                <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex justify-center text-xs font-bold border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white items-center hidden mr-3">
-                                    ${a.name.substring(0,2)}
+                        <tr class="hover:bg-slate-400/10 transition-colors border-b border-white/5 last:border-0 ${a.isRealized ? 'bg-amber-50/50 dark:bg-amber-900/10' : ''}">
+                            <td class="py-3 px-4 flex flex-col font-bold text-base text-slate-900 dark:text-white">
+                                <div class="flex items-center">
+                                    ${a.isRealized 
+                                        ? `<div class="w-8 h-8 mr-3 rounded-full bg-amber-100 dark:bg-amber-800 flex items-center justify-center text-amber-600 dark:text-amber-200 shrink-0"><i class="fa-solid fa-lock"></i></div>` 
+                                        : `<img src="${logoUrl}" class="w-8 h-8 rounded-full border border-slate-300 dark:border-slate-600 bg-white mr-3 shrink-0" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden'); this.nextElementSibling.classList.add('flex');">
+                                           <div class="w-8 h-8 mr-3 rounded-full bg-slate-200 dark:bg-slate-700 flex justify-center text-xs font-bold border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white items-center hidden shrink-0">
+                                               ${a.name.substring(0,2)}
+                                           </div>`
+                                    }
+                                    <span class="${a.isRealized ? 'text-amber-700 dark:text-amber-400' : ''}">${a.name} ${a.isRealized ? '<span class="text-xs font-normal opacity-70 ml-1">(Satıldı)</span>' : ''}</span>
                                 </div>
-                                ${a.name}
+                                ${a.isRealized && a.salesDetailsHTML ? `<div class="mt-1 ml-11 flex flex-col gap-0.5">${a.salesDetailsHTML}</div>` : ''}
                             </td>
                             <td class="py-3 px-4 text-right">${formatMoney(a.initial_cost !== undefined ? a.initial_cost : a.cost)}</td>
                             <td class="py-3 px-4 text-right">${formatMoney(a.price || a.cost)}</td>
