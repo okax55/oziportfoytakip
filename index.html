@@ -1043,7 +1043,7 @@
                 'this_month': '1mo', '1w': '1mo', '1m': '1mo',
                 '3m': '3mo', '6m': '6mo', 'ytd': 'ytd', '1y': '1y', '2y': '2y'
             };
-            const yfPeriod = periodMap[range] || '1mo';
+            const yfPeriod = '1y'; // Always fetch 1y for accurate performance tables
 
             try {
                 let symbols = new Set(['ALTIN', 'XU100.IS', 'NASDAQ', 'SP500']);
@@ -2447,8 +2447,8 @@
                                 </div>
                                 ${a.name}
                             </td>
+                            <td class="py-3 px-4 text-right">${formatMoney(costVal)}</td>
                             <td class="py-3 px-4 text-right">${formatMoney(a.price || a.cost)}</td>
-                            <td class="py-3 px-4 text-right">${formatMoney(a.initial_cost !== undefined ? a.initial_cost : a.cost)}</td>
                             <td class="py-3 px-4 text-right font-bold">${a.weight.toFixed(2)}%</td>
                             <td class="py-3 px-4 text-right">${formatAssetPct(d1)}</td>
                             <td class="py-3 px-4 text-right">${formatAssetPct(w1)}</td>
@@ -2467,13 +2467,16 @@
                             <div class="flex items-center gap-3">
                                 <span class="text-xl font-extrabold tracking-wide uppercase text-slate-900 dark:text-white flex items-center gap-2">
                                     ${p.name}
+                                    <button onclick="changePortfolioMonth(-1)" class="text-slate-400 hover:text-brand-500"><i class="fa-solid fa-chevron-left"></i></button>
+                                    <span class="text-sm font-semibold text-slate-600 dark:text-slate-400">${appState.currentViewMonth}</span>
+                                    <button onclick="changePortfolioMonth(1)" class="text-slate-400 hover:text-brand-500"><i class="fa-solid fa-chevron-right"></i></button>
                                     <a href="#" onclick="switchTab('manage');" class="text-slate-400 hover:text-brand-400 ml-1 text-sm"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
                                 </span>
                             </div>
                             <div class="flex items-center gap-6">
                                 <div class="flex items-center gap-2">
-                                    <span class="text-sm text-brand-700 dark:text-brand-300 bg-brand-100 dark:bg-brand-900/40 uppercase font-extrabold border-2 border-brand-400 dark:border-brand-600 rounded-lg px-4 py-1.5 flex items-center gap-2 shadow-md">
-                                        <i class="fa-solid fa-sack-dollar"></i> Toplam Varlık: ${formatMoney(stats.totalValue)}
+                                    <span class="text-xs text-brand-600 dark:text-brand-300 bg-brand-100 dark:bg-brand-900/30 uppercase font-bold border border-brand-300 dark:border-brand-700 rounded-lg px-3 py-1 flex items-center gap-2 shadow-sm">
+                                        <i class="fa-solid fa-layer-group"></i> Toplam Varlık: ${stats.assetsWithStats.length}
                                     </span>
                                 </div>
                                 <div class="flex items-center gap-2">
@@ -2488,8 +2491,8 @@
                                 <thead class="text-xs text-slate-500 dark:text-slate-400 border-b border-white/20 dark:border-white/5 uppercase tracking-wide">
                                     <tr>
                                         <th scope="col" class="py-3 px-4 font-semibold whitespace-nowrap">Hisse / Varlık</th>
-                                        <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap">Fiyat</th>
                                         <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap">Maliyet</th>
+                                        <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap">Fiyat</th>
                                         <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap">Ağırlık</th>
                                         <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap">Günlük</th>
                                         <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap">Haftalık</th>
@@ -2503,13 +2506,38 @@
                                 <tbody class="divide-y divide-slate-700/30">
                                     ${assetRows}
                                 </tbody>
+                                <tfoot>
+                                    <tr class="border-t-2 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white font-bold bg-slate-50 dark:bg-slate-800/50">
+                                        <td class="py-3 px-4 uppercase text-xs tracking-wider">Toplam Maliyet:</td>
+                                        <td class="py-3 px-4 text-right">${formatMoney(stats.totalCost)}</td>
+                                        <td class="py-3 px-4 text-right"></td>
+                                        <td class="py-3 px-4 text-right"></td>
+                                        <td class="py-3 px-4 text-right"></td>
+                                        <td class="py-3 px-4 text-right"></td>
+                                        <td class="py-3 px-4 text-right"></td>
+                                        <td class="py-3 px-4 text-right"></td>
+                                        <td class="py-3 px-4 text-right"></td>
+                                        <td class="py-3 px-4 text-right"></td>
+                                        <td class="py-3 px-4 text-right"></td>
+                                    </tr>
+                                </tfoot>
                             </table>
                         </div>
                     </div>
                 `;
             });
         }
-
+        
+        window.changePortfolioMonth = function(direction) {
+            const months = Object.keys(appState.portfoliosData).sort();
+            const idx = months.indexOf(appState.currentViewMonth);
+            if (idx === -1) return;
+            const newIdx = idx + direction;
+            if (newIdx >= 0 && newIdx < months.length) {
+                appState.currentViewMonth = months[newIdx];
+                updateAllViews();
+            }
+        };
 
         window.toggleBenchmark = async function(checkbox) {
             const val = checkbox.value;
