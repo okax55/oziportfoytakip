@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ozi Portföy Takip</title>
     <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <!-- Tailwind CSS for Styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js for Data Visualization -->
@@ -154,19 +158,19 @@
     </div>
 
     <!-- Sidebar Overlay (Mobile) -->
-    <div id="sidebarOverlay" class="fixed inset-0 bg-slate-900/50 z-40 lg:hidden hidden backdrop-blur-sm" onclick="toggleSidebar()"></div>
+    <div id="sidebarOverlay" class="fixed inset-0 bg-slate-900/50 z-[90] lg:hidden hidden backdrop-blur-sm" onclick="toggleSidebar()"></div>
 
     <!-- Sidebar -->
-    <aside id="sidebar" class="fixed lg:relative top-0 left-0 h-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border-r border-slate-200 dark:border-slate-700/50 shadow-2xl lg:shadow-none w-64 lg:w-20 lg:hover:w-64 transition-all duration-300 z-50 flex flex-col -translate-x-full lg:translate-x-0 group">
+    <aside id="sidebar" class="fixed top-0 left-0 h-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border-r border-slate-200 dark:border-slate-700/50 shadow-2xl lg:shadow-none w-64 lg:w-20 lg:hover:w-64 transition-all duration-300 z-[100] flex flex-col -translate-x-full lg:translate-x-0 group">
         
         <!-- Logo Area -->
-        <div class="h-16 flex items-center px-4 border-b border-slate-200 dark:border-slate-700/50 shrink-0 justify-between">
+        <div class="h-16 flex items-center px-4 border-b border-slate-200 dark:border-slate-700/50 shrink-0 justify-between cursor-pointer" onclick="switchTab('compare')">
             <div class="flex items-center gap-3">
                 <img src="logo.png" alt="Logo" class="w-10 h-10 rounded-lg shadow-lg shadow-brand-500/30 shrink-0 object-cover">
                 <h1 class="text-xl font-bold text-slate-900 dark:text-white tracking-wide opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap overflow-hidden">Ozi<span class="font-light">Portföy</span></h1>
             </div>
             <!-- Mobile Close Button -->
-            <button onclick="toggleSidebar()" class="lg:hidden text-slate-500 hover:text-brand-500 p-2">
+            <button onclick="event.stopPropagation(); toggleSidebar()" class="lg:hidden text-slate-500 hover:text-brand-500 p-2">
                 <i class="fa-solid fa-xmark text-xl"></i>
             </button>
         </div>
@@ -200,10 +204,10 @@
 
         <!-- Bottom Actions -->
         <div class="p-4 border-t border-slate-200 dark:border-slate-700/50 flex flex-col gap-2 shrink-0">
-            <!-- Pin Button (Desktop Only) -->
-            <button onclick="toggleSidebarPin()" id="pinSidebarBtn" class="hidden lg:flex items-center gap-4 px-3 py-3 rounded-xl transition-all font-medium text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700/50 dark:text-slate-400 group/item">
-                <div class="w-6 flex justify-center shrink-0"><i class="fa-solid fa-thumbtack text-lg transition-transform duration-300" id="pinIcon"></i></div>
-                <span class="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Menüyü Sabitle</span>
+            <!-- Sidebar State Toggle (Desktop Only) -->
+            <button onclick="toggleSidebarState()" id="sidebarStateBtn" class="hidden lg:flex items-center gap-4 px-3 py-3 rounded-xl transition-all font-medium text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700/50 dark:text-slate-400 group/item">
+                <div class="w-6 flex justify-center shrink-0"><i class="fa-solid fa-bars-staggered text-lg transition-transform duration-300" id="sidebarStateIcon"></i></div>
+                <span class="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap" id="sidebarStateText">Menü Modu</span>
             </button>
             
             <button onclick="toggleTheme()" class="flex items-center gap-4 px-3 py-3 rounded-xl transition-all font-medium text-slate-500 hover:text-brand-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-brand-400 dark:hover:bg-slate-700/50 group/item">
@@ -214,7 +218,7 @@
     </aside>
 
     <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col h-screen overflow-hidden relative">
+    <div id="mainWrapper" class="flex-1 flex flex-col h-screen overflow-hidden relative w-full lg:ml-20 transition-all duration-300">
         
         <!-- Mobile Header (Visible only on mobile) -->
         <header class="lg:hidden glass-header flex items-center justify-between px-4 h-16 border-b border-slate-200 dark:border-slate-700/50 shrink-0 z-30">
@@ -1248,8 +1252,56 @@
             }
         }
 
-        let sidebarPinned = false;
+        let sidebarState = 'hover'; // 'hover', 'pinned', 'closed'
         
+        window.toggleSidebarState = function() {
+            const sidebar = document.getElementById('sidebar');
+            const stateIcon = document.getElementById('sidebarStateIcon');
+            const stateText = document.getElementById('sidebarStateText');
+            
+            if (sidebarState === 'hover') {
+                // Go to pinned
+                sidebarState = 'pinned';
+                sidebar.classList.remove('lg:w-20', 'lg:hover:w-64');
+                sidebar.classList.add('lg:w-64');
+                
+                const texts = sidebar.querySelectorAll('.lg\\:opacity-0');
+                texts.forEach(t => {
+                    t.classList.remove('lg:opacity-0', 'lg:group-hover:opacity-100');
+                    t.classList.add('opacity-100');
+                });
+                stateIcon.className = "fa-solid fa-lock text-lg text-brand-500 transition-transform duration-300";
+                stateText.innerText = "Menü Sabit";
+            } else if (sidebarState === 'pinned') {
+                // Go to closed
+                sidebarState = 'closed';
+                sidebar.classList.remove('lg:w-64', 'lg:hover:w-64');
+                sidebar.classList.add('lg:w-20');
+                
+                const texts = sidebar.querySelectorAll('.opacity-100');
+                texts.forEach(t => {
+                    if(t.classList.contains('whitespace-nowrap')) {
+                       t.classList.add('lg:opacity-0');
+                       t.classList.remove('opacity-100');
+                    }
+                });
+                stateIcon.className = "fa-solid fa-eye-slash text-lg transition-transform duration-300";
+                stateText.innerText = "Menü Kapalı";
+            } else {
+                // Go back to hover
+                sidebarState = 'hover';
+                sidebar.classList.remove('lg:w-64');
+                sidebar.classList.add('lg:w-20', 'lg:hover:w-64');
+                
+                const texts = sidebar.querySelectorAll('.lg\\:opacity-0');
+                texts.forEach(t => {
+                    t.classList.add('lg:group-hover:opacity-100');
+                });
+                stateIcon.className = "fa-solid fa-bars-staggered text-lg transition-transform duration-300";
+                stateText.innerText = "Menü Modu";
+            }
+        };
+
         window.toggleSidebar = function() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');
@@ -1259,39 +1311,6 @@
             } else {
                 sidebar.classList.add('-translate-x-full');
                 overlay.classList.add('hidden');
-            }
-        };
-
-        window.toggleSidebarPin = function() {
-            sidebarPinned = !sidebarPinned;
-            const sidebar = document.getElementById('sidebar');
-            const pinIcon = document.getElementById('pinIcon');
-            if (sidebarPinned) {
-                sidebar.classList.remove('lg:w-20');
-                sidebar.classList.add('lg:w-64');
-                sidebar.classList.remove('lg:hover:w-64');
-                
-                const texts = sidebar.querySelectorAll('.lg\\:opacity-0');
-                texts.forEach(t => {
-                    t.classList.remove('lg:opacity-0');
-                    t.classList.remove('lg:group-hover:opacity-100');
-                    t.classList.add('opacity-100');
-                });
-                pinIcon.classList.add('rotate-45', 'text-brand-500');
-            } else {
-                sidebar.classList.remove('lg:w-64');
-                sidebar.classList.add('lg:w-20');
-                sidebar.classList.add('lg:hover:w-64');
-                
-                const texts = sidebar.querySelectorAll('.opacity-100');
-                texts.forEach(t => {
-                    if(t.classList.contains('whitespace-nowrap')) {
-                       t.classList.add('lg:opacity-0');
-                       t.classList.add('lg:group-hover:opacity-100');
-                       t.classList.remove('opacity-100');
-                    }
-                });
-                pinIcon.classList.remove('rotate-45', 'text-brand-500');
             }
         };
 
@@ -2576,13 +2595,13 @@
                     `;
                 });
                 
-                const [vY, vM] = appState.currentViewMonth.split('-');
+                const [vY, vM] = viewMonth.split('-');
                 const vMonthName = monthNames[parseInt(vM) - 1];
                 const vYearShort = vY.slice(2);
                 const formattedMonth = `${vMonthName} '${vYearShort}`;
                 
                 const allMonths = Object.keys(appState.portfoliosData).sort();
-                const isLatestMonth = appState.currentViewMonth === allMonths[allMonths.length - 1];
+                const isLatestMonth = viewMonth === allMonths[allMonths.length - 1];
                 const rightArrowState = isLatestMonth ? 'disabled style="opacity:0.3;cursor:not-allowed;"' : '';
 
                 container.innerHTML += `
