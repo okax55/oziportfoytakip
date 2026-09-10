@@ -1081,7 +1081,8 @@
                         
                         const [year, month] = appState.currentViewMonth.split('-');
                         let daysInMonth = new Date(year, month, 0).getDate();
-                        const today = new Date();
+                        const [ly, lm, ld] = appState.lastUpdatedDate.split('-');
+                        const today = new Date(parseInt(ly), parseInt(lm) - 1, parseInt(ld));
                         if (today.getFullYear() === parseInt(year) && (today.getMonth() + 1) === parseInt(month)) {
                             daysInMonth = today.getDate();
                         }
@@ -1572,7 +1573,8 @@
 
         function getTradingDays(yearMonth) {
             const [year, month] = yearMonth.split('-').map(Number);
-            const today = new Date();
+            const [ly, lm, ld] = appState.lastUpdatedDate.split('-');
+            const today = new Date(parseInt(ly), parseInt(lm) - 1, parseInt(ld));
             let daysInMonth = new Date(year, month, 0).getDate();
             
             if (today.getFullYear() === year && (today.getMonth() + 1) === month) {
@@ -1966,8 +1968,9 @@
         }
 
         function getTradingDaysForRange(range) {
-            const today = new Date();
-            let startDate = new Date();
+            const [ly, lm, ld] = appState.lastUpdatedDate.split('-');
+            const today = new Date(parseInt(ly), parseInt(lm) - 1, parseInt(ld));
+            let startDate = new Date(today);
             const yyyy_mm = appState.currentViewMonth;
             const [cYear, cMonth] = yyyy_mm.split('-');
 
