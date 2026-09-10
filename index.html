@@ -13,6 +13,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js for Data Visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
     <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
@@ -213,7 +214,7 @@
         <!-- Bottom Actions -->
         <div class="p-4 border-t border-slate-200 dark:border-slate-700/50 flex flex-col gap-2 shrink-0">
             <!-- Sidebar State Toggle -->
-            <div class="relative group/menu hidden lg:block">
+            <div class="relative group/menu w-full block">
                 <button onclick="toggleSidebarMenu(event)" id="sidebarStateBtn" class="w-full flex items-center gap-4 px-3 py-3 rounded-xl transition-all font-medium text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700/50 dark:text-slate-400 group/item" title="Sidebar Modu">
                     <div class="w-6 flex justify-center shrink-0"><i class="fa-solid fa-table-columns text-lg transition-transform duration-300" id="sidebarStateIcon"></i></div>
                     <span class="text-sm opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap" id="sidebarStateText">Otomatik</span>
@@ -892,6 +893,7 @@
 
         Chart.defaults.color = '#94a3b8';
         Chart.defaults.font.family = 'Inter';
+        Chart.register(ChartDataLabels);
 
         window.onload = initApp;
 
@@ -1926,6 +1928,8 @@
                         } : undefined,
                         borderRadius: isLine ? 0 : 6,
                         maxBarThickness: 40,
+                        barPercentage: 0.8,
+                        categoryPercentage: 0.9,
                     }]
                 },
                 plugins: [crosshairPlugin],
@@ -1933,6 +1937,17 @@
                     responsive: true, maintainAspectRatio: false,
                     interaction: { mode: 'index', intersect: false },
                     plugins: { 
+                        datalabels: {
+                            display: !isLine,
+                            color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#000000',
+                            font: { weight: 'bold', size: 10 },
+                            align: (context) => context.dataset.data[context.dataIndex] < 0 ? 'start' : 'end',
+                            anchor: (context) => context.dataset.data[context.dataIndex] < 0 ? 'start' : 'end',
+                            formatter: (value) => {
+                                const sign = value > 0 ? '+' : '';
+                                return `${sign}%${Math.abs(value).toFixed(1)}`;
+                            }
+                        },
                         legend: { display: false }, 
                         tooltip: { 
                               enabled: true,
@@ -1993,12 +2008,16 @@
                                 color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#000000',
                                 font: { weight: '600' },
                                 autoSkip: false,
-                                maxRotation: 0,
+                                maxRotation: isLine ? 0 : 90,
+                                minRotation: isLine ? 0 : 90,
                                 callback: function(val, index, ticks) {
-                                    if (index === 0) return '';
                                     const label = this.getLabelForValue(val);
-                                    if (index === ticks.length - 1) return label;
-                                    return index % 2 === 0 ? label : '';
+                                    if (isLine) {
+                                        if (index === 0) return '';
+                                        if (index === ticks.length - 1) return label;
+                                        return index % 2 === 0 ? label : '';
+                                    }
+                                    return label;
                                 }
                             } 
                         },
@@ -2406,7 +2425,7 @@
             });
             
             if (!isLine) {
-                datasets.push({ label: 'Getiri (%)', data: barData, backgroundColor: barBackgroundColors, borderWidth: 0, borderRadius: 6, maxBarThickness: 40 });
+                datasets.push({ label: 'Getiri (%)', data: barData, backgroundColor: barBackgroundColors, borderWidth: 0, borderRadius: 6, maxBarThickness: 40, barPercentage: 0.8, categoryPercentage: 0.9 });
             }
 
             const gridColor = document.documentElement.classList.contains('dark') ? 'rgba(148, 163, 184, 0.15)' : 'rgba(15, 23, 42, 0.25)';
@@ -2419,6 +2438,17 @@
                     responsive: true, maintainAspectRatio: false,
                     interaction: { mode: 'index', intersect: false },
                     plugins: {
+                        datalabels: {
+                            display: !isLine,
+                            color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#000000',
+                            font: { weight: 'bold', size: 10 },
+                            align: (context) => context.dataset.data[context.dataIndex] < 0 ? 'start' : 'end',
+                            anchor: (context) => context.dataset.data[context.dataIndex] < 0 ? 'start' : 'end',
+                            formatter: (value) => {
+                                const sign = value > 0 ? '+' : '';
+                                return `${sign}%${Math.abs(value).toFixed(1)}`;
+                            }
+                        },
                         legend: { display: false },
                         tooltip: {
                               usePointStyle: true,
@@ -2447,8 +2477,11 @@
                                 color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#000000',
                                 font: { weight: '600' },
                                 maxTicksLimit: 15,
+                                maxRotation: 0,
+                                minRotation: 0,
+                                display: appState.compareTimeRange !== 'this_month',
                                 callback: function(val, index, ticks) {
-                                    if (index === 0) return '';
+                                    if (isLine && index === 0) return '';
                                     return this.getLabelForValue(val);
                                 }
                             } 
@@ -2654,8 +2687,14 @@
                 const formattedMonth = `${vMonthName} '${vYearShort}`;
                 
                 const allMonths = Object.keys(appState.portfoliosData).sort();
-                const isLatestMonth = viewMonth === allMonths[allMonths.length - 1];
+                const validMonths = allMonths.filter(m => appState.portfoliosData[m].some(port => port.id.split('_')[0] === baseId));
+                
+                const currentIdx = validMonths.indexOf(viewMonth);
+                const isLatestMonth = currentIdx === validMonths.length - 1;
+                const isOldestMonth = currentIdx === 0;
+                
                 const rightArrowState = isLatestMonth ? 'disabled style="opacity:0.3;cursor:not-allowed;"' : '';
+                const leftArrowState = isOldestMonth ? 'disabled style="opacity:0.3;cursor:not-allowed;"' : '';
 
                 container.innerHTML += `
                     <div class="glass-panel rounded-2xl shadow-xl overflow-hidden flex flex-col mt-6">
@@ -2665,7 +2704,7 @@
                                     ${p.name}
                                 </span>
                                 <div class="flex items-center bg-slate-200/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg p-1 shadow-sm shrink-0">
-                                    <button onclick="changePortfolioMonth('${baseId}', -1)" class="w-7 sm:w-8 h-7 sm:h-8 flex items-center justify-center text-slate-500 hover:text-brand-600 hover:bg-white dark:hover:bg-slate-700 rounded transition-colors"><i class="fa-solid fa-chevron-left text-[10px] sm:text-xs"></i></button>
+                                    <button onclick="changePortfolioMonth('${baseId}', -1)" class="w-7 sm:w-8 h-7 sm:h-8 flex items-center justify-center text-slate-500 hover:text-brand-600 hover:bg-white dark:hover:bg-slate-700 rounded transition-colors" ${leftArrowState}><i class="fa-solid fa-chevron-left text-[10px] sm:text-xs"></i></button>
                                     <span class="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 w-[65px] sm:w-[75px] text-center">${formattedMonth}</span>
                                     <button onclick="changePortfolioMonth('${baseId}', 1)" class="w-7 sm:w-8 h-7 sm:h-8 flex items-center justify-center text-slate-500 hover:text-brand-600 hover:bg-white dark:hover:bg-slate-700 rounded transition-colors" ${rightArrowState}><i class="fa-solid fa-chevron-right text-[10px] sm:text-xs"></i></button>
                                 </div>
@@ -2712,13 +2751,14 @@
         }
         
         window.changePortfolioMonth = function(baseId, direction) {
-            const months = Object.keys(appState.portfoliosData).sort();
+            const allMonths = Object.keys(appState.portfoliosData).sort();
+            const validMonths = allMonths.filter(m => appState.portfoliosData[m].some(p => p.id.split('_')[0] === baseId));
             const current = appState.portfolioViewMonths[baseId] || appState.currentViewMonth;
-            const idx = months.indexOf(current);
+            const idx = validMonths.indexOf(current);
             if (idx === -1) return;
             const newIdx = idx + direction;
-            if (newIdx >= 0 && newIdx < months.length) {
-                appState.portfolioViewMonths[baseId] = months[newIdx];
+            if (newIdx >= 0 && newIdx < validMonths.length) {
+                appState.portfolioViewMonths[baseId] = validMonths[newIdx];
                 renderPortfolioDetailedViews();
             }
         };
