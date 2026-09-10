@@ -2287,10 +2287,6 @@
                     }
                 }
             });
-            
-            // Yeni tablo ve portföy detayları fonksiyonlarını çağır
-            try { renderPerformanceDetailsTable(); } catch(e) { console.error("PerfTable Error:", e); }
-            try { renderPortfolioDetailedViews(); } catch(e) { console.error("PortView Error:", e); }
         }
 
         
@@ -2476,8 +2472,8 @@
                             </div>
                             <div class="flex items-center gap-6">
                                 <div class="flex items-center gap-2">
-                                    <span class="text-xs text-brand-600 dark:text-brand-300 bg-brand-100 dark:bg-brand-900/30 uppercase font-bold border border-brand-300 dark:border-brand-700 rounded-lg px-3 py-1 flex items-center gap-2 shadow-sm">
-                                        <i class="fa-solid fa-layer-group"></i> Toplam Varlık: ${stats.assetsWithStats.length}
+                                    <span class="text-sm text-brand-700 dark:text-brand-300 bg-brand-100 dark:bg-brand-900/40 uppercase font-extrabold border-2 border-brand-400 dark:border-brand-600 rounded-lg px-4 py-1.5 flex items-center gap-2 shadow-md">
+                                        <i class="fa-solid fa-sack-dollar"></i> Toplam Varlık: ${formatMoney(stats.totalValue)}
                                     </span>
                                 </div>
                                 <div class="flex items-center gap-2">
@@ -2905,10 +2901,12 @@
         }
 
         function updateAllViews() {
-            initDropdowns();
-            renderMonthlyView();
-            renderManagementView();
-            renderCompareView();
+            try { initDropdowns(); } catch(e) { console.error("Dropdown error:", e); }
+            try { renderMonthlyView(); } catch(e) { console.error("Monthly error:", e); }
+            try { renderManagementView(); } catch(e) { console.error("Management error:", e); }
+            try { renderCompareView(); } catch(e) { console.error("Compare error:", e); }
+            try { renderPerformanceDetailsTable(); } catch(e) { console.error("Perf Table error:", e); }
+            try { renderPortfolioDetailedViews(); } catch(e) { console.error("Port Details error:", e); }
         }
 
         /* Calculator JS Logic */
