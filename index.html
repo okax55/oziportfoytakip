@@ -864,6 +864,43 @@
 
         const chartColors = ["#10b981", "#ec4899", "#f59e0b", "#8b5cf6", "#14b8a6", "#d946ef", "#f43f5e", "#84cc16"];
 
+        let currentSortCol = null;
+        let currentSortDir = null; // 'desc', 'asc', null
+
+        window.setSort = function(colName) {
+            if (currentSortCol === colName) {
+                if (currentSortDir === 'desc') currentSortDir = 'asc';
+                else if (currentSortDir === 'asc') { currentSortDir = null; currentSortCol = null; }
+                else currentSortDir = 'desc';
+            } else {
+                currentSortCol = colName;
+                currentSortDir = 'desc';
+            }
+            renderMonthlyTable();
+            renderPortfolioDetailedViews();
+        };
+
+        function getSortIcon(colName) {
+            if (currentSortCol !== colName || !currentSortDir) return '<i class="fa-solid fa-sort ml-1 opacity-30"></i>';
+            return currentSortDir === 'desc' ? '<i class="fa-solid fa-sort-down ml-1 text-brand-500"></i>' : '<i class="fa-solid fa-sort-up ml-1 text-brand-500"></i>';
+        }
+
+        function applySort(arr) {
+            if (!currentSortCol || !currentSortDir) return arr;
+            return [...arr].sort((a, b) => {
+                let valA = a[currentSortCol];
+                let valB = b[currentSortCol];
+                if (valA === undefined || valA === null) valA = -999999;
+                if (valB === undefined || valB === null) valB = -999999;
+                
+                if (typeof valA === 'string') {
+                    return currentSortDir === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                } else {
+                    return currentSortDir === 'asc' ? valA - valB : valB - valA;
+                }
+            });
+        }
+
         let appState = {
             portfoliosData: {}, // { "2026-08": [ {id, name, assets} ] }
             benchmarksData: {}, // { "2026-08": { "ALTIN": 2500, "XU100.IS": 10000 } }
