@@ -146,6 +146,14 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
+        
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 font-sans h-screen flex relative overflow-hidden transition-colors duration-500">
@@ -161,7 +169,7 @@
     <div id="sidebarOverlay" class="fixed inset-0 bg-slate-900/50 z-[90] lg:hidden hidden backdrop-blur-sm" onclick="toggleSidebar()"></div>
 
     <!-- Sidebar -->
-    <aside id="sidebar" class="fixed top-0 left-0 h-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border-r border-slate-200 dark:border-slate-700/50 shadow-2xl lg:shadow-none w-64 lg:w-20 lg:hover:w-64 transition-all duration-300 z-[100] flex flex-col -translate-x-full lg:translate-x-0 group">
+    <aside id="sidebar" class="fixed top-0 left-0 h-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border-r border-slate-200 dark:border-slate-700/50 shadow-2xl lg:shadow-none w-64 lg:w-16 lg:hover:w-56 transition-all duration-300 z-[100] flex flex-col -translate-x-full lg:translate-x-0 group">
         
         <!-- Logo Area -->
         <div class="h-16 flex items-center px-4 border-b border-slate-200 dark:border-slate-700/50 shrink-0 justify-between cursor-pointer" onclick="switchTab('compare')">
@@ -176,49 +184,65 @@
         </div>
 
         <!-- Navigation Links -->
-        <nav class="flex-1 overflow-y-auto py-6 px-3 flex flex-col gap-2">
+        <nav class="flex-1 overflow-y-auto py-6 px-3 flex flex-col gap-2 hide-scrollbar">
             <button onclick="switchTab('monthly')" id="nav-monthly" class="flex items-center gap-4 px-3 py-3 rounded-xl transition-all font-medium bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-400 group/item">
                 <div class="w-6 flex justify-center shrink-0"><i class="fa-solid fa-calendar-days text-lg"></i></div>
-                <span class="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Aylık Detay</span>
+                <span class="text-sm opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Aylık Detay</span>
             </button>
             <button onclick="switchTab('compare')" id="nav-compare" class="flex items-center gap-4 px-3 py-3 rounded-xl transition-all font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-700/50 group/item">
                 <div class="w-6 flex justify-center shrink-0"><i class="fa-solid fa-chart-pie text-lg"></i></div>
-                <span class="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Performans</span>
+                <span class="text-sm opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Performans</span>
             </button>
             <button onclick="switchTab('manage')" id="nav-manage" class="flex items-center gap-4 px-3 py-3 rounded-xl transition-all font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-700/50 group/item">
                 <div class="w-6 flex justify-center shrink-0"><i class="fa-solid fa-briefcase text-lg"></i></div>
-                <span class="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Yönetim</span>
+                <span class="text-sm opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Yönetim</span>
             </button>
             
             <div class="my-4 border-t border-slate-200 dark:border-slate-700/50"></div>
             
             <button onclick="openCalcModal()" class="flex items-center gap-4 px-3 py-3 rounded-xl transition-all font-medium text-orange-600 hover:bg-orange-50 dark:text-orange-400 dark:hover:bg-orange-900/20 group/item">
                 <div class="w-6 flex justify-center shrink-0"><i class="fa-solid fa-calculator text-lg"></i></div>
-                <span class="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Hesap Makinesi</span>
+                <span class="text-sm opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Hesap Makinesi</span>
             </button>
             <button onclick="openRebalanceModal()" class="flex items-center gap-4 px-3 py-3 rounded-xl transition-all font-medium text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/20 group/item">
                 <div class="w-6 flex justify-center shrink-0"><i class="fa-solid fa-scale-balanced text-lg"></i></div>
-                <span class="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Geçiş Planı</span>
+                <span class="text-sm opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Geçiş Planı</span>
             </button>
         </nav>
 
         <!-- Bottom Actions -->
         <div class="p-4 border-t border-slate-200 dark:border-slate-700/50 flex flex-col gap-2 shrink-0">
-            <!-- Sidebar State Toggle (Desktop Only) -->
-            <button onclick="toggleSidebarState()" id="sidebarStateBtn" class="hidden lg:flex items-center gap-4 px-3 py-3 rounded-xl transition-all font-medium text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700/50 dark:text-slate-400 group/item">
-                <div class="w-6 flex justify-center shrink-0"><i class="fa-solid fa-bars-staggered text-lg transition-transform duration-300" id="sidebarStateIcon"></i></div>
-                <span class="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap" id="sidebarStateText">Menü Modu</span>
-            </button>
+            <!-- Sidebar State Toggle -->
+            <div class="relative group/menu hidden lg:block">
+                <button onclick="toggleSidebarMenu(event)" id="sidebarStateBtn" class="w-full flex items-center gap-4 px-3 py-3 rounded-xl transition-all font-medium text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700/50 dark:text-slate-400 group/item" title="Sidebar Modu">
+                    <div class="w-6 flex justify-center shrink-0"><i class="fa-solid fa-table-columns text-lg transition-transform duration-300" id="sidebarStateIcon"></i></div>
+                    <span class="text-sm opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap" id="sidebarStateText">Otomatik</span>
+                </button>
+                <div id="sidebarStateDropdown" class="absolute left-full bottom-0 ml-4 w-48 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-xl shadow-2xl opacity-0 invisible transition-all duration-200 transform origin-bottom-left scale-95 flex flex-col py-2 border border-slate-200/50 dark:border-slate-700/50 z-[110]">
+                    <button onclick="setSidebarState('hover')" class="flex items-center justify-between px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors w-full text-left">
+                        Otomatik
+                        <i id="check-hover" class="fa-solid fa-check text-brand-500"></i>
+                    </button>
+                    <button onclick="setSidebarState('pinned')" class="flex items-center justify-between px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors w-full text-left">
+                        Sabit Açık
+                        <i id="check-pinned" class="fa-solid fa-check text-brand-500 hidden"></i>
+                    </button>
+                    <button onclick="setSidebarState('closed')" class="flex items-center justify-between px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors w-full text-left">
+                        Sabit Kapalı
+                        <i id="check-closed" class="fa-solid fa-check text-brand-500 hidden"></i>
+                    </button>
+                </div>
+            </div>
             
             <button onclick="toggleTheme()" class="flex items-center gap-4 px-3 py-3 rounded-xl transition-all font-medium text-slate-500 hover:text-brand-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-brand-400 dark:hover:bg-slate-700/50 group/item">
                 <div class="w-6 flex justify-center shrink-0"><i class="fa-solid fa-sun text-lg" id="themeIcon"></i></div>
-                <span class="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap" id="themeText">Tema Değiştir</span>
+                <span class="text-sm opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap" id="themeText">Tema Değiştir</span>
             </button>
         </div>
     </aside>
 
     <!-- Main Content Area -->
-    <div id="mainWrapper" class="flex-1 flex flex-col h-screen overflow-hidden relative w-full lg:ml-20 transition-all duration-300">
+    <div id="mainWrapper" class="flex-1 flex flex-col h-screen overflow-hidden relative w-full lg:ml-16 transition-all duration-300">
         
         <!-- Mobile Header (Visible only on mobile) -->
         <header class="lg:hidden glass-header flex items-center justify-between px-4 h-16 border-b border-slate-200 dark:border-slate-700/50 shrink-0 z-30">
@@ -1252,31 +1276,62 @@
             }
         }
 
-        let sidebarState = 'hover'; // 'hover', 'pinned', 'closed'
+        let sidebarState = 'hover';
+        let sidebarMenuOpen = false;
+
+        window.toggleSidebarMenu = function(e) {
+            e.stopPropagation();
+            sidebarMenuOpen = !sidebarMenuOpen;
+            const dropdown = document.getElementById('sidebarStateDropdown');
+            if (sidebarMenuOpen) {
+                dropdown.classList.remove('opacity-0', 'invisible', 'scale-95');
+                dropdown.classList.add('opacity-100', 'visible', 'scale-100');
+            } else {
+                dropdown.classList.add('opacity-0', 'invisible', 'scale-95');
+                dropdown.classList.remove('opacity-100', 'visible', 'scale-100');
+            }
+        };
+
+        // Close dropdown when clicked outside
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('sidebarStateDropdown');
+            const btn = document.getElementById('sidebarStateBtn');
+            if (dropdown && btn && !btn.contains(e.target) && !dropdown.contains(e.target) && sidebarMenuOpen) {
+                sidebarMenuOpen = false;
+                dropdown.classList.add('opacity-0', 'invisible', 'scale-95');
+                dropdown.classList.remove('opacity-100', 'visible', 'scale-100');
+            }
+        });
         
-        window.toggleSidebarState = function() {
+        window.setSidebarState = function(state) {
+            sidebarState = state;
+            sidebarMenuOpen = false;
+            document.getElementById('sidebarStateDropdown').classList.add('opacity-0', 'invisible', 'scale-95');
+            document.getElementById('sidebarStateDropdown').classList.remove('opacity-100', 'visible', 'scale-100');
+            
+            document.getElementById('check-hover').classList.add('hidden');
+            document.getElementById('check-pinned').classList.add('hidden');
+            document.getElementById('check-closed').classList.add('hidden');
+            document.getElementById(`check-${state}`).classList.remove('hidden');
+
             const sidebar = document.getElementById('sidebar');
             const stateIcon = document.getElementById('sidebarStateIcon');
             const stateText = document.getElementById('sidebarStateText');
             
-            if (sidebarState === 'hover') {
-                // Go to pinned
-                sidebarState = 'pinned';
-                sidebar.classList.remove('lg:w-20', 'lg:hover:w-64');
-                sidebar.classList.add('lg:w-64');
+            if (state === 'pinned') {
+                sidebar.classList.remove('lg:w-16', 'lg:hover:w-56');
+                sidebar.classList.add('lg:w-56');
                 
                 const texts = sidebar.querySelectorAll('.lg\\:opacity-0');
                 texts.forEach(t => {
                     t.classList.remove('lg:opacity-0', 'lg:group-hover:opacity-100');
                     t.classList.add('opacity-100');
                 });
-                stateIcon.className = "fa-solid fa-lock text-lg text-brand-500 transition-transform duration-300";
-                stateText.innerText = "Menü Sabit";
-            } else if (sidebarState === 'pinned') {
-                // Go to closed
-                sidebarState = 'closed';
-                sidebar.classList.remove('lg:w-64', 'lg:hover:w-64');
-                sidebar.classList.add('lg:w-20');
+                stateIcon.className = "fa-solid fa-table-columns text-lg text-brand-500 transition-transform duration-300";
+                stateText.innerText = "Sabit Açık";
+            } else if (state === 'closed') {
+                sidebar.classList.remove('lg:w-56', 'lg:hover:w-56');
+                sidebar.classList.add('lg:w-16');
                 
                 const texts = sidebar.querySelectorAll('.opacity-100');
                 texts.forEach(t => {
@@ -1285,20 +1340,18 @@
                        t.classList.remove('opacity-100');
                     }
                 });
-                stateIcon.className = "fa-solid fa-eye-slash text-lg transition-transform duration-300";
-                stateText.innerText = "Menü Kapalı";
+                stateIcon.className = "fa-solid fa-table-columns text-lg text-slate-400 transition-transform duration-300";
+                stateText.innerText = "Sabit Kapalı";
             } else {
-                // Go back to hover
-                sidebarState = 'hover';
-                sidebar.classList.remove('lg:w-64');
-                sidebar.classList.add('lg:w-20', 'lg:hover:w-64');
+                sidebar.classList.remove('lg:w-56');
+                sidebar.classList.add('lg:w-16', 'lg:hover:w-56');
                 
                 const texts = sidebar.querySelectorAll('.lg\\:opacity-0');
                 texts.forEach(t => {
                     t.classList.add('lg:group-hover:opacity-100');
                 });
-                stateIcon.className = "fa-solid fa-bars-staggered text-lg transition-transform duration-300";
-                stateText.innerText = "Menü Modu";
+                stateIcon.className = "fa-solid fa-table-columns text-lg transition-transform duration-300";
+                stateText.innerText = "Otomatik";
             }
         };
 
@@ -2606,27 +2659,27 @@
 
                 container.innerHTML += `
                     <div class="glass-panel rounded-2xl shadow-xl overflow-hidden flex flex-col mt-6">
-                        <div class="p-5 border-b border-white/20 dark:border-white/5 flex justify-between items-center bg-slate-800/5">
-                            <div class="flex items-center gap-6">
-                                <span class="text-xl font-extrabold tracking-wide uppercase text-slate-900 dark:text-white truncate w-32 sm:w-48" title="${p.name}">
+                        <div class="p-4 sm:p-5 border-b border-white/20 dark:border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-0 bg-slate-800/5">
+                            <div class="flex items-center justify-between w-full md:w-auto gap-2 sm:gap-6">
+                                <span class="text-lg sm:text-xl font-extrabold tracking-wide uppercase text-slate-900 dark:text-white truncate flex-1 md:w-48" title="${p.name}">
                                     ${p.name}
                                 </span>
-                                <div class="flex items-center bg-slate-200/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg p-1 shadow-sm">
-                                    <button onclick="changePortfolioMonth('${baseId}', -1)" class="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-brand-600 hover:bg-white dark:hover:bg-slate-700 rounded transition-colors"><i class="fa-solid fa-chevron-left text-xs"></i></button>
-                                    <span class="text-sm font-bold text-slate-700 dark:text-slate-300 w-[75px] text-center">${formattedMonth}</span>
-                                    <button onclick="changePortfolioMonth('${baseId}', 1)" class="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-brand-600 hover:bg-white dark:hover:bg-slate-700 rounded transition-colors" ${rightArrowState}><i class="fa-solid fa-chevron-right text-xs"></i></button>
+                                <div class="flex items-center bg-slate-200/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg p-1 shadow-sm shrink-0">
+                                    <button onclick="changePortfolioMonth('${baseId}', -1)" class="w-7 sm:w-8 h-7 sm:h-8 flex items-center justify-center text-slate-500 hover:text-brand-600 hover:bg-white dark:hover:bg-slate-700 rounded transition-colors"><i class="fa-solid fa-chevron-left text-[10px] sm:text-xs"></i></button>
+                                    <span class="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 w-[65px] sm:w-[75px] text-center">${formattedMonth}</span>
+                                    <button onclick="changePortfolioMonth('${baseId}', 1)" class="w-7 sm:w-8 h-7 sm:h-8 flex items-center justify-center text-slate-500 hover:text-brand-600 hover:bg-white dark:hover:bg-slate-700 rounded transition-colors" ${rightArrowState}><i class="fa-solid fa-chevron-right text-[10px] sm:text-xs"></i></button>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-4">
-                                <div class="flex items-center h-10">
-                                    <span class="h-full px-4 rounded-lg border border-brand-400/50 dark:border-brand-500/50 bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 flex items-center gap-2 shadow-sm font-bold text-sm whitespace-nowrap">
-                                        <i class="fa-solid fa-layer-group"></i> <span class="hidden sm:inline uppercase text-[10px] tracking-wider opacity-90">Toplam Varlık:</span> ${stats.assetsWithStats.length}
+                            <div class="flex items-center gap-2 sm:gap-4 w-full md:w-auto justify-end">
+                                <div class="flex items-center h-9 sm:h-10">
+                                    <span class="h-full px-3 sm:px-4 rounded-full border border-brand-400/50 dark:border-brand-500/50 bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 flex items-center gap-2 shadow-sm font-bold text-xs sm:text-sm whitespace-nowrap">
+                                        <i class="fa-solid fa-layer-group"></i> <span class="hidden sm:inline uppercase text-xs tracking-wider">Toplam Varlık:</span> ${stats.assetsWithStats.length}
                                     </span>
                                 </div>
-                                <div class="flex items-center h-10">
-                                    <span class="h-full px-4 rounded-lg border flex items-center gap-2 shadow-sm font-bold text-sm whitespace-nowrap ${tBgBorder}">
-                                        <span class="hidden sm:inline uppercase text-[10px] opacity-75 tracking-wider">Bu Ay Getirisi:</span>
-                                        <span class="text-base">${sign}${stats.totalChange.toFixed(2)}%</span>
+                                <div class="flex items-center h-9 sm:h-10">
+                                    <span class="h-full px-3 sm:px-4 rounded-full border flex items-center gap-1 sm:gap-2 shadow-sm font-bold text-xs sm:text-sm whitespace-nowrap ${tBgBorder}">
+                                        <span class="hidden sm:inline uppercase text-xs tracking-wider">Bu Ay Getirisi:</span>
+                                        <span class="text-sm sm:text-base">${sign}${stats.totalChange.toFixed(2)}%</span>
                                     </span>
                                 </div>
                             </div>
