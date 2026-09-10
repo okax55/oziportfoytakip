@@ -1080,7 +1080,6 @@
                 // Kaydedilmiş sekmeye dön
                 const savedTab = localStorage.getItem('ozi_currentTab');
                 switchTab(['compare', 'manage', 'portfolio-detail'].includes(savedTab) ? savedTab : 'compare');
-                switchTab(savedTab);
                 
             } catch (e) {
                 console.error(e);
@@ -1607,11 +1606,11 @@
             const btnLine = document.getElementById('btnLineChart');
             const btnBar = document.getElementById('btnBarChart');
             if (type === 'line') {
-                btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md glass-button transition-colors";
-                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors";
+                if (btnLine) btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md glass-button transition-colors";
+                if (btnBar) btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors";
             } else {
-                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md glass-button transition-colors";
-                btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors";
+                if (btnBar) btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md glass-button transition-colors";
+                if (btnLine) btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors";
             }
             if (!skipRender) renderMonthlyChart();
         }
@@ -1934,7 +1933,9 @@
         };
 
         function renderMonthlyChart() {
-            const ctx = document.getElementById('monthlyChart').getContext('2d');
+            const chartEl = document.getElementById('monthlyChart');
+            if (!chartEl) return;
+            const ctx = chartEl.getContext('2d');
             const ports = appState.portfoliosData[appState.currentViewMonth] || [];
             const portfolio = ports.find(p => p.id.split('_')[0] === appState.currentPortfolioId?.split('_')[0]);
             const stats = getPortfolioStats(portfolio);
@@ -2248,11 +2249,11 @@
             const btnLine = document.getElementById('btnCompareLineChart');
             const btnBar = document.getElementById('btnCompareBarChart');
             if (type === 'line') {
-                btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md glass-button transition-colors";
-                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors";
+                if (btnLine) btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md glass-button transition-colors";
+                if (btnBar) btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors";
             } else {
-                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md glass-button transition-colors";
-                btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors";
+                if (btnBar) btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md glass-button transition-colors";
+                if (btnLine) btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors";
             }
             if (!skipRender) renderCompareView();
         }
