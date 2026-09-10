@@ -337,8 +337,9 @@
                     <table class="w-full text-sm text-left text-slate-700 dark:text-slate-300">
                         <thead class="text-xs text-slate-500 dark:text-slate-400 border-b border-white/20 dark:border-white/5">
                             <tr>
-                                <th scope="col" class="px-5 py-4 font-medium whitespace-nowrap">Başlangıç</th>
                                 <th scope="col" class="px-5 py-4 font-medium whitespace-nowrap">Portföy Adı</th>
+                                <th scope="col" class="px-5 py-4 font-medium whitespace-nowrap">Başlangıç</th>
+                                <th scope="col" class="px-5 py-4 font-medium text-right whitespace-nowrap">Toplam Maliyet</th>
                                 <th scope="col" class="px-5 py-4 font-medium text-right whitespace-nowrap">Toplam Varlık</th>
                                 <th scope="col" class="px-5 py-4 font-medium text-right whitespace-nowrap">Günlük</th>
                                 <th scope="col" class="px-5 py-4 font-medium text-right whitespace-nowrap">Haftalık</th>
@@ -780,7 +781,7 @@
             html.classList.toggle('dark');
             const isDark = html.classList.contains('dark');
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            document.getElementById('themeIcon').className = isDark ? 'fa-solid fa-moon text-lg' : 'fa-solid fa-sun text-lg';
+            document.getElementById('themeIcon').className = isDark ? 'fa-solid fa-sun text-lg' : 'fa-solid fa-moon text-lg';
             
             // Re-render charts for theme colors
             Chart.defaults.color = isDark ? '#94a3b8' : '#64748b';
@@ -793,13 +794,13 @@
             document.documentElement.classList.add('dark');
             document.addEventListener("DOMContentLoaded", () => {
                 const i = document.getElementById('themeIcon');
-                if(i) i.className = 'fa-solid fa-moon text-lg';
+                if(i) i.className = 'fa-solid fa-sun text-lg';
             });
         } else {
             document.documentElement.classList.remove('dark');
             document.addEventListener("DOMContentLoaded", () => {
                 const i = document.getElementById('themeIcon');
-                if(i) i.className = 'fa-solid fa-sun text-lg';
+                if(i) i.className = 'fa-solid fa-moon text-lg';
             });
         }
 
@@ -2357,6 +2358,7 @@
                 const todayStr = appState.lastUpdatedDate;
                 const currentValObj = getPortfolioValueAndCost(pId, appState.currentViewMonth, todayStr);
                 const totalAsset = currentValObj ? currentValObj.value : 0;
+                const totalCost = currentValObj ? currentValObj.cost : 0;
                 
                 const d1 = calculateReturnForPeriod(pId, 1);
                 const w1 = calculateReturnForPeriod(pId, 7);
@@ -2385,10 +2387,11 @@
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-400/10 transition-colors">
                         <td class="px-5 py-4 font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                            <span class="w-3 h-3 rounded-full shadow-sm" style="background-color: ${p.color}"></span>
-                            ${p.name}
+                            <span class="w-3 h-3 rounded-full shadow-sm flex-shrink-0" style="background-color: ${p.color}"></span>
+                            <span class="truncate">${p.name}</span>
                         </td>
                         <td class="px-5 py-4 font-bold text-slate-700 dark:text-slate-300">${formatDateTR(startDate)}</td>
+                        <td class="px-5 py-4 font-bold text-right text-slate-700 dark:text-slate-400">${formatMoney(totalCost)}</td>
                         <td class="px-5 py-4 font-bold text-right text-slate-900 dark:text-white">${formatMoney(totalAsset)}</td>
                         <td class="px-5 py-4 text-right font-medium">${formatPct(d1)}</td>
                         <td class="px-5 py-4 text-right font-medium">${formatPct(w1)}</td>
@@ -2471,6 +2474,11 @@
                     `;
                 });
                 
+                const [vY, vM] = appState.currentViewMonth.split('-');
+                const vMonthName = monthNames[parseInt(vM) - 1];
+                const vYearShort = vY.slice(2);
+                const formattedMonth = `${vMonthName} '${vYearShort}`;
+
                 container.innerHTML += `
                     <div class="glass-panel rounded-2xl shadow-xl overflow-hidden flex flex-col">
                         <div class="p-5 border-b border-white/20 dark:border-white/5 flex justify-between items-center bg-slate-800/5">
@@ -2478,20 +2486,22 @@
                                 <span class="text-xl font-extrabold tracking-wide uppercase text-slate-900 dark:text-white flex items-center gap-2">
                                     ${p.name}
                                     <button onclick="changePortfolioMonth(-1)" class="text-slate-400 hover:text-brand-500"><i class="fa-solid fa-chevron-left"></i></button>
-                                    <span class="text-sm font-semibold text-slate-600 dark:text-slate-400">${appState.currentViewMonth}</span>
+                                    <span class="text-sm font-semibold text-slate-600 dark:text-slate-400 min-w-[70px] text-center">${formattedMonth}</span>
                                     <button onclick="changePortfolioMonth(1)" class="text-slate-400 hover:text-brand-500"><i class="fa-solid fa-chevron-right"></i></button>
                                     <a href="#" onclick="switchTab('manage');" class="text-slate-400 hover:text-brand-400 ml-1 text-sm"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
                                 </span>
                             </div>
                             <div class="flex items-center gap-6">
                                 <div class="flex items-center gap-2">
-                                    <span class="text-xs text-brand-600 dark:text-brand-300 bg-brand-100 dark:bg-brand-900/30 uppercase font-bold border border-brand-300 dark:border-brand-700 rounded-lg px-3 py-1 flex items-center gap-2 shadow-sm">
+                                    <span class="text-xs text-brand-600 dark:text-brand-300 bg-brand-100 dark:bg-brand-900/30 uppercase font-bold border border-brand-400/50 dark:border-brand-500/50 rounded-lg px-3 py-1 flex items-center gap-2 shadow-sm">
                                         <i class="fa-solid fa-layer-group"></i> Toplam Varlık: ${stats.assetsWithStats.length}
                                     </span>
                                 </div>
-                                <div class="flex items-center gap-2">
-                                    <span class="text-xs text-slate-500 uppercase font-semibold">Bu Ay Getirisi:</span>
-                                    <span class="px-3 py-1 rounded-md border font-bold ${tBgBorder}">${sign}${stats.totalChange.toFixed(2)}%</span>
+                                <div class="flex items-center">
+                                    <span class="px-3 py-1.5 rounded-lg border flex items-center gap-2 shadow-sm ${tBgBorder}">
+                                        <span class="text-[10px] uppercase font-bold opacity-75 hidden sm:inline tracking-wider">Bu Ay Getirisi:</span>
+                                        <span class="text-sm sm:text-base font-bold">${sign}${stats.totalChange.toFixed(2)}%</span>
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -2516,21 +2526,6 @@
                                 <tbody class="divide-y divide-slate-700/30">
                                     ${assetRows}
                                 </tbody>
-                                <tfoot>
-                                    <tr class="border-t-2 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white font-bold bg-slate-50 dark:bg-slate-800/50">
-                                        <td class="py-3 px-4 uppercase text-xs tracking-wider">Toplam Maliyet:</td>
-                                        <td class="py-3 px-4 text-right">${formatMoney(stats.totalCost)}</td>
-                                        <td class="py-3 px-4 text-right"></td>
-                                        <td class="py-3 px-4 text-right"></td>
-                                        <td class="py-3 px-4 text-right"></td>
-                                        <td class="py-3 px-4 text-right"></td>
-                                        <td class="py-3 px-4 text-right"></td>
-                                        <td class="py-3 px-4 text-right"></td>
-                                        <td class="py-3 px-4 text-right"></td>
-                                        <td class="py-3 px-4 text-right"></td>
-                                        <td class="py-3 px-4 text-right"></td>
-                                    </tr>
-                                </tfoot>
                             </table>
                         </div>
                     </div>
