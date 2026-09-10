@@ -1579,13 +1579,13 @@
 
         function updatePortfolioDropdown() {
             const pMenu = document.getElementById('portfolioDropdownMenu');
-            pMenu.innerHTML = '';
+            if (pMenu) pMenu.innerHTML = '';
             const allPorts = getAllUniquePortfolios();
             
             allPorts.forEach(p => {
                 const isSelected = p.id.split('_')[0] === appState.currentPortfolioId?.split('_')[0];
                 if(isSelected) {
-                    document.getElementById('portfolioDropdownText').textContent = p.name;
+                    const pText = document.getElementById('portfolioDropdownText'); if (pText) pText.textContent = p.name;
                 }
                 
                 const btn = document.createElement('button');
@@ -1597,7 +1597,7 @@
                     updatePortfolioDropdown();
                     renderMonthlyView();
                 };
-                pMenu.appendChild(btn);
+                if (pMenu) pMenu.appendChild(btn);
             });
         }
 
@@ -2120,6 +2120,7 @@
         function renderMonthlyTable() {
             const tbody = document.getElementById('assetsTableBody');
             const thead = document.getElementById('monthlyTableHeader');
+            if (!tbody || !thead) return;
             const ports = appState.portfoliosData[appState.currentViewMonth] || [];
             const portfolio = ports.find(p => p.id.split('_')[0] === appState.currentPortfolioId?.split('_')[0]);
             const stats = getPortfolioStats(portfolio);
