@@ -144,7 +144,7 @@
         }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 font-sans min-h-screen flex flex-col relative overflow-x-hidden transition-colors duration-500">
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 font-sans h-screen flex relative overflow-hidden transition-colors duration-500">
     
     <!-- Animated Liquid Background Blobs -->
     <div class="fixed inset-0 w-full h-full pointer-events-none z-[-1] overflow-hidden">
@@ -153,62 +153,99 @@
         <div class="absolute -bottom-8 left-40 w-96 h-96 bg-pink-300 dark:bg-blue-900 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-50 dark:opacity-10 animate-blob animation-delay-4000"></div>
     </div>
 
-    <header class="glass-header sticky top-0 z-50">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('monthly')">
-                    <img src="logo.png" alt="Logo" class="w-10 h-10 rounded-lg shadow-lg shadow-brand-500/30 object-cover">
-                    <h1 class="text-xl font-bold text-slate-900 dark:text-white tracking-wide">Ozi<span class="font-light">Portföy</span></h1>
-                </div>
-                <div class="flex items-center gap-2 sm:gap-4">
-                    <div class="hidden md:flex items-center gap-2 mr-2">
-                        <button onclick="openCalcModal()" class="glass-button px-3 py-1.5 text-xs font-medium rounded-lg flex items-center bg-gradient-to-r from-orange-500 to-amber-500 shadow-orange-500/30">
-                            <i class="fa-solid fa-calculator mr-1"></i>Hesap Makinesi
-                        </button>
-                        <button onclick="openRebalanceModal()" class="glass-button px-3 py-1.5 text-xs font-medium rounded-lg flex items-center bg-gradient-to-r from-emerald-500 to-teal-500 shadow-emerald-500/30 text-white">
-                            <i class="fa-solid fa-scale-balanced mr-1"></i>Portföy Geçiş Planı
-                        </button>
-                    </div>
-                    <div class="flex glass-input p-1 rounded-xl shadow-sm">
-                        <button id="tab-monthly" class="p-2 sm:px-4 sm:py-2 text-xl sm:text-sm font-medium rounded-lg transition-all glass-button-tab text-white shadow-md flex items-center justify-center" onclick="switchTab('monthly')">
-                            <i class="fa-solid fa-calendar-days sm:mr-2"></i><span class="hidden sm:inline">Aylık Detay</span>
-                        </button>
-                        <button id="tab-compare" class="p-2 sm:px-4 sm:py-2 text-xl sm:text-sm font-medium rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all flex items-center justify-center" onclick="switchTab('compare')">
-                            <i class="fa-solid fa-chart-pie sm:mr-2"></i><span class="hidden sm:inline">Performans</span>
-                        </button>
-                        <button id="tab-manage" class="p-2 sm:px-4 sm:py-2 text-xl sm:text-sm font-medium rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all flex items-center justify-center" onclick="switchTab('manage')">
-                            <i class="fa-solid fa-briefcase sm:mr-2"></i><span class="hidden sm:inline">Yönetim</span>
-                        </button>
-                    </div>
-                    <button id="themeToggleBtn" onclick="toggleTheme()" class="text-slate-500 dark:text-slate-400 hover:text-brand-500 transition-colors ml-2 p-2 rounded-full hover:bg-slate-700/50">
-                        <i class="fa-solid fa-moon text-lg" id="themeIcon"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </header>
+    <!-- Sidebar Overlay (Mobile) -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-slate-900/50 z-40 lg:hidden hidden backdrop-blur-sm" onclick="toggleSidebar()"></div>
 
-    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed lg:relative top-0 left-0 h-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border-r border-slate-200 dark:border-slate-700/50 shadow-2xl lg:shadow-none w-64 lg:w-20 lg:hover:w-64 transition-all duration-300 z-50 flex flex-col -translate-x-full lg:translate-x-0 group">
+        
+        <!-- Logo Area -->
+        <div class="h-16 flex items-center px-4 border-b border-slate-200 dark:border-slate-700/50 shrink-0 justify-between">
+            <div class="flex items-center gap-3">
+                <img src="logo.png" alt="Logo" class="w-10 h-10 rounded-lg shadow-lg shadow-brand-500/30 shrink-0 object-cover">
+                <h1 class="text-xl font-bold text-slate-900 dark:text-white tracking-wide opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap overflow-hidden">Ozi<span class="font-light">Portföy</span></h1>
+            </div>
+            <!-- Mobile Close Button -->
+            <button onclick="toggleSidebar()" class="lg:hidden text-slate-500 hover:text-brand-500 p-2">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="flex-1 overflow-y-auto py-6 px-3 flex flex-col gap-2">
+            <button onclick="switchTab('monthly')" id="nav-monthly" class="flex items-center gap-4 px-3 py-3 rounded-xl transition-all font-medium bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-400 group/item">
+                <div class="w-6 flex justify-center shrink-0"><i class="fa-solid fa-calendar-days text-lg"></i></div>
+                <span class="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Aylık Detay</span>
+            </button>
+            <button onclick="switchTab('compare')" id="nav-compare" class="flex items-center gap-4 px-3 py-3 rounded-xl transition-all font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-700/50 group/item">
+                <div class="w-6 flex justify-center shrink-0"><i class="fa-solid fa-chart-pie text-lg"></i></div>
+                <span class="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Performans</span>
+            </button>
+            <button onclick="switchTab('manage')" id="nav-manage" class="flex items-center gap-4 px-3 py-3 rounded-xl transition-all font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-700/50 group/item">
+                <div class="w-6 flex justify-center shrink-0"><i class="fa-solid fa-briefcase text-lg"></i></div>
+                <span class="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Yönetim</span>
+            </button>
+            
+            <div class="my-4 border-t border-slate-200 dark:border-slate-700/50"></div>
+            
+            <button onclick="openCalcModal()" class="flex items-center gap-4 px-3 py-3 rounded-xl transition-all font-medium text-orange-600 hover:bg-orange-50 dark:text-orange-400 dark:hover:bg-orange-900/20 group/item">
+                <div class="w-6 flex justify-center shrink-0"><i class="fa-solid fa-calculator text-lg"></i></div>
+                <span class="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Hesap Makinesi</span>
+            </button>
+            <button onclick="openRebalanceModal()" class="flex items-center gap-4 px-3 py-3 rounded-xl transition-all font-medium text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/20 group/item">
+                <div class="w-6 flex justify-center shrink-0"><i class="fa-solid fa-scale-balanced text-lg"></i></div>
+                <span class="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Geçiş Planı</span>
+            </button>
+        </nav>
+
+        <!-- Bottom Actions -->
+        <div class="p-4 border-t border-slate-200 dark:border-slate-700/50 flex flex-col gap-2 shrink-0">
+            <!-- Pin Button (Desktop Only) -->
+            <button onclick="toggleSidebarPin()" id="pinSidebarBtn" class="hidden lg:flex items-center gap-4 px-3 py-3 rounded-xl transition-all font-medium text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700/50 dark:text-slate-400 group/item">
+                <div class="w-6 flex justify-center shrink-0"><i class="fa-solid fa-thumbtack text-lg transition-transform duration-300" id="pinIcon"></i></div>
+                <span class="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Menüyü Sabitle</span>
+            </button>
+            
+            <button onclick="toggleTheme()" class="flex items-center gap-4 px-3 py-3 rounded-xl transition-all font-medium text-slate-500 hover:text-brand-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-brand-400 dark:hover:bg-slate-700/50 group/item">
+                <div class="w-6 flex justify-center shrink-0"><i class="fa-solid fa-sun text-lg" id="themeIcon"></i></div>
+                <span class="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap" id="themeText">Tema Değiştir</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        
+        <!-- Mobile Header (Visible only on mobile) -->
+        <header class="lg:hidden glass-header flex items-center justify-between px-4 h-16 border-b border-slate-200 dark:border-slate-700/50 shrink-0 z-30">
+            <button onclick="toggleSidebar()" class="text-slate-600 dark:text-slate-300 p-2 -ml-2">
+                <i class="fa-solid fa-bars text-xl"></i>
+            </button>
+            <div class="font-bold text-lg text-slate-900 dark:text-white">Ozi<span class="font-light">Portföy</span></div>
+            <div class="w-8"></div> <!-- Spacer for centering -->
+        </header>
+
+        <main class="flex-1 overflow-y-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-20">
         
         <!-- MONTHLY VIEW TAB -->
         <div id="view-monthly" class="block animate-fade-in">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                 <div class="flex flex-wrap items-center gap-3">
                     <div class="relative group z-50">
-                        <button id="portfolioDropdownBtn" onclick="toggleCustomDropdown('portfolioDropdownMenu')" class="glass-input px-4 py-2 rounded-xl text-sm font-bold text-slate-900 dark:text-white focus:outline-none flex justify-between items-center w-56 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all shadow-sm">
+                        <button id="portfolioDropdownBtn" onclick="toggleCustomDropdown('portfolioDropdownMenu')" class="glass-input px-4 py-2 rounded-xl text-sm font-bold text-slate-900 dark:text-white focus:outline-none flex justify-between items-center w-48 sm:w-56 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all shadow-sm">
                             <span id="portfolioDropdownText" class="truncate">Ana Portföy</span>
                             <i class="fa-solid fa-chevron-down text-xs opacity-60 ml-2"></i>
                         </button>
-                        <div id="portfolioDropdownMenu" class="absolute left-0 top-full mt-2 w-56 glass-panel rounded-xl shadow-2xl opacity-0 invisible transition-all duration-200 transform origin-top scale-95 flex flex-col py-2 max-h-60 overflow-y-auto border border-slate-200/50 dark:border-slate-700/50">
+                        <div id="portfolioDropdownMenu" class="absolute left-0 top-full mt-2 w-48 sm:w-56 glass-panel rounded-xl shadow-2xl opacity-0 invisible transition-all duration-200 transform origin-top scale-95 flex flex-col py-2 max-h-60 overflow-y-auto border border-slate-200/50 dark:border-slate-700/50">
                             <!-- JS -->
                         </div>
                     </div>
                     <div class="relative group z-50">
-                        <button id="monthDropdownBtn" onclick="toggleCustomDropdown('monthDropdownMenu')" class="glass-input px-4 py-2 rounded-xl text-sm font-bold text-slate-900 dark:text-white focus:outline-none flex justify-between items-center w-40 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all shadow-sm">
+                        <button id="monthDropdownBtn" onclick="toggleCustomDropdown('monthDropdownMenu')" class="glass-input px-4 py-2 rounded-xl text-sm font-bold text-slate-900 dark:text-white focus:outline-none flex justify-between items-center w-36 sm:w-40 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all shadow-sm">
                             <span id="monthDropdownText">Ay Seç</span>
                             <i class="fa-solid fa-chevron-down text-xs opacity-60 ml-2"></i>
                         </button>
-                        <div id="monthDropdownMenu" class="absolute left-0 top-full mt-2 w-40 glass-panel rounded-xl shadow-2xl opacity-0 invisible transition-all duration-200 transform origin-top scale-95 flex flex-col py-2 max-h-60 overflow-y-auto border border-slate-200/50 dark:border-slate-700/50">
+                        <div id="monthDropdownMenu" class="absolute left-0 top-full mt-2 w-36 sm:w-40 glass-panel rounded-xl shadow-2xl opacity-0 invisible transition-all duration-200 transform origin-top scale-95 flex flex-col py-2 max-h-60 overflow-y-auto border border-slate-200/50 dark:border-slate-700/50">
                             <!-- JS -->
                         </div>
                     </div>
@@ -216,10 +253,10 @@
                 
                 <div class="flex glass-panel p-1 rounded-lg shadow-sm">
                     <button id="btnLineChart" onclick="toggleChartType('line')" class="px-4 py-1.5 text-sm font-medium rounded-md bg-brand-500 text-white shadow transition-colors">
-                        <i class="fa-solid fa-chart-line mr-2"></i>Çizgi
+                        <i class="fa-solid fa-chart-line sm:mr-2"></i><span class="hidden sm:inline">Çizgi</span>
                     </button>
-                    <button id="btnBarChart" onclick="toggleChartType('bar')" class="px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-900 dark:hover:text-white transition-colors">
-                        <i class="fa-solid fa-chart-simple mr-2"></i>Sütun
+                    <button id="btnBarChart" onclick="toggleChartType('bar')" class="px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                        <i class="fa-solid fa-chart-simple sm:mr-2"></i><span class="hidden sm:inline">Sütun</span>
                     </button>
                 </div>
             </div>
@@ -230,7 +267,7 @@
                     <!-- Zaman filtreleri aylık sekmede gizlendi, çünkü burası sadece seçili ayı gösteriyor -->
                 </div>
                 <div class="w-full h-72 sm:h-96 relative">
-                    <canvas id="monthlyChart"></canvas>
+                    <canvas id="monthlyChart" class="cursor-default select-none"></canvas>
                 </div>
             </div>
 
@@ -319,7 +356,7 @@
                 
                 <!-- Chart Canvas -->
                 <div class="w-full h-80 sm:h-[450px] relative mt-4">
-                    <canvas id="compareChart"></canvas>
+                    <canvas id="compareChart" class="cursor-default select-none"></canvas>
                 </div>
                 
                 <!-- Legends (Portfolios) -->
@@ -396,6 +433,7 @@
         </div>
 
     </main>
+    </div>
 
     <!-- MODALS -->
     
@@ -814,6 +852,7 @@
             
             // UI State
             currentViewMonth: "",
+            portfolioViewMonths: {}, // { "portfoy1": "2026-09" }
             currentPortfolioId: "",
             monthlyChartType: 'line',
             deleteQueue: { type: null, pId: null, aId: null },
@@ -1209,20 +1248,76 @@
             }
         }
 
+        let sidebarPinned = false;
+        
+        window.toggleSidebar = function() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            if (sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        };
+
+        window.toggleSidebarPin = function() {
+            sidebarPinned = !sidebarPinned;
+            const sidebar = document.getElementById('sidebar');
+            const pinIcon = document.getElementById('pinIcon');
+            if (sidebarPinned) {
+                sidebar.classList.remove('lg:w-20');
+                sidebar.classList.add('lg:w-64');
+                sidebar.classList.remove('lg:hover:w-64');
+                
+                const texts = sidebar.querySelectorAll('.lg\\:opacity-0');
+                texts.forEach(t => {
+                    t.classList.remove('lg:opacity-0');
+                    t.classList.remove('lg:group-hover:opacity-100');
+                    t.classList.add('opacity-100');
+                });
+                pinIcon.classList.add('rotate-45', 'text-brand-500');
+            } else {
+                sidebar.classList.remove('lg:w-64');
+                sidebar.classList.add('lg:w-20');
+                sidebar.classList.add('lg:hover:w-64');
+                
+                const texts = sidebar.querySelectorAll('.opacity-100');
+                texts.forEach(t => {
+                    if(t.classList.contains('whitespace-nowrap')) {
+                       t.classList.add('lg:opacity-0');
+                       t.classList.add('lg:group-hover:opacity-100');
+                       t.classList.remove('opacity-100');
+                    }
+                });
+                pinIcon.classList.remove('rotate-45', 'text-brand-500');
+            }
+        };
+
         function switchTab(tabId) {
             localStorage.setItem('ozi_currentTab', tabId);
             const tabs = ['monthly', 'compare', 'manage'];
             tabs.forEach(t => {
-                const btn = document.getElementById(`tab-${t}`);
+                const btn = document.getElementById(`nav-${t}`);
                 const view = document.getElementById(`view-${t}`);
+                if (!btn || !view) return;
+                
                 if (t === tabId) {
-                    btn.className = "p-2 sm:px-4 sm:py-2 text-xl sm:text-sm font-medium rounded-lg transition-all glass-button-tab text-white shadow-md flex items-center justify-center";
+                    btn.className = "flex items-center gap-4 px-3 py-3 rounded-xl transition-all font-medium bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-400 group/item";
                     view.classList.remove('hidden');
                 } else {
-                    btn.className = "p-2 sm:px-4 sm:py-2 text-xl sm:text-sm font-medium rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all flex items-center justify-center";
+                    btn.className = "flex items-center gap-4 px-3 py-3 rounded-xl transition-all font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-700/50 group/item";
                     view.classList.add('hidden');
                 }
             });
+            
+            if(window.innerWidth < 1024) {
+               const sidebar = document.getElementById('sidebar');
+               if (sidebar && !sidebar.classList.contains('-translate-x-full')) {
+                   toggleSidebar();
+               }
+            }
         }
 
         function updateFilterButtons(containerId, activeRange) {
@@ -2415,9 +2510,15 @@
             const allUniquePorts = getAllUniquePortfolios();
             
             allUniquePorts.forEach(p => {
-                const ports = appState.portfoliosData[appState.currentViewMonth];
+                const baseId = p.id;
+                if (!appState.portfolioViewMonths[baseId]) {
+                    appState.portfolioViewMonths[baseId] = appState.currentViewMonth;
+                }
+                const viewMonth = appState.portfolioViewMonths[baseId];
+
+                const ports = appState.portfoliosData[viewMonth];
                 if (!ports) return;
-                const activePort = ports.find(x => x.id.split('_')[0] === p.id);
+                const activePort = ports.find(x => x.id.split('_')[0] === baseId);
                 if (!activePort || activePort.assets.length === 0) return;
                 
                 const stats = getPortfolioStats(activePort);
@@ -2471,7 +2572,6 @@
                             <td class="py-3 px-4 text-right">${formatAssetPct(m3)}</td>
                             <td class="py-3 px-4 text-right">${formatAssetPct(y1)}</td>
                             <td class="py-3 px-4 text-right">${formatAssetPct(a.overallChange)}</td>
-                            <td class="py-3 px-4 text-right">${formatBadgeAssetPct(a.change * (a.weight/100))}</td>
                         </tr>
                     `;
                 });
@@ -2493,11 +2593,10 @@
                                     ${p.name}
                                 </span>
                                 <div class="flex items-center bg-slate-200/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg p-1 shadow-sm">
-                                    <button onclick="changePortfolioMonth(-1)" class="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-brand-600 hover:bg-white dark:hover:bg-slate-700 rounded transition-colors"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+                                    <button onclick="changePortfolioMonth('${baseId}', -1)" class="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-brand-600 hover:bg-white dark:hover:bg-slate-700 rounded transition-colors"><i class="fa-solid fa-chevron-left text-xs"></i></button>
                                     <span class="text-sm font-bold text-slate-700 dark:text-slate-300 w-[75px] text-center">${formattedMonth}</span>
-                                    <button onclick="changePortfolioMonth(1)" class="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-brand-600 hover:bg-white dark:hover:bg-slate-700 rounded transition-colors" ${rightArrowState}><i class="fa-solid fa-chevron-right text-xs"></i></button>
+                                    <button onclick="changePortfolioMonth('${baseId}', 1)" class="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-brand-600 hover:bg-white dark:hover:bg-slate-700 rounded transition-colors" ${rightArrowState}><i class="fa-solid fa-chevron-right text-xs"></i></button>
                                 </div>
-                                <a href="#" onclick="switchTab('manage');" class="text-slate-400 hover:text-brand-400 text-sm -ml-2 hidden sm:inline"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
                             </div>
                             <div class="flex items-center gap-4">
                                 <div class="flex items-center h-10">
@@ -2528,7 +2627,6 @@
                                         <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap">3 Aylık</th>
                                         <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap">1 Yıllık</th>
                                         <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap">Toplam</th>
-                                        <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap">Aylık Etki</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-700/30">
@@ -2541,14 +2639,15 @@
             });
         }
         
-        window.changePortfolioMonth = function(direction) {
+        window.changePortfolioMonth = function(baseId, direction) {
             const months = Object.keys(appState.portfoliosData).sort();
-            const idx = months.indexOf(appState.currentViewMonth);
+            const current = appState.portfolioViewMonths[baseId] || appState.currentViewMonth;
+            const idx = months.indexOf(current);
             if (idx === -1) return;
             const newIdx = idx + direction;
             if (newIdx >= 0 && newIdx < months.length) {
-                appState.currentViewMonth = months[newIdx];
-                updateAllViews();
+                appState.portfolioViewMonths[baseId] = months[newIdx];
+                renderPortfolioDetailedViews();
             }
         };
 
