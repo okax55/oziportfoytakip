@@ -2588,19 +2588,6 @@
             if (!tbody) return;
             tbody.innerHTML = '';
 
-            thead.innerHTML = `
-                <tr>
-                    <th scope="col" class="px-4 py-4 font-medium whitespace-nowrap cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" onclick="setSort('name')">Varlık / Hisse ${getSortIcon('name')}</th>
-                    <th scope="col" class="px-4 py-4 font-medium text-right whitespace-nowrap cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" onclick="setSort('amount')">Adet ${getSortIcon('amount')}</th>
-                    <th scope="col" class="px-4 py-4 font-medium text-right whitespace-nowrap cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" onclick="setSort('initial_cost')">İlk Maliyet ${getSortIcon('initial_cost')}</th>
-                    <th scope="col" class="px-4 py-4 font-medium text-right whitespace-nowrap cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" onclick="setSort('cost')">Ay Başı Mal. ${getSortIcon('cost')}</th>
-                    <th scope="col" class="px-4 py-4 font-medium text-right whitespace-nowrap cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" onclick="setSort('price')">Güncel Fiyat ${getSortIcon('price')}</th>
-                    <th scope="col" class="px-4 py-4 font-medium text-center whitespace-nowrap cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" onclick="setSort('weight')">Ağırlık (%) ${getSortIcon('weight')}</th>
-                    <th scope="col" class="px-4 py-4 font-medium text-right whitespace-nowrap cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" onclick="setSort('overallChange')">Toplam Kâr (TL/%) ${getSortIcon('overallChange')}</th>
-                    <th scope="col" class="px-4 py-4 font-medium text-right whitespace-nowrap cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" onclick="setSort('change')">Bu Ayki Kâr (TL/%) ${getSortIcon('change')}</th>
-                </tr>
-            `;
-
             
             const allUniquePorts = getAllUniquePortfolios();
             
