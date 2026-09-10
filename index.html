@@ -265,10 +265,13 @@
 
         <!-- Navigation Links -->
         <nav class="flex-1 overflow-y-auto py-6 px-3 flex flex-col gap-2 hide-scrollbar">
-            
+            <button onclick="switchTab('monthly')" id="nav-monthly" class="flex items-center gap-4 px-3 py-3 rounded-xl transition-all font-medium bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-400 group/item">
+                <div class="w-6 flex justify-center shrink-0"><i class="fa-solid fa-calendar-days text-lg"></i></div>
+                <span class="text-sm opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Aylık Detay</span>
+            </button>
             <button onclick="switchTab('compare')" id="nav-compare" class="flex items-center gap-4 px-3 py-3 rounded-xl transition-all font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-700/50 group/item">
                 <div class="w-6 flex justify-center shrink-0"><i class="fa-solid fa-chart-pie text-lg"></i></div>
-                <span class="text-sm opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Tüm Portföyler</span>
+                <span class="text-sm opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Performans</span>
             </button>
             <button onclick="switchTab('manage')" id="nav-manage" class="flex items-center gap-4 px-3 py-3 rounded-xl transition-all font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-700/50 group/item">
                 <div class="w-6 flex justify-center shrink-0"><i class="fa-solid fa-briefcase text-lg"></i></div>
@@ -332,6 +335,79 @@
 
         <main class="flex-1 overflow-y-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-20">
         
+        <!-- MONTHLY VIEW TAB -->
+        <div id="view-monthly" class="block animate-fade-in">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                <div class="flex flex-wrap items-center gap-3">
+                    <div class="relative group z-50">
+                        <button id="portfolioDropdownBtn" onclick="toggleCustomDropdown('portfolioDropdownMenu')" class="glass-input px-4 py-2 rounded-xl text-sm font-bold text-slate-900 dark:text-white focus:outline-none flex justify-between items-center w-48 sm:w-56 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all shadow-sm">
+                            <span id="portfolioDropdownText" class="truncate">Ana Portföy</span>
+                            <i class="fa-solid fa-chevron-down text-xs opacity-60 ml-2"></i>
+                        </button>
+                        <div id="portfolioDropdownMenu" class="absolute left-0 top-full mt-2 w-48 sm:w-56 glass-panel rounded-xl shadow-2xl opacity-0 invisible transition-all duration-200 transform origin-top scale-95 flex flex-col py-2 max-h-60 overflow-y-auto border border-slate-200/50 dark:border-slate-700/50">
+                            <!-- JS -->
+                        </div>
+                    </div>
+                    <div class="relative group z-50">
+                        <button id="monthDropdownBtn" onclick="toggleCustomDropdown('monthDropdownMenu')" class="glass-input px-4 py-2 rounded-xl text-sm font-bold text-slate-900 dark:text-white focus:outline-none flex justify-between items-center w-36 sm:w-40 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all shadow-sm">
+                            <span id="monthDropdownText">Ay Seç</span>
+                            <i class="fa-solid fa-chevron-down text-xs opacity-60 ml-2"></i>
+                        </button>
+                        <div id="monthDropdownMenu" class="absolute left-0 top-full mt-2 w-36 sm:w-40 glass-panel rounded-xl shadow-2xl opacity-0 invisible transition-all duration-200 transform origin-top scale-95 flex flex-col py-2 max-h-60 overflow-y-auto border border-slate-200/50 dark:border-slate-700/50">
+                            <!-- JS -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex glass-panel p-1 rounded-lg shadow-sm">
+                    <button id="btnLineChart" onclick="toggleChartType('line')" class="px-4 py-1.5 text-sm font-medium rounded-md bg-brand-500 text-white shadow transition-colors">
+                        <i class="fa-solid fa-chart-line sm:mr-2"></i><span class="hidden sm:inline">Çizgi</span>
+                    </button>
+                    <button id="btnBarChart" onclick="toggleChartType('bar')" class="px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                        <i class="fa-solid fa-chart-simple sm:mr-2"></i><span class="hidden sm:inline">Sütun</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-4 sm:p-6 shadow-xl mb-8 relative">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+                    <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Portföy Gelişimi (₺)</h2>
+                    <!-- Zaman filtreleri aylık sekmede gizlendi, çünkü burası sadece seçili ayı gösteriyor -->
+                </div>
+                <div class="w-full h-72 sm:h-96 relative">
+                    <canvas id="monthlyChart" class="cursor-default select-none"></canvas>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl shadow-xl overflow-hidden">
+                <div class="p-4 sm:p-6 border-b border-white/20 dark:border-white/5">
+                    <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Varlık Dağılımı ve Performans</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-slate-700 dark:text-slate-300">
+                        <thead id="monthlyTableHeader" class="text-xs text-slate-500 dark:text-slate-400 uppercase border-b border-white/20 dark:border-white/5">
+                            <!-- JS rendered -->
+                        </thead>
+                        <tbody id="assetsTableBody" class="divide-y divide-slate-700/50">
+                            <!-- JS -->
+                        </tbody>
+                        <tfoot class="border-t border-white/20 dark:border-white/5 font-semibold text-slate-900 dark:text-white">
+                            <tr>
+                                <td class="px-4 py-4 whitespace-nowrap">Toplam Portföy</td>
+                                <td class="px-4 py-4"></td>
+                                <td class="px-4 py-4 text-right whitespace-nowrap" id="totalInitialCost">0 ₺</td>
+                                <td class="px-4 py-4 text-right whitespace-nowrap" id="totalCost">0 ₺</td>
+                                <td class="px-4 py-4 text-right whitespace-nowrap" id="totalValue">0 ₺</td>
+                                <td class="px-4 py-4 text-center whitespace-nowrap">100%</td>
+                                <td class="px-4 py-4 text-right font-medium whitespace-nowrap" id="totalOverallProfit">0 ₺</td>
+                                <td class="px-4 py-4 text-right font-medium whitespace-nowrap" id="totalMonthlyProfit">0 ₺</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <!-- COMPARISON VIEW TAB -->
         <div id="view-compare" class="hidden animate-fade-in flex flex-col gap-6">
             
@@ -833,7 +909,7 @@
             
             // Re-render charts for theme colors
             Chart.defaults.color = isDark ? '#94a3b8' : '#64748b';
-            
+            if (!document.getElementById('view-monthly').classList.contains('hidden')) renderMonthlyChart();
             if (!document.getElementById('view-compare').classList.contains('hidden')) renderCompareView();
         }
         
@@ -867,7 +943,7 @@
                 currentSortDir = 'desc';
             }
             renderMonthlyTable();
-            
+            renderPortfolioDetailedViews();
         };
 
         function getSortIcon(colName) {
@@ -1078,12 +1154,12 @@
                 updateAllViews();
                 
                 // Kaydedilmiş sekmeye dön
-                const savedTab = localStorage.getItem('ozi_currentTab');
-                switchTab(['compare', 'manage', 'portfolio-detail'].includes(savedTab) ? savedTab : 'compare');
+                const savedTab = localStorage.getItem('ozi_currentTab') || 'monthly';
+                switchTab(savedTab);
                 
             } catch (e) {
                 console.error(e);
-                showAlert("Hata: " + (e.stack || e.message || "Bilinmeyen hata"));
+                showAlert("Backend'e ulaşılamadı. Lütfen 'python server.py' komutunun çalıştığından emin olun.");
             }
         }
 
@@ -1425,7 +1501,7 @@
 
         function switchTab(tabId) {
             localStorage.setItem('ozi_currentTab', tabId);
-            const tabs = ['compare', 'manage', 'portfolio-detail'];
+            const tabs = ['monthly', 'compare', 'manage'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`nav-${t}`);
                 const view = document.getElementById(`view-${t}`);
@@ -1579,13 +1655,13 @@
 
         function updatePortfolioDropdown() {
             const pMenu = document.getElementById('portfolioDropdownMenu');
-            if (pMenu) pMenu.innerHTML = '';
+            pMenu.innerHTML = '';
             const allPorts = getAllUniquePortfolios();
             
             allPorts.forEach(p => {
                 const isSelected = p.id.split('_')[0] === appState.currentPortfolioId?.split('_')[0];
                 if(isSelected) {
-                    const pText = document.getElementById('portfolioDropdownText'); if (pText) pText.textContent = p.name;
+                    document.getElementById('portfolioDropdownText').textContent = p.name;
                 }
                 
                 const btn = document.createElement('button');
@@ -1597,7 +1673,7 @@
                     updatePortfolioDropdown();
                     renderMonthlyView();
                 };
-                if (pMenu) pMenu.appendChild(btn);
+                pMenu.appendChild(btn);
             });
         }
 
@@ -1606,11 +1682,11 @@
             const btnLine = document.getElementById('btnLineChart');
             const btnBar = document.getElementById('btnBarChart');
             if (type === 'line') {
-                if (btnLine) btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md glass-button transition-colors";
-                if (btnBar) btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors";
+                btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md glass-button transition-colors";
+                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors";
             } else {
-                if (btnBar) btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md glass-button transition-colors";
-                if (btnLine) btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors";
+                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md glass-button transition-colors";
+                btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors";
             }
             if (!skipRender) renderMonthlyChart();
         }
@@ -1933,9 +2009,7 @@
         };
 
         function renderMonthlyChart() {
-            const chartEl = document.getElementById('monthlyChart');
-            if (!chartEl) return;
-            const ctx = chartEl.getContext('2d');
+            const ctx = document.getElementById('monthlyChart').getContext('2d');
             const ports = appState.portfoliosData[appState.currentViewMonth] || [];
             const portfolio = ports.find(p => p.id.split('_')[0] === appState.currentPortfolioId?.split('_')[0]);
             const stats = getPortfolioStats(portfolio);
@@ -2120,7 +2194,6 @@
         function renderMonthlyTable() {
             const tbody = document.getElementById('assetsTableBody');
             const thead = document.getElementById('monthlyTableHeader');
-            if (!tbody || !thead) return;
             const ports = appState.portfoliosData[appState.currentViewMonth] || [];
             const portfolio = ports.find(p => p.id.split('_')[0] === appState.currentPortfolioId?.split('_')[0]);
             const stats = getPortfolioStats(portfolio);
@@ -2250,11 +2323,11 @@
             const btnLine = document.getElementById('btnCompareLineChart');
             const btnBar = document.getElementById('btnCompareBarChart');
             if (type === 'line') {
-                if (btnLine) btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md glass-button transition-colors";
-                if (btnBar) btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors";
+                btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md glass-button transition-colors";
+                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors";
             } else {
-                if (btnBar) btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md glass-button transition-colors";
-                if (btnLine) btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors";
+                btnBar.className = "px-4 py-1.5 text-sm font-medium rounded-md glass-button transition-colors";
+                btnLine.className = "px-4 py-1.5 text-sm font-medium rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors";
             }
             if (!skipRender) renderCompareView();
         }
@@ -2711,7 +2784,7 @@
                 const total = calculateTotalReturn(pId);
                 const totalUsd = total / 1.5;
                 
-                rows.push({ id: p.id, name: p.name, color: p.color, startDate, totalCost, totalAsset, d1, w1, m1, m3, m6, y1, total, totalUsd });
+                rows.push({ name: p.name, color: p.color, startDate, totalCost, totalAsset, d1, w1, m1, m3, m6, y1, total, totalUsd });
             });
 
             rows = applyPerfSort(rows);
@@ -2739,305 +2812,185 @@
             });
         }
 
-                // --- PORTFOLIO DASHBOARD LOGIC ---
-        let pdActivePortfolioId = null;
-        let pdCurrentTab = 'active'; 
-        let pdCurrentSortCol = 'weight';
-        let pdCurrentSortDir = 'desc';
-
-        function switchPdTab(tab) {
-            pdCurrentTab = tab;
-            document.getElementById('pd-tab-active').className = tab === 'active' 
-                ? 'pb-3 text-sm font-bold border-b-2 border-brand-500 text-brand-600 dark:text-brand-400 transition-colors' 
-                : 'pb-3 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors';
+        function renderPortfolioDetailedViews() {
+            const container = document.getElementById('portfolioDetailsContainer');
+            if (!container) return;
+            container.innerHTML = '';
             
-            document.getElementById('pd-tab-history').className = tab === 'history' 
-                ? 'pb-3 text-sm font-bold border-b-2 border-brand-500 text-brand-600 dark:text-brand-400 transition-colors' 
-                : 'pb-3 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors';
+            const allUniquePorts = getAllUniquePortfolios();
             
-            renderPdAssetsTable();
-        }
-
-        function setPdSort(col) {
-            if (pdCurrentSortCol === col) {
-                pdCurrentSortDir = pdCurrentSortDir === 'desc' ? 'asc' : (pdCurrentSortDir === 'asc' ? 'none' : 'desc');
-                if (pdCurrentSortDir === 'none') {
-                    pdCurrentSortCol = 'weight';
-                    pdCurrentSortDir = 'desc';
+            allUniquePorts.forEach(p => {
+                const baseId = p.id;
+                if (!appState.portfolioViewMonths[baseId]) {
+                    appState.portfolioViewMonths[baseId] = appState.currentViewMonth;
                 }
-            } else {
-                pdCurrentSortCol = col;
-                pdCurrentSortDir = 'desc';
-            }
-            renderPdAssetsTable();
-        }
+                const viewMonth = appState.portfolioViewMonths[baseId];
 
-        function applyPdSort(assets) {
-            const getSortIconHTML = (col) => {
-                if (pdCurrentSortCol !== col) return '<i class="fa-solid fa-sort text-slate-300 dark:text-slate-600 ml-1"></i>';
-                return pdCurrentSortDir === 'desc' 
-                    ? '<i class="fa-solid fa-sort-down text-brand-500 ml-1"></i>' 
-                    : '<i class="fa-solid fa-sort-up text-brand-500 ml-1"></i>';
-            };
-            
-            const cols = ['date', 'name', 'cost', 'price', 'weight', 'd1', 'w1', 'm1', 'm3', 'm6', 'y1', 'overall'];
-            cols.forEach(c => {
-                const el = document.getElementById('pd-sort-' + c);
-                if(el) el.innerHTML = getSortIconHTML(c);
-            });
-
-            if (pdCurrentSortDir === 'none') return assets;
-
-            return [...assets].sort((a, b) => {
-                let valA, valB;
-                switch(pdCurrentSortCol) {
-                    case 'name': valA = a.name.toLowerCase(); valB = b.name.toLowerCase(); break;
-                    case 'cost': valA = a.initial_cost !== undefined ? a.initial_cost : a.cost; valB = b.initial_cost !== undefined ? b.initial_cost : b.cost; break;
-                    case 'price': valA = a.price || a.cost; valB = b.price || b.cost; break;
-                    case 'weight': valA = a.weight; valB = b.weight; break;
-                    case 'd1': valA = a.d1; valB = b.d1; break;
-                    case 'w1': valA = a.w1; valB = b.w1; break;
-                    case 'm1': valA = a.m1; valB = b.m1; break;
-                    case 'm3': valA = a.m3; valB = b.m3; break;
-                    case 'm6': valA = a.m6; valB = b.m6; break;
-                    case 'y1': valA = a.y1; valB = b.y1; break;
-                    case 'overall': valA = a.overallChange; valB = b.overallChange; break;
-                    case 'date': valA = a.name; valB = b.name; break; 
-                    default: valA = a.weight; valB = b.weight; break;
-                }
-                if (valA === valB) return 0;
-                if (valA === undefined || valA === null) return 1;
-                if (valB === undefined || valB === null) return -1;
+                const ports = appState.portfoliosData[viewMonth];
+                if (!ports) return;
+                const activePort = ports.find(x => x.id.split('_')[0] === baseId);
+                if (!activePort || activePort.assets.length === 0) return;
                 
-                if (typeof valA === 'string' && typeof valB === 'string') {
-                    return pdCurrentSortDir === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
-                }
-                return pdCurrentSortDir === 'asc' ? valA - valB : valB - valA;
-            });
-        }
-
-        function renderPdAssetsTable() {
-            const tbody = document.getElementById('pd-assets-tbody');
-            if(!tbody || !pdActivePortfolioId) return;
-            tbody.innerHTML = '';
-            
-            const pId = pdActivePortfolioId;
-            const viewMonth = appState.currentViewMonth;
-            
-            const ports = appState.portfoliosData[viewMonth];
-            if (!ports) return;
-            const activePort = ports.find(x => x.id.split('_')[0] === pId);
-            if (!activePort || activePort.assets.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="12" class="py-8 text-center text-slate-500">Bu portföyde varlık bulunmuyor.</td></tr>';
-                return;
-            }
-
-            const stats = getPortfolioStats(activePort);
-            
-            let activeAssets = [];
-            let realizedAssets = [];
-
-            stats.assetsWithStats.forEach(a => {
-                let fetchName = a.name.includes('.') ? a.name : a.name + '.IS';
-                const d1 = calculateAssetReturn(fetchName, a.price || a.cost, 1);
-                const w1 = calculateAssetReturn(fetchName, a.price || a.cost, 7);
-                const m1 = calculateAssetReturn(fetchName, a.price || a.cost, 30);
-                const m3 = calculateAssetReturn(fetchName, a.price || a.cost, 90);
-                const m6 = calculateAssetReturn(fetchName, a.price || a.cost, 180);
-                const y1 = calculateAssetReturn(fetchName, a.price || a.cost, 365);
+                const stats = getPortfolioStats(activePort);
                 
-                const enriched = { ...a, fetchName, d1, w1, m1, m3, m6, y1 };
-                if (a.isRealized) realizedAssets.push(enriched);
-                else activeAssets.push(enriched);
-            });
-            
-            const targetAssets = pdCurrentTab === 'active' ? activeAssets : realizedAssets;
-            const sortedAssets = applyPdSort(targetAssets);
-            
-            const formatAssetPct = (val) => {
-                if (val === null || val === undefined) return `<span class="text-slate-500 font-bold">-</span>`;
-                if (val === 0) return `<span class="text-slate-500">0.00%</span>`;
-                const color = val > 0 ? 'text-emerald-400' : 'text-rose-400';
-                const sg = val > 0 ? '+' : '';
-                return `<span class="${color}">${sg}${val.toFixed(2)}%</span>`;
-            };
-            
-            const formatBadgeAssetPct = (val) => {
-                const styleClasses = "inline-block w-20 text-center py-1 rounded-md border font-bold text-xs shadow-sm";
-                if (!val) return `<span class="${styleClasses} bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-500">0.00%</span>`;
-                const bgBorder = val > 0 ? 'bg-emerald-100 dark:bg-emerald-900/30 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400' : 'bg-rose-100 dark:bg-rose-900/30 border-rose-300 dark:border-rose-700 text-rose-700 dark:text-rose-400';
-                const sg = val > 0 ? '+' : '';
-                return `<span class="${styleClasses} ${bgBorder}">${sg}${val.toFixed(2)}%</span>`;
-            };
+                const tColor = stats.totalChange >= 0 ? 'text-emerald-400' : 'text-rose-400';
+                const tBgBorder = stats.totalChange >= 0 ? 'bg-emerald-100 dark:bg-emerald-900/30 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400' : 'bg-rose-100 dark:bg-rose-900/30 border-rose-300 dark:border-rose-700 text-rose-700 dark:text-rose-400';
+                const sign = stats.totalChange > 0 ? '+' : '';
 
-            sortedAssets.forEach(a => {
-                const logoUrl = `https://financialmodelingprep.com/image-stock/${a.fetchName}.png`;
-                
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-400/10 transition-colors ${a.isRealized ? 'bg-amber-50/50 dark:bg-amber-900/10' : ''}">
-                        <td class="py-3 px-5 text-slate-500 font-medium">-</td>
-                        <td class="py-3 px-5 flex flex-col font-bold text-base text-slate-900 dark:text-white">
-                            <div class="flex items-center">
-                                ${a.isRealized 
-                                    ? `<div class="w-8 h-8 mr-3 rounded-full bg-amber-100 dark:bg-amber-800 flex items-center justify-center text-amber-600 dark:text-amber-200 shrink-0"><i class="fa-solid fa-lock"></i></div>` 
-                                    : `<img src="${logoUrl}" class="w-8 h-8 rounded-full border border-slate-300 dark:border-slate-600 bg-white mr-3 shrink-0" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden'); this.nextElementSibling.classList.add('flex');">
-                                       <div class="w-8 h-8 mr-3 rounded-full bg-slate-200 dark:bg-slate-700 flex justify-center text-xs font-bold border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white items-center hidden shrink-0">
-                                           ${a.name.substring(0,2)}
-                                       </div>`
-                                }
-                                <span class="${a.isRealized ? 'text-amber-700 dark:text-amber-400' : ''}">${a.name} ${a.isRealized ? '<span class="text-xs font-normal opacity-70 ml-1">(Satıldı)</span>' : ''}</span>
-                            </div>
-                            ${a.isRealized && a.salesDetailsHTML ? `<div class="mt-1 ml-11 flex flex-col gap-0.5">${a.salesDetailsHTML}</div>` : ''}
-                        </td>
-                        <td class="py-3 px-5 text-right font-medium">${formatMoney(a.initial_cost !== undefined ? a.initial_cost : a.cost)}</td>
-                        <td class="py-3 px-5 text-right font-medium">${formatMoney(a.price || a.cost)}</td>
-                        <td class="py-3 px-5 text-right font-bold">${a.weight.toFixed(2)}%</td>
-                        <td class="py-3 px-5 text-right">${formatAssetPct(a.d1)}</td>
-                        <td class="py-3 px-5 text-right">${formatAssetPct(a.w1)}</td>
-                        <td class="py-3 px-5 text-right">${formatAssetPct(a.m1)}</td>
-                        <td class="py-3 px-5 text-right">${formatAssetPct(a.m3)}</td>
-                        <td class="py-3 px-5 text-right">${formatAssetPct(a.m6)}</td>
-                        <td class="py-3 px-5 text-right">${formatAssetPct(a.y1)}</td>
-                        <td class="py-3 px-5 text-right">${formatBadgeAssetPct(a.overallChange)}</td>
-                    </tr>
-                `;
-            });
-            
-            // Render Treemap
-            const treemap = document.getElementById('pd-treemap');
-            if(treemap && activeAssets.length > 0) {
-                treemap.innerHTML = '';
-                const sortedWeights = [...activeAssets].sort((a,b) => b.weight - a.weight);
-                sortedWeights.forEach(a => {
-                    const widthPct = Math.max(a.weight, 5); 
-                    const bgClass = a.overallChange >= 0 
-                        ? (a.overallChange > 15 ? 'bg-emerald-600' : (a.overallChange > 5 ? 'bg-emerald-500' : 'bg-emerald-400'))
-                        : (a.overallChange < -15 ? 'bg-rose-600' : (a.overallChange < -5 ? 'bg-rose-500' : 'bg-rose-400'));
+                let assetRows = '';
+                let activeAssets = [];
+                let realizedAssets = [];
+
+                stats.assetsWithStats.forEach(a => {
+                    let fetchName = a.name.includes('.') ? a.name : a.name + '.IS';
+                    const d1 = calculateAssetReturn(fetchName, a.price || a.cost, 1);
+                    const w1 = calculateAssetReturn(fetchName, a.price || a.cost, 7);
+                    const m1 = calculateAssetReturn(fetchName, a.price || a.cost, 30);
+                    const m3 = calculateAssetReturn(fetchName, a.price || a.cost, 90);
+                    const y1 = calculateAssetReturn(fetchName, a.price || a.cost, 365);
                     
-                    treemap.innerHTML += `
-                        <div class="flex-1 flex flex-col justify-center items-center text-white rounded shadow-sm p-2 transition-transform hover:scale-105 cursor-pointer ${bgClass}" style="flex-basis: ${widthPct}%; min-height: 80px;">
-                            <span class="font-bold text-sm lg:text-base tracking-wide">${a.name}</span>
-                            <span class="text-xs opacity-90">${a.weight.toFixed(1)}%</span>
-                            <span class="text-xs font-bold mt-1 bg-black/20 px-1.5 py-0.5 rounded">${a.overallChange > 0 ? '+' : ''}${a.overallChange.toFixed(1)}%</span>
-                        </div>
+                    const enriched = { ...a, fetchName, d1, w1, m1, m3, y1 };
+                    if (a.isRealized) realizedAssets.push(enriched);
+                    else activeAssets.push(enriched);
+                });
+
+                const sortedAssets = [...applySort(activeAssets), ...applySort(realizedAssets)];
+
+                sortedAssets.forEach(a => {
+                    let fetchName = a.fetchName;
+                    const logoUrl = `https://financialmodelingprep.com/image-stock/${fetchName}.png`;
+                    
+                    const d1 = a.d1;
+                    const w1 = a.w1;
+                    const m1 = a.m1;
+                    const m3 = a.m3;
+                    const y1 = a.y1;
+                    
+                    const formatAssetPct = (val) => {
+                        if (val === null || val === undefined) return `<span class="text-slate-500 font-bold">-</span>`;
+                        if (val === 0) return `<span class="text-slate-500">0.00%</span>`;
+                        const color = val > 0 ? 'text-emerald-400' : 'text-rose-400';
+                        const sg = val > 0 ? '+' : '';
+                        return `<span class="${color}">${sg}${val.toFixed(2)}%</span>`;
+                    };
+                    
+                    const formatBadgeAssetPct = (val) => {
+                        const styleClasses = "inline-block w-20 text-center py-1 rounded-md border font-bold text-xs shadow-sm";
+                        if (!val) return `<span class="${styleClasses} bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-500">0.00%</span>`;
+                        const bgBorder = val > 0 ? 'bg-emerald-100 dark:bg-emerald-900/30 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400' : 'bg-rose-100 dark:bg-rose-900/30 border-rose-300 dark:border-rose-700 text-rose-700 dark:text-rose-400';
+                        const sg = val > 0 ? '+' : '';
+                        return `<span class="${styleClasses} ${bgBorder}">${sg}${val.toFixed(2)}%</span>`;
+                    };
+                    
+                    assetRows += `
+                        <tr class="hover:bg-slate-400/10 transition-colors border-b border-white/5 last:border-0 ${a.isRealized ? 'bg-amber-50/50 dark:bg-amber-900/10' : ''}">
+                            <td class="py-3 px-4 flex flex-col font-bold text-base text-slate-900 dark:text-white">
+                                <div class="flex items-center">
+                                    ${a.isRealized 
+                                        ? `<div class="w-8 h-8 mr-3 rounded-full bg-amber-100 dark:bg-amber-800 flex items-center justify-center text-amber-600 dark:text-amber-200 shrink-0"><i class="fa-solid fa-lock"></i></div>` 
+                                        : `<img src="${logoUrl}" class="w-8 h-8 rounded-full border border-slate-300 dark:border-slate-600 bg-white mr-3 shrink-0" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden'); this.nextElementSibling.classList.add('flex');">
+                                           <div class="w-8 h-8 mr-3 rounded-full bg-slate-200 dark:bg-slate-700 flex justify-center text-xs font-bold border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white items-center hidden shrink-0">
+                                               ${a.name.substring(0,2)}
+                                           </div>`
+                                    }
+                                    <span class="${a.isRealized ? 'text-amber-700 dark:text-amber-400' : ''}">${a.name} ${a.isRealized ? '<span class="text-xs font-normal opacity-70 ml-1">(Satıldı)</span>' : ''}</span>
+                                </div>
+                                ${a.isRealized && a.salesDetailsHTML ? `<div class="mt-1 ml-11 flex flex-col gap-0.5">${a.salesDetailsHTML}</div>` : ''}
+                            </td>
+                            <td class="py-3 px-4 text-right">${formatMoney(a.initial_cost !== undefined ? a.initial_cost : a.cost)}</td>
+                            <td class="py-3 px-4 text-right">${formatMoney(a.price || a.cost)}</td>
+                            <td class="py-3 px-4 text-right font-bold">${a.weight.toFixed(2)}%</td>
+                            <td class="py-3 px-4 text-right">${formatAssetPct(d1)}</td>
+                            <td class="py-3 px-4 text-right">${formatAssetPct(w1)}</td>
+                            <td class="py-3 px-4 text-right">${formatAssetPct(m1)}</td>
+                            <td class="py-3 px-4 text-right">${formatAssetPct(m3)}</td>
+                            <td class="py-3 px-4 text-right">${formatAssetPct(y1)}</td>
+                            <td class="py-3 px-4 text-right">${formatBadgeAssetPct(a.overallChange)}</td>
+                        </tr>
                     `;
                 });
-            } else if (treemap) {
-                treemap.innerHTML = '<div class="w-full h-full flex items-center justify-center text-slate-500 font-medium">Veri bulunamadı</div>';
-            }
-        }
-
-        function openPortfolioDetail(pId) {
-            pdActivePortfolioId = pId;
-            switchTab('portfolio-detail');
-            
-            const p = getAllUniquePortfolios().find(x => x.id === pId);
-            if(!p) return;
-            
-            document.getElementById('pd-name').textContent = p.name;
-            const iconEl = document.getElementById('pd-icon');
-            if(iconEl) iconEl.style.color = p.color;
-            
-            const allMonths = Object.keys(appState.portfoliosData).sort();
-            const validMonths = allMonths.filter(m => appState.portfoliosData[m].some(port => port.id.split('_')[0] === pId));
-            
-            const recentMonthsEl = document.getElementById('pd-recent-months');
-            recentMonthsEl.innerHTML = '';
-            
-            validMonths.slice(-3).reverse().forEach(vm => {
-                const parts = vm.split('-');
-                const mName = monthNames[parseInt(parts[1])-1] + " '" + parts[0].slice(2);
                 
-                const pt = appState.portfoliosData[vm].find(x => x.id.split('_')[0] === pId);
-                let ret = 0;
-                if(pt) {
-                    const st = getPortfolioStats(pt);
-                    ret = st.totalChange;
-                }
-                const color = ret >= 0 ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' : 'text-rose-500 bg-rose-50 dark:bg-rose-900/20';
-                const sign = ret > 0 ? '+' : '';
-                recentMonthsEl.innerHTML += `
-                    <div class="flex justify-between items-center text-sm">
-                        <span class="text-slate-600 dark:text-slate-400 font-medium">${mName}</span>
-                        <span class="font-bold px-2 py-0.5 rounded ${color}">${sign}${ret.toFixed(2)}%</span>
+                const [vY, vM] = viewMonth.split('-');
+                const vMonthName = monthNames[parseInt(vM) - 1];
+                const vYearShort = vY.slice(2);
+                const formattedMonth = `${vMonthName} '${vYearShort}`;
+                
+                const allMonths = Object.keys(appState.portfoliosData).sort();
+                const validMonths = allMonths.filter(m => appState.portfoliosData[m].some(port => port.id.split('_')[0] === baseId));
+                
+                const currentIdx = validMonths.indexOf(viewMonth);
+                const isLatestMonth = currentIdx === validMonths.length - 1;
+                const isOldestMonth = currentIdx === 0;
+                
+                const rightArrowState = isLatestMonth ? 'disabled style="opacity:0.3;cursor:not-allowed;"' : '';
+                const leftArrowState = isOldestMonth ? 'disabled style="opacity:0.3;cursor:not-allowed;"' : '';
+
+                container.innerHTML += `
+                    <div class="glass-panel rounded-2xl shadow-xl overflow-hidden flex flex-col mt-6">
+                        <div class="p-4 sm:p-5 border-b border-white/20 dark:border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-0 bg-slate-800/5">
+                            <div class="flex items-center justify-between w-full md:w-auto gap-2 sm:gap-6">
+                                <span class="text-lg sm:text-xl font-extrabold tracking-wide uppercase text-slate-900 dark:text-white truncate flex-1 md:w-48" title="${p.name}">
+                                    ${p.name}
+                                </span>
+                                <div class="flex items-center bg-slate-200/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg p-1 shadow-sm shrink-0">
+                                    <button onclick="changePortfolioMonth('${baseId}', -1)" class="w-7 sm:w-8 h-7 sm:h-8 flex items-center justify-center text-slate-500 hover:text-brand-600 hover:bg-white dark:hover:bg-slate-700 rounded transition-colors" ${leftArrowState}><i class="fa-solid fa-chevron-left text-[10px] sm:text-xs"></i></button>
+                                    <span class="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 w-[65px] sm:w-[75px] text-center">${formattedMonth}</span>
+                                    <button onclick="changePortfolioMonth('${baseId}', 1)" class="w-7 sm:w-8 h-7 sm:h-8 flex items-center justify-center text-slate-500 hover:text-brand-600 hover:bg-white dark:hover:bg-slate-700 rounded transition-colors" ${rightArrowState}><i class="fa-solid fa-chevron-right text-[10px] sm:text-xs"></i></button>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 sm:gap-4 w-full md:w-auto justify-end">
+                                <div class="flex items-center h-9 sm:h-10">
+                                    <span class="h-full px-3 sm:px-4 rounded-full border border-brand-400/50 dark:border-brand-500/50 bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 flex items-center gap-2 shadow-sm font-bold text-xs sm:text-sm whitespace-nowrap">
+                                        <i class="fa-solid fa-layer-group"></i> <span class="hidden sm:inline uppercase text-xs tracking-wider">Toplam Varlık:</span> ${stats.assetsWithStats.length}
+                                    </span>
+                                </div>
+                                <div class="flex items-center h-9 sm:h-10">
+                                    <span class="h-full px-3 sm:px-4 rounded-full border flex items-center gap-1 sm:gap-2 shadow-sm font-bold text-xs sm:text-sm whitespace-nowrap ${tBgBorder}">
+                                        <span class="hidden sm:inline uppercase text-xs tracking-wider">Bu Ay Getirisi:</span>
+                                        <span class="text-sm sm:text-base">${sign}${stats.totalChange.toFixed(2)}%</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 overflow-x-auto">
+                            <table class="w-full text-sm text-left text-slate-700 dark:text-slate-300">
+                                <thead class="text-xs text-slate-500 dark:text-slate-400 border-b border-white/20 dark:border-white/5 uppercase tracking-wide">
+                                    <tr>
+                                        <th scope="col" class="py-3 px-4 font-semibold whitespace-nowrap cursor-pointer hover:bg-white/5 transition-colors" onclick="setSort('name')">Hisse / Varlık ${getSortIcon('name')}</th>
+                                        <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap cursor-pointer hover:bg-white/5 transition-colors" onclick="setSort('cost')">Maliyet ${getSortIcon('cost')}</th>
+                                        <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap cursor-pointer hover:bg-white/5 transition-colors" onclick="setSort('price')">Fiyat ${getSortIcon('price')}</th>
+                                        <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap cursor-pointer hover:bg-white/5 transition-colors" onclick="setSort('weight')">Ağırlık ${getSortIcon('weight')}</th>
+                                        <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap cursor-pointer hover:bg-white/5 transition-colors" onclick="setSort('d1')">Günlük ${getSortIcon('d1')}</th>
+                                        <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap cursor-pointer hover:bg-white/5 transition-colors" onclick="setSort('w1')">Haftalık ${getSortIcon('w1')}</th>
+                                        <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap cursor-pointer hover:bg-white/5 transition-colors" onclick="setSort('m1')">1 Aylık ${getSortIcon('m1')}</th>
+                                        <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap cursor-pointer hover:bg-white/5 transition-colors" onclick="setSort('m3')">3 Aylık ${getSortIcon('m3')}</th>
+                                        <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap cursor-pointer hover:bg-white/5 transition-colors" onclick="setSort('y1')">1 Yıllık ${getSortIcon('y1')}</th>
+                                        <th scope="col" class="py-3 px-4 font-semibold text-right whitespace-nowrap cursor-pointer hover:bg-white/5 transition-colors" onclick="setSort('overallChange')">Toplam ${getSortIcon('overallChange')}</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-700/30">
+                                    ${assetRows}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 `;
             });
-            
-            const totalRet = calculateTotalReturn(pId);
-            const trColor = totalRet >= 0 ? 'text-emerald-500' : 'text-rose-500';
-            const trSign = totalRet > 0 ? '+' : '';
-            document.getElementById('pd-total-return').textContent = trSign + totalRet.toFixed(2) + '%';
-            document.getElementById('pd-total-return').className = 'text-5xl font-black tracking-tighter ' + trColor;
-            
-            const [y, m] = appState.currentViewMonth.split('-');
-            document.getElementById('pd-table-month-label').textContent = monthNames[parseInt(m)-1] + ' ' + y;
-            
-            if(window.pdChartObj) window.pdChartObj.destroy();
-            
-            const dates = Object.keys(appState.datesHistory).sort();
-            let dataPoints = [];
-            let labels = [];
-            
-            let compoundBase = 1.0;
-            let cMonth = dates.length > 0 ? dates[0].substring(0,7) : '';
-
-            dates.forEach(dateStr => {
-                const yyyy_mm = dateStr.substring(0, 7);
-                if (yyyy_mm !== cMonth) {
-                    let endOfMonthRet = 0;
-                    const prevDays = Object.keys(appState.datesHistory).filter(d => d.startsWith(cMonth)).sort();
-                    if(prevDays.length > 0) {
-                        const vc = getPortfolioValueAndCost(pId, cMonth, prevDays[prevDays.length-1]);
-                        if(vc && vc.cost > 0) endOfMonthRet = (vc.value - vc.cost) / vc.cost;
-                    }
-                    compoundBase *= (1 + endOfMonthRet);
-                    cMonth = yyyy_mm;
-                }
-                
-                const vc = getPortfolioValueAndCost(pId, cMonth, dateStr);
-                let currentRet = 0;
-                if (vc && vc.cost > 0) currentRet = (vc.value - vc.cost) / vc.cost;
-                
-                const totalCumRet = (compoundBase * (1 + currentRet)) - 1;
-                dataPoints.push(totalCumRet * 100);
-                labels.push(dateStr);
-            });
-            
-            const ctx = document.getElementById('pd-chart').getContext('2d');
-            window.pdChartObj = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: p.name,
-                        data: dataPoints,
-                        borderColor: p.color || '#6366f1',
-                        backgroundColor: (p.color || '#6366f1') + '20',
-                        borderWidth: 2,
-                        fill: true,
-                        pointRadius: 0,
-                        pointHoverRadius: 5
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: { mode: 'index', intersect: false },
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { display: false },
-                        y: { 
-                            grid: { color: 'rgba(150, 150, 150, 0.1)' },
-                            ticks: { callback: v => '%' + v }
-                        }
-                    }
-                }
-            });
-
-            switchPdTab('active');
         }
-
+        
+        window.changePortfolioMonth = function(baseId, direction) {
+            const allMonths = Object.keys(appState.portfoliosData).sort();
+            const validMonths = allMonths.filter(m => appState.portfoliosData[m].some(p => p.id.split('_')[0] === baseId));
+            const current = appState.portfolioViewMonths[baseId] || appState.currentViewMonth;
+            const idx = validMonths.indexOf(current);
+            if (idx === -1) return;
+            const newIdx = idx + direction;
+            if (newIdx >= 0 && newIdx < validMonths.length) {
+                appState.portfolioViewMonths[baseId] = validMonths[newIdx];
+                renderPortfolioDetailedViews();
+            }
+        };
 
         window.toggleBenchmark = async function(checkbox) {
             const val = checkbox.value;
@@ -3430,11 +3383,11 @@
 
         function updateAllViews() {
             try { initDropdowns(); } catch(e) { console.error("Dropdown error:", e); }
-            
+            try { renderMonthlyView(); } catch(e) { console.error("Monthly error:", e); }
             try { renderManagementView(); } catch(e) { console.error("Management error:", e); }
             try { renderCompareView(); } catch(e) { console.error("Compare error:", e); }
             try { renderPerformanceDetailsTable(); } catch(e) { console.error("Perf Table error:", e); }
-            try {  } catch(e) { console.error("Port Details error:", e); }
+            try { renderPortfolioDetailedViews(); } catch(e) { console.error("Port Details error:", e); }
         }
 
         /* Calculator JS Logic */
