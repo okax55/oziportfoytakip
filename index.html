@@ -1043,7 +1043,7 @@
                 'this_month': '1mo', '1w': '1mo', '1m': '1mo',
                 '3m': '3mo', '6m': '6mo', 'ytd': 'ytd', '1y': '1y', '2y': '2y'
             };
-            const yfPeriod = '1y'; // Always fetch 1y for accurate performance tables
+            const yfPeriod = periodMap[range] || '1mo';
 
             try {
                 let symbols = new Set(['ALTIN', 'XU100.IS', 'NASDAQ', 'SP500']);
@@ -2447,7 +2447,7 @@
                                 </div>
                                 ${a.name}
                             </td>
-                            <td class="py-3 px-4 text-right">${formatMoney(costVal)}</td>
+                            <td class="py-3 px-4 text-right">${formatMoney(a.initial_cost !== undefined ? a.initial_cost : a.cost)}</td>
                             <td class="py-3 px-4 text-right">${formatMoney(a.price || a.cost)}</td>
                             <td class="py-3 px-4 text-right font-bold">${a.weight.toFixed(2)}%</td>
                             <td class="py-3 px-4 text-right">${formatAssetPct(d1)}</td>
