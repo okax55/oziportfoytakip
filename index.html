@@ -337,8 +337,8 @@
                     <table class="w-full text-sm text-left text-slate-700 dark:text-slate-300">
                         <thead class="text-xs text-slate-500 dark:text-slate-400 border-b border-white/20 dark:border-white/5">
                             <tr>
-                                <th scope="col" class="px-5 py-4 font-medium whitespace-nowrap">Portföy Adı</th>
                                 <th scope="col" class="px-5 py-4 font-medium whitespace-nowrap">Başlangıç</th>
+                                <th scope="col" class="px-5 py-4 font-medium whitespace-nowrap">Portföy Adı</th>
                                 <th scope="col" class="px-5 py-4 font-medium text-right whitespace-nowrap">Toplam Maliyet</th>
                                 <th scope="col" class="px-5 py-4 font-medium text-right whitespace-nowrap">Toplam Varlık</th>
                                 <th scope="col" class="px-5 py-4 font-medium text-right whitespace-nowrap">Günlük</th>
@@ -2378,19 +2378,20 @@
                 };
 
                 const formatBadgePct = (val) => {
-                    if (val === 0) return `<span class="px-2 py-0.5 rounded-md border bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-500">0.00%</span>`;
+                    const styleClasses = "inline-block w-24 text-center py-1 rounded-md border font-bold text-sm shadow-sm";
+                    if (val === 0) return `<span class="${styleClasses} bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-500">0.00%</span>`;
                     const bgBorder = val > 0 ? 'bg-emerald-100 dark:bg-emerald-900/30 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400' : 'bg-rose-100 dark:bg-rose-900/30 border-rose-300 dark:border-rose-700 text-rose-700 dark:text-rose-400';
                     const sign = val > 0 ? '+' : '';
-                    return `<span class="px-2 py-0.5 rounded-md border font-bold ${bgBorder}">${sign}${val.toFixed(2)}%</span>`;
+                    return `<span class="${styleClasses} ${bgBorder}">${sign}${val.toFixed(2)}%</span>`;
                 };
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-400/10 transition-colors">
+                        <td class="px-5 py-4 font-bold text-slate-700 dark:text-slate-300">${formatDateTR(startDate)}</td>
                         <td class="px-5 py-4 font-bold text-slate-900 dark:text-white flex items-center gap-3">
                             <span class="w-3 h-3 rounded-full shadow-sm flex-shrink-0" style="background-color: ${p.color}"></span>
                             <span class="truncate">${p.name}</span>
                         </td>
-                        <td class="px-5 py-4 font-bold text-slate-700 dark:text-slate-300">${formatDateTR(startDate)}</td>
                         <td class="px-5 py-4 font-bold text-right text-slate-700 dark:text-slate-400">${formatMoney(totalCost)}</td>
                         <td class="px-5 py-4 font-bold text-right text-slate-900 dark:text-white">${formatMoney(totalAsset)}</td>
                         <td class="px-5 py-4 text-right font-medium">${formatPct(d1)}</td>
@@ -2445,10 +2446,11 @@
                     };
                     
                     const formatBadgeAssetPct = (val) => {
-                        if (!val) return `<span class="px-2 py-0.5 rounded-md border bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-500">0.00%</span>`;
+                        const styleClasses = "inline-block w-20 text-center py-1 rounded-md border font-bold text-xs shadow-sm";
+                        if (!val) return `<span class="${styleClasses} bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-500">0.00%</span>`;
                         const bgBorder = val > 0 ? 'bg-emerald-100 dark:bg-emerald-900/30 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400' : 'bg-rose-100 dark:bg-rose-900/30 border-rose-300 dark:border-rose-700 text-rose-700 dark:text-rose-400';
                         const sg = val > 0 ? '+' : '';
-                        return `<span class="px-2 py-0.5 rounded-md border font-bold text-xs ${bgBorder}">${sg}${val.toFixed(2)}%</span>`;
+                        return `<span class="${styleClasses} ${bgBorder}">${sg}${val.toFixed(2)}%</span>`;
                     };
                     
                     assetRows += `
@@ -2478,29 +2480,35 @@
                 const vMonthName = monthNames[parseInt(vM) - 1];
                 const vYearShort = vY.slice(2);
                 const formattedMonth = `${vMonthName} '${vYearShort}`;
+                
+                const allMonths = Object.keys(appState.portfoliosData).sort();
+                const isLatestMonth = appState.currentViewMonth === allMonths[allMonths.length - 1];
+                const rightArrowState = isLatestMonth ? 'disabled style="opacity:0.3;cursor:not-allowed;"' : '';
 
                 container.innerHTML += `
-                    <div class="glass-panel rounded-2xl shadow-xl overflow-hidden flex flex-col">
+                    <div class="glass-panel rounded-2xl shadow-xl overflow-hidden flex flex-col mt-6">
                         <div class="p-5 border-b border-white/20 dark:border-white/5 flex justify-between items-center bg-slate-800/5">
-                            <div class="flex items-center gap-3">
-                                <span class="text-xl font-extrabold tracking-wide uppercase text-slate-900 dark:text-white flex items-center gap-2">
-                                    ${p.name}
-                                    <button onclick="changePortfolioMonth(-1)" class="text-slate-400 hover:text-brand-500"><i class="fa-solid fa-chevron-left"></i></button>
-                                    <span class="text-sm font-semibold text-slate-600 dark:text-slate-400 min-w-[70px] text-center">${formattedMonth}</span>
-                                    <button onclick="changePortfolioMonth(1)" class="text-slate-400 hover:text-brand-500"><i class="fa-solid fa-chevron-right"></i></button>
-                                    <a href="#" onclick="switchTab('manage');" class="text-slate-400 hover:text-brand-400 ml-1 text-sm"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
-                                </span>
-                            </div>
                             <div class="flex items-center gap-6">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-xs text-brand-600 dark:text-brand-300 bg-brand-100 dark:bg-brand-900/30 uppercase font-bold border border-brand-400/50 dark:border-brand-500/50 rounded-lg px-3 py-1 flex items-center gap-2 shadow-sm">
-                                        <i class="fa-solid fa-layer-group"></i> Toplam Varlık: ${stats.assetsWithStats.length}
+                                <span class="text-xl font-extrabold tracking-wide uppercase text-slate-900 dark:text-white truncate w-32 sm:w-48" title="${p.name}">
+                                    ${p.name}
+                                </span>
+                                <div class="flex items-center bg-slate-200/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg p-1 shadow-sm">
+                                    <button onclick="changePortfolioMonth(-1)" class="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-brand-600 hover:bg-white dark:hover:bg-slate-700 rounded transition-colors"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+                                    <span class="text-sm font-bold text-slate-700 dark:text-slate-300 w-[75px] text-center">${formattedMonth}</span>
+                                    <button onclick="changePortfolioMonth(1)" class="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-brand-600 hover:bg-white dark:hover:bg-slate-700 rounded transition-colors" ${rightArrowState}><i class="fa-solid fa-chevron-right text-xs"></i></button>
+                                </div>
+                                <a href="#" onclick="switchTab('manage');" class="text-slate-400 hover:text-brand-400 text-sm -ml-2 hidden sm:inline"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="flex items-center h-10">
+                                    <span class="h-full px-4 rounded-lg border border-brand-400/50 dark:border-brand-500/50 bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 flex items-center gap-2 shadow-sm font-bold text-sm whitespace-nowrap">
+                                        <i class="fa-solid fa-layer-group"></i> <span class="hidden sm:inline uppercase text-[10px] tracking-wider opacity-90">Toplam Varlık:</span> ${stats.assetsWithStats.length}
                                     </span>
                                 </div>
-                                <div class="flex items-center">
-                                    <span class="px-3 py-1.5 rounded-lg border flex items-center gap-2 shadow-sm ${tBgBorder}">
-                                        <span class="text-[10px] uppercase font-bold opacity-75 hidden sm:inline tracking-wider">Bu Ay Getirisi:</span>
-                                        <span class="text-sm sm:text-base font-bold">${sign}${stats.totalChange.toFixed(2)}%</span>
+                                <div class="flex items-center h-10">
+                                    <span class="h-full px-4 rounded-lg border flex items-center gap-2 shadow-sm font-bold text-sm whitespace-nowrap ${tBgBorder}">
+                                        <span class="hidden sm:inline uppercase text-[10px] opacity-75 tracking-wider">Bu Ay Getirisi:</span>
+                                        <span class="text-base">${sign}${stats.totalChange.toFixed(2)}%</span>
                                     </span>
                                 </div>
                             </div>
