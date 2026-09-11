@@ -3022,7 +3022,7 @@
 
             ports.forEach(p => {
                 let trs = '';
-                if(p.assets.length === 0) {
+                if(p.assets.length === 0 && (!appState.realizedProfits || !appState.realizedProfits[p.id] || appState.realizedProfits[p.id].length === 0)) {
                     trs = `<tr><td colspan="4" class="py-4 text-center text-slate-500 text-sm">Varlık bulunamadı.</td></tr>`;
                 } else {
                     p.assets.forEach(a => {
@@ -3051,6 +3051,26 @@
                             </tr>
                         `;
                     });
+                    
+                    if (appState.realizedProfits && appState.realizedProfits[p.id]) {
+                        appState.realizedProfits[p.id].forEach(r => {
+                            trs += `
+                                <tr class="hover:bg-slate-400/10 transition-colors bg-amber-50/50 dark:bg-amber-900/10">
+                                    <td class="py-2 font-bold text-base text-amber-700 dark:text-amber-400 tracking-wide flex items-center">
+                                        <div class="w-6 h-6 mr-2 rounded-full bg-amber-100 dark:bg-amber-800 flex items-center justify-center text-amber-600 dark:text-amber-200 shrink-0 text-xs"><i class="fa-solid fa-lock"></i></div>
+                                        ${r.name} <span class="text-xs font-normal opacity-70 ml-1">(Satıldı)</span>
+                                    </td>
+                                    <td class="py-2 text-right opacity-50">${r.amountSold}</td>
+                                    <td class="py-2 text-right opacity-50">${(r.initialCost !== undefined ? r.initialCost : r.cost).toFixed(2)} ₺</td>
+                                    <td class="py-2 text-right opacity-50">${r.cost.toFixed(2)} ₺</td>
+                                    <td class="py-2 text-right opacity-50">${r.avgSellPrice.toFixed(2)} ₺</td>
+                                    <td class="py-2 text-right">
+                                        <span class="text-xs text-amber-600 dark:text-amber-400">Kilitli</span>
+                                    </td>
+                                </tr>
+                            `;
+                        });
+                    }
                 }
 
                 container.innerHTML += `
