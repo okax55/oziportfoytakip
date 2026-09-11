@@ -2440,6 +2440,16 @@
                     hasAnyData = true;
                 }
             });
+
+            // Realized Profits (Satılan Hisseler) Ekleme
+            if (appState.realizedProfits && appState.realizedProfits[p.id]) {
+                appState.realizedProfits[p.id].forEach(r => {
+                    totalValue += r.totalSellValue;
+                    totalCost += r.totalSellCost;
+                    hasAnyData = true;
+                });
+            }
+
             if (!hasAnyData || totalCost === 0) return null;
             return { value: totalValue, cost: totalCost };
         }
